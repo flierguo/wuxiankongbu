@@ -164,7 +164,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     }
     // Player.V.挑战倍数 = 10
 
-    Npc.SayEx(Player, '传送页面', S)
+    Npc.SayEx(Player, '传送', S)
 }
 
 
@@ -231,7 +231,7 @@ export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         }
     }
     // 生成按钮
-    for (let yIndex = 0; yIndex < yPositions.length; yIndex++) {
+    for (let yIndex = 1; yIndex < yPositions.length; yIndex++) {
         const y = yPositions[yIndex];
         if (副本状态[yIndex]) {
             const 下标余数 = yIndex === 9 ? 0 : yIndex + 1;
@@ -253,7 +253,7 @@ export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 
 
 
-    Npc.SayEx(Player, '传送副本', str);
+    Npc.SayEx(Player, '传送层数', str);
 
 }
 

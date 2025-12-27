@@ -141,6 +141,7 @@ class 超大数值优化器 {
         return Math.pow(10, decimal.l).toFixed(fixed);
     }
     
+    
     /**
      * 获取缓存结果
      */
@@ -315,6 +316,63 @@ export function js_number_批量计算_超大数值版(
     }
     
     return 结果;
+}
+
+// ============================================
+// 科学计数法转换工具函数
+// ============================================
+
+/**
+ * 将科学计数法字符串转换为大数值字符串
+ * 例如: '5e200' -> '5' + '0'.repeat(200) = '5000...0' (5后面200个0)
+ * @param scientificNotation 科学计数法字符串，如 '5e200', '1.5e100'
+ * @returns 完整的大数值字符串
+ */
+export function 科学计数法转大数值(scientificNotation: string): string {
+    // 检查是否包含科学计数法标记 (e 或 E)
+    const lowerStr = scientificNotation.toLowerCase();
+    const eIndex = lowerStr.indexOf('e');
+    if (eIndex === -1) {
+        // 不是科学计数法，直接返回原字符串
+        return scientificNotation;
+    }
+    
+    // 分离底数和指数部分
+    const baseStr = scientificNotation.substring(0, eIndex);
+    const exponentStr = scientificNotation.substring(eIndex + 1);
+    
+    // 解析底数和指数
+    const base = parseFloat(baseStr);
+    const exponent = parseInt(exponentStr);
+    
+    if (isNaN(base) || isNaN(exponent)) {
+        return scientificNotation; // 解析失败，返回原字符串
+    }
+    
+    // 处理底数的小数部分
+    let baseIntStr = baseStr;
+    let decimalIndex = baseStr.indexOf('.');
+    let decimalPlaces = 0;
+    
+    if (decimalIndex !== -1) {
+        // 有小数部分
+        const integerPart = baseStr.substring(0, decimalIndex);
+        const decimalPart = baseStr.substring(decimalIndex + 1);
+        decimalPlaces = decimalPart.length;
+        baseIntStr = integerPart + decimalPart; // 合并整数和小数部分
+    }
+    
+    // 计算需要添加的0的数量
+    const zerosToAdd = exponent - decimalPlaces;
+    
+    if (zerosToAdd <= 0) {
+        // 指数小于等于小数位数，需要处理小数情况
+        // 这种情况比较少见，暂时返回原字符串
+        return scientificNotation;
+    }
+    
+    // 生成结果：底数整数部分 + 需要的0
+    return baseIntStr + '0'.repeat(zerosToAdd);
 }
 
 // ============================================

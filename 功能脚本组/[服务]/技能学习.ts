@@ -1,4 +1,4 @@
-import { 装备属性统计 } from "../../大数值版本/装备属性统计"
+import { 装备属性统计 } from "../../核心功能/装备属性统计"
 import { 特效 } from "../[玩家]/_P_Base"
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -87,7 +87,7 @@ export function 技能学习(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         Player.AddSkill(技能名字);
     } else if (Player.GetItemCount('书页') >= 书页数量) {
         if (技能名字 == '群魔乱舞') {
-            Player.ShowEffectEx2(特效.鬼舞群魔乱舞, -10, 20, true, 99999)
+            // Player.ShowEffectEx2(特效.鬼舞群魔乱舞, -10, 20, true, 99999)
         }
         Player.AddSkill(技能名字);
         Npc.Take(Player, '书页', 书页数量)

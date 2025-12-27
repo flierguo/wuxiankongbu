@@ -4,23 +4,20 @@ import { Refresh } from "../功能脚本组/[怪物]/_M_Refresh"
 import { funcDie } from "../功能脚本组/[怪物]/_M_Die"
 import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../功能脚本组/[玩家]/_P_Base"
 import { Main } from "../功能脚本组/[装备]/_ITEM_zbhs"
-import { 交易市场, 人物属性, 会员, 会员特权, 地图, 执行新手任务, 新手任务, 测试用的, 职业词条 } from "../功能脚本组/[服务]/延时跳转"
-import { 天赋 } from "../功能脚本组/[服务]/王城"
+import { 交易市场, 测试用的 } from "../功能脚本组/[服务]/延时跳转"
 import { 杀怪鞭尸 } from "../功能脚本组/[玩家]/_P_杀怪触发"
 import * as 交易中心 from "../功能脚本组/[服务]/交易中心"
 // import { 计算伤害 } from "../大数值版本/攻击计算"
 // import { 计算伤害 } from '../应用智能优化版';
 // import { 计算伤害 } from '../性能优化/攻击计算_极致优化';
 import { 计算伤害 } from '../性能优化/攻击计算_超极致优化';
-import { 装备属性统计 } from "../大数值版本/装备属性统计"
-import { 实时回血, 血量显示 } from "../大数值版本/字符计算"
+import { 装备属性统计 } from "../核心功能/装备属性统计"
+import { 实时回血, 血量显示 } from "../核心功能/字符计算"
 import { js_war } from "../全局脚本[公共单元]/utils/计算方法"
 import * as 地图1 from '../功能脚本组/[地图]/地图';
 import { 记录充值数据 } from "../功能脚本组/[服务]/充值属性"
 import * as 材料仓库 from "../功能脚本组/[服务]/材料仓库"
 
-// ============ 启动智能优化系统 ============
-import { 启动智能优化系统 } from '../应用智能优化版';
 
 // ========================================
 
@@ -61,7 +58,7 @@ GameLib.onMonitorDamageEx = (ActorObject: TActor, ADamageSource: TActor, Tag: nu
     return 1
 }
 GameLib.onRightClickMapPos = (Player: TPlayObject, MapX: number, MapY: number): void => {
-    if (Player.GetPermission() == 11) {
+    if (Player.GetPermission() == 10) {
         Player.MapMove(Player.GetMapName(), MapX, MapY)
     } else {
         if (Player.GetJewelrys(4) != null && Player.GetJewelrys(4).GetName() == '甘道夫之戒') {
@@ -89,7 +86,6 @@ GameLib.onScriptEngineFinal = (isReload: boolean): void => {
 GameLib.onScriptEngineInit = (isReload: boolean): void => {
     if (isReload == false) {
         地图1.初始化副本池()
-        启动智能优化系统();
         let AMap: TEnvirnoment
         // for (let 循环 of 刷BOSS) {
         //     AMap = GameLib.FindMap(循环.地图名字);
@@ -110,10 +106,10 @@ GameLib.onScriptButtonClick = (Player: TPlayObject, params: string): void => {
         case '刷新': Player.ReloadBag(); break
         case '材料仓库': Player.DelayCallMethod('材料仓库.Main', 10, true); break
         case '装备回收': Main(GameLib.QFunctionNpc, Player); break
-        case '无限仓库': Player.DelayCallMethod('可视仓库.Main', 10, true); break
+        case '随身仓库': Player.DelayCallMethod('可视仓库.Main', 10, true); break
         case '综合服务': Player.DelayCallMethod('_YXFW_Anniukg.Main', 10, true); break
         // case '天赋': 天赋(GameLib.QFunctionNpc, Player); break
-        case '交易中心': 交易中心.Main(Player); break
+        case '交易市场': 交易中心.Main(Player); break
     }
 }
 
@@ -121,11 +117,7 @@ GameLib.onCastleStartWar = (Castle: TUserCastle): void => { //城堡开始攻城
 }
 // 玩家登陆触发
 GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
-    if (Player.V.鬼舞者 && Player.FindSkill('群魔乱舞')) { Player.ShowEffectEx2(特效.鬼舞群魔乱舞, -10, 20, true, 99999) }
-    if (Player.V.武僧) { Player.ShowEffectEx2(特效.武僧天雷阵, -15, 15, true, 99999) }
-    // if (Player.IsAdmin && Player.MachineCode != '8D6B-B1EC-D7C6-E809'&& Player.MachineCode != '8D6B-B1EC-D7C6-E809') {
-    //     Player.Kick()
-    // }
+
     ////  自己     雪儿     
     if ((Player.MachineCode == 'F70F-128D-002F-62BE') || Player.MachineCode == '187F-34BE-F98F-D037' || Player.MachineCode == '8D6B-B1EC-D7C6-E809') {
         Player.SetPermission(10)
@@ -192,11 +184,10 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
         _P_NewPlayer.PlayerRegister(Player);
         GameLib.BroadcastSay(format('%s玩家[%s]在[%s]上线了！', ['(*)', Player.Name, Player.Map.Name]), 249, 255)
     }
-    会员(GameLib.QFunctionNpc, Player)
-    // 新手任务(GameLib.QFunctionNpc, Player)
+
     交易市场(GameLib.QFunctionNpc, Player)
-    人物属性(GameLib.QFunctionNpc, Player)
-    职业词条(GameLib.QFunctionNpc, Player)
+
+
     Player.SetPVar(关闭仓库, 0);//P变量关闭仓库
     Player.SetPVar(仓库第一页, 1);//P变量仓库第一页
     Player.SetNVar(仓库总格子数, 490);//N变量仓库总格子数
@@ -346,31 +337,5 @@ GameLib.onGuildInitialize = (Guild: TGuild): void => { }
 GameLib.onPlayerSpeedException = (Player: TPlayObject): boolean => { return false }
 
 GameLib.onExecuteExtendButton = (Play: TPlayObject, CommandText: string): void => {
-    if (CommandText == '会员啊') {
-        // 伤害显示(Play)
-        会员特权(GameLib.QFunctionNpc, Play)
-    }
-    // if (CommandText == '交易市场啊') {
-    //     // 伤害显示(Play)
-    //      交易中心.Main(Play)
-    //    // Play.MapMove('摆摊地图', 35, 23)
-    //   // 交易中心(GameLib.QFunctionNpc, Play)
-    // }
-    if (CommandText == '新手任务啊') {
-        // 伤害显示(Play)
-        执行新手任务(GameLib.QFunctionNpc, Play)
-    }
-    // if (CommandText == '属性啊') {
-    //     // 伤害显示(Play)
-    //     人物属性(GameLib.QFunctionNpc, Play)
-    //     测试用的(GameLib.QFunctionNpc, Play)
 
-    // }
-    // if (CommandText == '词条啊') {
-    //     职业词条(GameLib.QFunctionNpc, Play)
-    // }
-    // if (CommandText == '词条啊') {
-    //     // 伤害显示(Play)
-    //     职业词条(GameLib.QFunctionNpc, Play)
-    // }
 }

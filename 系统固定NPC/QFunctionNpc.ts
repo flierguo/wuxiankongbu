@@ -1,23 +1,21 @@
-// import * as XXXX from "../功能脚本组/[XX]/XXXX"宝宝
+
 import { ItemProperty } from "../功能脚本组/[装备]/_ITEM_Drop"
 import { 攻击触发, 释放魔法触发 } from "../功能脚本组/[玩家]/释放魔法和攻击触发"
-import { _P_P_AbilityData } from "../功能脚本组/[玩家]/_P_Base"
 import { monitoring } from "../功能脚本组/[功能]/_GN_Monitoring"
 import * as _P_Base from "../功能脚本组/[玩家]/_P_Base"
 
-import { ViewItems } from "../功能脚本组/[服务]/可视仓库"
 import { 宝宝杀怪触发, 杀怪触发, 杀怪鞭尸, 特殊掉落, 经验勋章 } from "../功能脚本组/[玩家]/_P_杀怪触发"
 import { 使用物品 } from "../功能脚本组/[装备]/_ITEM_使用物品"
 import { 取两点距离 } from "./RobotManageNpc"
-import { 沙巴克 } from "../功能脚本组/[玩家]/沙巴克杀人"
 // import { 怪物掉落物品触发 } from "../大数值版本/怪物掉落物品触发"
-import { 怪物掉落物品触发 } from '../应用智能优化版';
-import { 装备属性统计 } from "../大数值版本/装备属性统计"
+import { 怪物掉落物品触发 } from '../核心功能/怪物掉落物品触发';
+import { 装备属性统计 } from "../核心功能/装备属性统计"
 import { 检查装备回收, 计算装备回收价值 } from "../功能脚本组/[装备]/_ITEM_zbhs"
 import { Main } from "../后台管理"
 import * as 地图 from '../功能脚本组/[地图]/地图';
-import * as 聚宝葫芦 from '../功能脚本组/[服务]/聚宝葫芦';
-import { 实时回血, 血量显示 } from "../大数值版本/字符计算"
+
+import { 实时回血, 血量显示 } from "../核心功能/字符计算"
+import * as 随身仓库 from "../功能脚本组/[服务]/可视仓库"
 
 //人物杀怪
 GameLib.onKillMonster = (Player: TPlayObject, Monster: TActor): void => {
@@ -103,7 +101,7 @@ GameLib.onPlayAddSkill = (Player: TPlayObject, Magic: TUserMagic): boolean => { 
 //杀人触发
 GameLib.onKillPlayer = (Killer: TPlayObject, Player: TPlayObject): void => {
     // if (GameLib.FindCastle('沙巴克').GetUnderWar() && Player.GetMapName() == '0150') {
-    沙巴克(Killer, Player)
+    // 沙巴克(Killer, Player)
     // }
 
 }
@@ -300,52 +298,6 @@ GameLib.onMonDropItem = (Actor: TActor, Monster: TActor, Item: TUserItem, Map: T
 }
 //根据怪物名称爆出物品触发(针对监视物品)：Owner:物品所属玩家，Monster:怪物名称,item:物品，Accept：是否允许掉落
 GameLib.onDropItemByMonName = (Owner: TPlayObject, Monster: string, Item: TUserItem): boolean => {
-
-            // 掉落物品列表（除幸运精魄外的其他材料）
-            const 掉落物品列表 = [
-                '书页',
-                '挑战石',
-                '血石精华', 
-                '泰坦结晶',
-                '专属碎片',
-                '种族雕像',
-                '特戒碎片',
-                '斗笠碎片',
-                '烈焰精魄',
-                '无限玄晶',
-                '暴怒符文',
-                '殇之精魄',
-            ];
-            if(掉落物品列表.includes(Item.GetName()) && random(10) < 1){
-                聚宝葫芦.聚宝葫芦掉落材料(GameLib.QFunctionNpc, Owner);
-                // console.log('怪物掉落物品11111='+Item.GetName())
-            }
-            
-            // 处理等级石物品
-            if (Item.GetName().includes('等级石')) {
-                // 遍历背包查找相同名称的物品
-                let 现有物品: TUserItem | null = null;
-                for (let i = 0; i < Owner.GetItemSize(); i++) {
-                    const 背包物品 = Owner.GetBagItem(i);
-                    if (背包物品 && 背包物品.GetName() === Item.GetName()) {
-                        现有物品 = 背包物品;
-                        break;
-                    }
-                }
-                
-                if (现有物品) {
-                    // 背包里已有该物品，增加持久度
-                    const 当前持久 = 现有物品.GetDura();
-                    现有物品.SetDura(当前持久 + 1);
-                    // Owner.SendMessage(`${Item.GetName()} 数量 +1，当前数量：${当前持久 + 1}`, 1);
-                    Owner.UpdateItem(现有物品)
-                    return false; // 不在地图上生成物品
-                } else {
-                    // 背包里没有，正常给予物品
-                    return true; // 允许在地图上生成物品
-                }
-            }
-            
             // 默认允许掉落
             return true;
 }
@@ -535,11 +487,11 @@ GameLib.onPickUpItemChangePicker = (PickSender: TPlayObject, Item: TUserItem, Go
 GameLib.onUseExpStoneItem = (PlayObject: TPlayObject, Item: TUserItem): boolean => { return true }
 //客户端左侧增加一个按钮
 GameLib.onSideBarButtonClick = (Player: TPlayObject, AName: string): void => {
-    if (AName == '特殊') {
-        let Args = new TArgs()
-        Args.Add(1)
-        ViewItems(GameLib.QFunctionNpc, Player, Args)
-    }
+    // if (AName == '特殊') {
+    //     let Args = new TArgs()
+    //     Args.Add(1)
+    //     ViewItems(GameLib.QFunctionNpc, Player, Args)
+    // }
 
 }
 //自定义间隔作用类Buff触发(当添加自定义间隔作用类Buff之后 在间隔设定时间后)
@@ -556,18 +508,15 @@ GameLib.onAddBuff = (Actor: TActor, Buff: TBuff, Accept: boolean): boolean => {
 }
 //点击背包物品触发 
 GameLib.onUIActivedBagItemEvent = (Player: TPlayObject, UIName: string, ClientItemBagIndex: number, Item: TUserItem, KeyCtrl: boolean, KeyAlt: boolean, MouseButton: TMouseButton): void => {
-    if (UIName == '分页仓库' && Item) {
-        //  Player.GetNVar(298)
-        // if (Item.GetNoStore() || Item.GetBind()) { Player.MessageBox("此物品禁止存入仓库!"); return }
-        if (Player.BigStorageItemsCount < Player.GetNVar(_P_Base.仓库总格子数)) {
-            Player.AddItemToBigStorage(Item)
-        } else {
-            Player.MessageBox("你仓库满了！");
+    //console.log("点击背包物品触发", UIName, ClientItemBagIndex, Item, KeyCtrl, KeyAlt, MouseButton)
+    if (UIName == '随身仓库' && Item) {
+        if (Player.AddItemToBigStorage(Item)) {
+            // Player.DeleteItem(Item)
         }
 
         let Args = new TArgs()
         Args.Add(1)
-        ViewItems(GameLib.QFunctionNpc, Player, Args)
+        随身仓库.Main(GameLib.QFunctionNpc, Player, Args)
     }
 }
 

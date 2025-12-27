@@ -1,1542 +1,665 @@
-import { _P_P_AbilityData, } from "../功能脚本组/[玩家]/_P_Base"
 import * as _P_Base from "../功能脚本组/[玩家]/_P_Base"
-import { 人物属性随机 } from "../功能脚本组/[玩家]/_P_Base"
-import { TAG, _M_N_宝宝释放群雷, _M_N_猎人宝宝群攻, 原始名字, 宝宝基础技能, 宝宝高级技能, 怪物星数 } from "../功能脚本组/[怪物]/_M_Base"
-import { 取两点距离 } from "./RobotManageNpc"
-import { 实时回血, 血量显示 } from "../大数值版本/字符计算"
-import { js_number } from "../全局脚本[公共单元]/utils/计算方法"
+import { 实时回血 } from "../核心功能/字符计算"
 import { 大数值整数简写 } from "../功能脚本组/[服务]/延时跳转"
+import { 智能计算 } from "../大数值/核心计算方法"
 
 
-GameLib.onMonSelectMagicBeforeAttack = (AMon: TActor, ATarget: TActor, AMagicID: number): number => {
-    // console.log(AMon.GetName()+'对方名字='+ATarget.GetName())
-    if (AMon.GetNVar(_M_N_宝宝释放群雷) == 1) { AMagicID = 10056 }
-    if (AMon.GetNVar(_M_N_猎人宝宝群攻) == 1) { AMagicID = 10058 }
-
-    if (AMon.GetName() == '战仙·人形怪') { AMagicID = 10064 }
-    if (AMon.GetName() == '法仙·人形怪') { AMagicID = 10065 }
-    if (AMon.GetName() == '道仙·人形怪') { AMagicID = 10066 }
-
-    if (AMon.GetName() == '畜生道轮回兽') { AMagicID = 10072 }
-    if (AMon.GetName() == '饿鬼道轮回兽') { AMagicID = 10073 }
-    if (AMon.GetName() == '地狱道轮回兽') { AMagicID = 10074 }
-    if (AMon.GetName() == '修罗道轮回兽') { AMagicID = 10075 }
-    if (AMon.GetName() == '人道轮回兽') { AMagicID = 10076 }
-    if (AMon.GetName() == '天道轮回兽') { AMagicID = 10077 }
-
-    if (AMon.GetName().includes('远古树精')) {
-        if (random(100) < 20) {
-            AMagicID = 10094
-        } else if (random(100) < 10) {
-            AMagicID = 10090
-        } else {
-            AMagicID = 10100
-        }
-    }
-
-
-    if (AMon.GetName().includes('暗黑法师')) {
-        if (random(100) < 20) {
-            AMagicID = 10095
-        } else if (random(100) < 10) {
-            AMagicID = 10093
-        } else { AMagicID = 10091 }
-    }
-    if (AMon.GetName().includes('圣光骑士')) {
-        if (random(100) < 20) {
-            AMagicID = 10098
-        } else if (random(100) < 10) {
-            AMagicID = 10099
-        } else {
-            AMagicID = 10097
-        }
-    }
-
-    if (AMon.GetName().includes('暗影虎王')) {
-        if (random(100) < 20) {
-            AMagicID = 10088
-        } else {
-            AMagicID = 10101
-        }
-    }
-    if (AMon.GetName().includes('地狱九头蛇')) {
-        if (random(100) < 20) {
-            AMagicID = 10089
-        } else {
-            AMagicID = 10102
-        }
-    }
-
-    let Player = AMon.Master as TPlayObject
-    if (Player) {
-        if (AMon.GetNVar(宝宝高级技能) == 1) {
-            if (DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('宝宝倚天').AsDateTime) >= 15) {
-                AMagicID = 10087
-                Player.VarDateTime('宝宝倚天').AsDateTime = DateUtils.Now()
-            } else if (DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('宝宝逐日').AsDateTime) >= 10) {
-                AMagicID = 10086
-                Player.VarDateTime('宝宝逐日').AsDateTime = DateUtils.Now()
-            } else if (DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('宝宝开天斩').AsDateTime) >= 10) {
-                AMagicID = 10085
-                Player.VarDateTime('宝宝开天斩').AsDateTime = DateUtils.Now()
-            } else if (DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('宝宝烈火').AsDateTime) >= 10) {
-                AMagicID = 10084
-                Player.VarDateTime('宝宝烈火').AsDateTime = DateUtils.Now()
-            } else if (AMon.GetNVar(宝宝基础技能) == 1) {
-                if (random(100) < 10) {
-                    AMagicID = 10081
-                } else {
-                    let AActorList: TActorList;
-                    let a = 0
-                    AActorList = Player.Map.GetActorListInRange(AMon.GetMapX(), AMon.GetMapY(), 1, '');
-                    for (let i = 0; i < AActorList.Count; i++) {
-                        let Actor = AActorList.Actor(i);
-                        if (Actor != null && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() != AMon.GetHandle() && !Actor.GetInSafeZone()) {
-                            a++
-                        }
-                    }
-                    if (a > 1) {
-                        AMagicID = 10083   //半月
-                    } else {
-                        AMagicID = 10082  //刺杀
-                    }
-                }
-            }
-        } else if (AMon.GetNVar(宝宝基础技能) == 1) {
-            if (random(100) < 10) {
-                AMagicID = 10081
-            } else {
-                let AActorList: TActorList;
-                let a = 0
-                AActorList = Player.Map.GetActorListInRange(Player.GetMapX(), Player.GetMapY(), 1, '');
-                for (let i = 0; i < AActorList.Count; i++) {
-                    let Actor = AActorList.Actor(i);
-                    if (Actor != null && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() != AMon.GetHandle() && Actor.GetHandle() != Player.GetHandle() && !Actor.GetInSafeZone()) {
-                        a++
-                    }
-                }
-                if (a > 1) {
-                    AMagicID = 10083   //半月
-                } else {
-                    AMagicID = 10082  //刺杀
-                }
-            }
-        }
-
-
-    }
-    return AMagicID
-}
-
-
-export function 万剑归宗(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let bPlayer: TPlayObject = Target as TPlayObject
-    if (!Player.InSafeZone) {
-
-
-        if (bPlayer.IsPlayer() && random(100) >= Player.R.抵抗异常) {
-            bPlayer.SetState(5, 3, 0)
-        } else if (Player.SlaveCount > 0) {
-            for (let a = 0; a <= Player.SlaveCount; a++) {
-                if (Player.GetSlave(a) != null && Player.GetSlave(a).Handle != Target.Handle) {
-                    Target.SetState(5, 3, 0)
-                }
-            }
-        } else {
-            Target.SetState(5, 3, 0)
-        }
-        Player.Damage(Target, 1, _P_Base.技能ID.战神.万剑归宗主动)
-    }
-}
-export function 圣光打击(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    const 范围 = Math.min(Number(Player.R.攻击范围) + 1 , 4)
-    let 目标列表 = 获取目标范围内目标(Player, Target, 范围 , false)
-    for (const 目标 of 目标列表)  {
-        Player.Damage(目标, 1, _P_Base.技能ID.骑士.圣光打击被动)
-    }
-}
-
-export function 召唤战神(Source: TActor): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 召唤数量 = 1
-    if (Player.V.契约专精激活) { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 * 2 / 50) } else { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 / 50) }
-
-    战神宝宝(Player, '战神', 1, 1, 召唤数量)
-}
-
-export function 愤怒(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, _P_Base.技能ID.骑士.愤怒被动)
-}
-
-
-export function 审判救赎(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, _P_Base.技能ID.骑士.审判救赎主动)
-}
-export function 冰霜之环(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let bPlayer: TPlayObject = Target as TPlayObject
-    if (!Player.InSafeZone) {
-        if (bPlayer.IsPlayer() && random(100) >= Player.R.抵抗异常) {
-            bPlayer.SetState(5, 1, 0)
-            bPlayer.ShowEffectEx2(_P_Base.特效.冰冻, -10, 25, true, 1)
-        } else {
-            Target.SetState(5, 1, 0)
-            Target.ShowEffectEx2(_P_Base.特效.冰冻, -10, 25, true, 1)
-        }
-        Player.Damage(Target, 1, _P_Base.技能ID.冰法.冰霜之环被动)
-    }
-}
-export function 萌萌浣熊(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 召唤数量 = 1
-    if (Player.V.契约专精激活) { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 * 2 / 30) } else { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 / 30) }
-    let 继承倍率 = 1 + (Player.R.拉布拉多等级 + Player.V.拉布拉多等级 + Player.R.所有技能等级) * 0.05
-    驯兽师召宝宝(Player, '萌萌浣熊', 1, 继承倍率, 召唤数量)
-}
-export function 嗜血狼人(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 召唤数量 = 1
-    if (Player.V.契约专精激活) { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 * 2 / 40) } else { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 / 40) }
-    let 继承倍率 = 1 + (Player.R.嗜血狼人等级 + Player.V.嗜血狼人等级 + Player.R.所有技能等级) * 0.05
-    驯兽师召宝宝(Player, '嗜血狼人', 5, 继承倍率, 召唤数量)
-}
-export function 丛林虎王(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 召唤数量 = 1
-    if (Player.V.契约专精激活) { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 * 2 / 50) } else { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 / 50) }
-    let 继承倍率 = 2 + (Player.R.丛林虎王等级 + Player.V.丛林虎王等级 + Player.R.所有技能等级) * 0.1
-    驯兽师召宝宝(Player, '丛林虎王', 1, 继承倍率, 召唤数量)
-}
-export function 雷暴之怒(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.R.宝宝释放群雷 = true
-    for (let a = 0; a <= Player.SlaveCount; a++) {
-        if (Player.GetSlave(a)) {
-            Player.GetSlave(a).SetNVar(_M_N_宝宝释放群雷, 1)
-        }
-    }
-    let 宝宝群雷 = Player.AddStatusBuff(_P_Base.显示图标.宝宝群雷, TBuffStatusType.stNone, 40000, 0, 0) //给人物加个BUFF，方便增加一个BUFF图标
-    Player.SetBuffIcon(宝宝群雷.Handle, 'icons.data', 142, 142, '{S=‘雷暴之怒’技能触发:40秒内宝宝攻击目标将会触发群体雷电技能;C=251}', '', '使用‘雷暴之怒’技能触发:40秒内宝宝攻击目标将会触发群体雷电技能！', true/*是否消失前3秒钟闪烁*/, true/*是否在图标底部显示剩余时间*/)
-    Player.DelayCallMethod('延时跳转.宝宝群雷关闭'/*要调用的函数名*/, 40000/*延迟时间1000毫秒*/, true/*切换地图不删除该延迟调用*/);
-}
-
-//牧师
-export function 妙手回春(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 恢复血量 = js_number(Player.R.自定属性[163], `2`, 3)
-    // 恢复血量 = 恢复血量 + 恢复血量 * Player.R.妙手回春等级 * 0.2
-    恢复血量 = js_number(js_number(js_number(恢复血量, Player.R.妙手回春等级, 3), `0.2`, 3), 恢复血量, 1)
-    let P: TPlayObject
-    if (Player.GroupOwner) {//如果存在队长
-        for (let I = 0; I <= Player.GroupCount - 1; I++) {
-            P = Player.GetGroupMember(I)
-            if (取两点距离(Player.MapX, Player.MapY, P.MapX, P.MapY) <= 10) {
-                P.ShowEffectEx2(_P_Base.特效.妙手回春, -13, 25, true, 1)
-                实时回血(P, 恢复血量)
-                // P.SetHP(P.GetHP() + 恢复血量)
-            }
-        }
-    } else {
-        Player.ShowEffectEx2(_P_Base.特效.妙手回春, -13, 25, true, 1)
-        实时回血(Player, 恢复血量)
-    }
-}
-export function 互相伤害(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    if (!Target.IsPlayer()) {
-        Player.Damage(Target, 1, _P_Base.技能ID.牧师.互相伤害被动)
-    }
-    // if(DateUtils.MilliSecondSpan(DateUtils.Now(), Player.VarDateTime('互相伤害技能冷却').AsDateTime) > 500){
-    //   Player.VarDateTime(`互相伤害技能冷却`).AsDateTime = DateUtils.Now()
-    // }
-}
-//刺客
-export function 弱点(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let AActorList: TActorList;
-    if (Player.R.暗影值 < 1) { Player.SendMessage('暗影值不足1点,无法使用弱点技能!'); return }
-    Player.R.暗影值 = Player.R.暗影值 - 1
-    let 暗影值 = Player.AddStatusBuff(_P_Base.显示图标.暗影值, TBuffStatusType.stNone, 0, 0, 0) //给人物加个BUFF，方便增加一个BUFF图标
-    Player.SetBuffIcon(暗影值.Handle, 'icons.data', 148, 148, ``, '', `{S=当前‘暗影值’数量:${Player.R.暗影值};C=251}`, true/*是否消失前3秒钟闪烁*/, true/*是否在图标底部显示剩余时间*/)
-    if (Player.R.暗影值 < 1) { Player.DeleteBuff(暗影值.Handle) }
-    Player.FlashMove(Player.MapX, Player.MapY, true) //破除隐身
-    Player.ShowEffectEx2(_P_Base.特效.刺客弱点, -10, 20, true, 1)
-    const 范围 = Math.min(4 + Number(Player.R.攻击范围) , 10)
-    AActorList = Player.Map.GetActorListInRange(Player.GetMapX(), Player.GetMapY(), 范围, '');
-    for (let i = 0; i < AActorList.Count; i++) {
-        let Actor = AActorList.Actor(i);
-        if (Actor != null && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() != Player.GetHandle()) {
-            Player.Damage(Actor, 1, _P_Base.技能ID.刺客.弱点主动)
-        }
-    }
-}
-export function 增伤(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    if (Player.R.暗影值 < 1) { Player.SendMessage('暗影值不足1点,无法使用增伤技能!'); return }
-    if (DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('增伤').AsDateTime) >= 120) {
-        Player.VarDateTime('增伤').AsDateTime = DateUtils.Now()
-        Player.R.暗影值 = Player.R.暗影值 - 1
-        let 暗影值 = Player.AddStatusBuff(_P_Base.显示图标.暗影值, TBuffStatusType.stNone, 0, 0, 0) //给人物加个BUFF，方便增加一个BUFF图标
-        Player.SetBuffIcon(暗影值.Handle, 'icons.data', 148, 148, ``, '', `{S=当前‘暗影值’数量:${Player.R.暗影值};C=251}`, true/*是否消失前3秒钟闪烁*/, true/*是否在图标底部显示剩余时间*/)
-        if (Player.R.暗影值 < 1) { Player.DeleteBuff(暗影值.Handle) }
-        let 暴击几率 = 10 + 10 * Player.R.增伤等级 * 0.1
-        Player.R.暴击几率 = 暴击几率
-        let 刺客增伤 = Player.AddStatusBuff(_P_Base.显示图标.刺客增伤, TBuffStatusType.stNone, 110000, 0, 0) //给人物加个BUFF，方便增加一个BUFF图标
-        Player.SetBuffIcon(刺客增伤.Handle, 'icons.data', 145, 145, '{S=‘增伤’技能触发:增加暴击几率1%,持续110秒!;C=251}', '', '‘增伤’技能触发:增加暴击几率1%,持续110秒!', true/*是否消失前3秒钟闪烁*/, true/*是否在图标底部显示剩余时间*/)
-    } else {
-        Player.SendCountDownMessage(`‘增伤’技能CD中剩余时间：${120 - Math.round(DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('增伤').AsDateTime))}`, 0);
-    }
-}
-export function 暗影杀阵(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, 10030)
-}
-export function 暗影杀阵闪现(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    switch (true) {
-        case Target.GetMap().CanMove(Target.GetMapX() + 1, Target.GetMapY(), true) == true: Player.FlashMove(Target.GetMapX() + 1, Target.GetMapY(), true); break
-        case Target.GetMap().CanMove(Target.GetMapX() - 1, Target.GetMapY(), true) == true: Player.FlashMove(Target.GetMapX() - 1, Target.GetMapY(), true); break
-        case Target.GetMap().CanMove(Target.GetMapX(), Target.GetMapY() + 1, true) == true: Player.FlashMove(Target.GetMapX(), Target.GetMapY() + 1, true); break
-        case Target.GetMap().CanMove(Target.GetMapX(), Target.GetMapY() - 1, true) == true: Player.FlashMove(Target.GetMapX(), Target.GetMapY() - 1, true); break
-        case Target.GetMap().CanMove(Target.GetMapX() - 1, Target.GetMapY() - 1, true) == true: Player.FlashMove(Target.GetMapX() - 1, Target.GetMapY() - 1, true); break
-        case Target.GetMap().CanMove(Target.GetMapX() + 1, Target.GetMapY() - 1, true) == true: Player.FlashMove(Target.GetMapX() + 1, Target.GetMapY() - 1, true); break
-        case Target.GetMap().CanMove(Target.GetMapX() - 1, Target.GetMapY() + 1, true) == true: Player.FlashMove(Target.GetMapX() - 1, Target.GetMapY() + 1, true); break
-        case Target.GetMap().CanMove(Target.GetMapX() + 1, Target.GetMapY() + 1, true) == true: Player.FlashMove(Target.GetMapX() + 1, Target.GetMapY() + 1, true); break
-    }
-
-}
-
-// 鬼舞者
-export function 鬼舞斩(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-
-    const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-    let 目标列表 = 获取目标范围内目标(Player, Target ,范围, true)
-    for (const 目标 of 目标列表) {
-        Player.Damage(目标, 1, _P_Base.技能ID.鬼舞者.鬼舞斩被动)
-    }
-}
-export function 鬼舞术(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, _P_Base.技能ID.鬼舞者.鬼舞术被动)
-}
-export function 群魔乱舞(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.ShowEffectEx2(_P_Base.特效.鬼舞群魔乱舞, -10, 20, true, 1)
-    Player.Damage(Target, 1, _P_Base.技能ID.鬼舞者.群魔乱舞被动)
-}
-//神射手
-export function 万箭齐发啊(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void  {
-    let Player: TPlayObject = Source as TPlayObject;
-    const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-    let 目标列表 = 获取目标范围内目标(Player, Target ,范围, true)
-    for (const 目标 of 目标列表) {
-        Player.Damage(目标, 1, 10057)
-    }
-
-}
-export function 复仇(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, _P_Base.技能ID.神射手.复仇被动)
-}
-
-//猎人
-export function 分裂箭(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-    let 目标列表 = 获取目标范围内目标(Player, Target ,范围, false)
-    for (const 目标 of 目标列表) {
-    Player.Damage(目标, 1, _P_Base.技能ID.猎人.分裂箭被动)
-    }
-
-}
-export function 召唤宠物(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 召唤数量 = 1
-    if (Player.V.契约专精激活) { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 * 2 / 40) } else { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 / 50) }
-    let 攻击距离 = 1
-    if (Player.R.猎人宝宝释放群攻) {
-        攻击距离 = 8
-    }
-    let 继承倍率 = 1 + (Player.R.召唤宠物等级 + Player.V.召唤宠物等级 + Player.R.所有技能等级) * 0.05
-    猎人召唤宝宝(Player, '灵魂宝宝', 攻击距离, 继承倍率, 召唤数量)
-}
-export function 宠物突变(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.R.猎人宝宝释放群攻 = true
-    for (let a = 0; a <= Player.SlaveCount; a++) {
-        if (Player.GetSlave(a)) {
-            Player.GetSlave(a).SetNVar(_M_N_猎人宝宝群攻, 1)
-            if (Player.R.猎人宝宝释放群攻) {
-                Player.GetSlave(a).SetAttackRange(8)
-            }
-        }
-    }
-    let 宝宝群攻 = Player.AddStatusBuff(_P_Base.显示图标.猎人宝宝群攻, TBuffStatusType.stNone, 30000, 0, 0) //给人物加个BUFF，方便增加一个BUFF图标
-    Player.SetBuffIcon(宝宝群攻.Handle, 'icons.data', 151, 151, '{S=‘宠物突变’技能触发:30秒内宝宝变为群体攻击,伤害,血量提升100%.结束后宠物将消失需从新召唤;C=251}', '', '使用‘宠物突变’技能触发:30秒内宝宝变为群体攻击,伤害,血量提升100%.结束后宠物将消失需从新召唤', true/*是否消失前3秒钟闪烁*/, true/*是否在图标底部显示剩余时间*/)
-    Player.DelayCallMethod('延时跳转.猎人宝宝群攻关闭'/*要调用的函数名*/, 30000/*延迟时间1000毫秒*/, true/*切换地图不删除该延迟调用*/);
-}
-
-//武僧
-
-export function 天雷阵(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    const 范围 = Math.min(Number(Player.R.攻击范围)+3 , 7)
-    let 目标列表 = 获取玩家范围内目标(Player, 范围)
-    for (const 目标 of 目标列表) {
-        Player.Damage(目标, 1, _P_Base.技能ID.武僧.天雷阵被动)
-    }
-    // Player.Damage(Target, 1, _P_Base.技能ID.武僧.天雷阵被动)
-}
-export function 至高武术(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let bPlayer: TPlayObject = Target as TPlayObject
-    if (bPlayer.IsPlayer() && random(100) >= Player.R.抵抗异常) {
-        Target.SetState(5, 2 + Math.floor((Player.R.至高武术等级 + Player.V.至高武术等级 + Player.R.所有技能等级) / 10), 0)
-    } else {
-        Target.SetState(5, 2 + Math.floor((Player.R.至高武术等级 + Player.V.至高武术等级 + Player.R.所有技能等级) / 10), 0)
-    }
-
-}
-export function 碎石破空(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, _P_Base.技能ID.武僧.碎石破空被动)
-}
-//罗汉
-export function 金刚护体(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.R.罗汉技能伤害 = true
-    let 金刚护体 = Player.AddStatusBuff(_P_Base.显示图标.武僧金刚护体, TBuffStatusType.stNone, 40000, 0, 0) //给人物加个BUFF，方便增加一个BUFF图标
-    Player.SetBuffIcon(金刚护体.Handle, 'icons.data', 154, 154, '{S=‘金刚护体’技能触发:30秒内伤害增加;C=251}', '', '‘金刚护体’技能触发:30秒内伤害增加', true/*是否消失前3秒钟闪烁*/, true/*是否在图标底部显示剩余时间*/)
-    Player.DelayCallMethod('延时跳转.罗汉金刚护体关闭'/*要调用的函数名*/, 40000/*延迟时间1000毫秒*/, true/*切换地图不删除该延迟调用*/);
-}
-export function 擒龙功(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let bPlayer: TPlayObject = Target as TPlayObject
-    Target.Move(Target.GetMapName(), Player.GetMapX(), Player.GetMapY())
-    if (bPlayer.IsPlayer() && random(100) >= Player.R.抵抗异常) {
-        Target.SetState(5, 2 + Math.floor((Player.R.擒龙功等级 + Player.V.擒龙功等级 + Player.R.所有技能等级) / 10), 0)
-        Target.ShowEffectEx2(_P_Base.特效.冰冻, -10, 25, true, 2 + Math.floor((Player.R.擒龙功等级 + Player.V.擒龙功等级 + Player.R.所有技能等级) / 10))
-    } else {
-        Target.SetState(5, 2 + Math.floor((Player.R.擒龙功等级 + Player.V.擒龙功等级 + Player.R.所有技能等级) / 10), 0)
-        Target.ShowEffectEx2(_P_Base.特效.冰冻, -10, 25, true, 2 + Math.floor((Player.R.擒龙功等级 + Player.V.擒龙功等级 + Player.R.所有技能等级) / 10))
-    }
-
-}
-export function 金刚护法(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, _P_Base.技能ID.罗汉.金刚护法被动)
-}
-
-export function 轮回之道(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 召唤数量 = 1
-    let 宝宝名字 = ''
-    if (Player.V.契约专精激活) { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 * 2 / 60) } else { 召唤数量 = 召唤数量 + Math.floor(Player.R.契约点数 / 60) }
-    switch (true) {
-        case Player.V.轮回次数 < 10: 宝宝名字 = '畜生道轮回兽'; break
-        case Player.V.轮回次数 >= 10 && Player.V.轮回次数 < 20: 宝宝名字 = '饿鬼道轮回兽'; break
-        case Player.V.轮回次数 >= 20 && Player.V.轮回次数 < 30: 宝宝名字 = '地狱道轮回兽'; break
-        case Player.V.轮回次数 >= 30 && Player.V.轮回次数 < 40: 宝宝名字 = '修罗道轮回兽'; break
-        case Player.V.轮回次数 >= 40 && Player.V.轮回次数 < 50: 宝宝名字 = '人道轮回兽'; break
-        case Player.V.轮回次数 == 50: 宝宝名字 = '天道轮回兽'; break
-    }
-    let 继承倍率 = 2 + (Player.R.轮回之道等级 + Player.V.轮回之道等级 + Player.R.所有技能等级) * 0.1
-    // console.log('123')
-    罗汉宝宝(Player, 宝宝名字, 1, 继承倍率, 召唤数量)
-}
-
-
-
-export function 罗汉金钟(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.SetSuperManMode(true)
-    Player.ShowEffectEx2(_P_Base.特效.罗汉无敌, -10, 25, true, 3)
-    Player.DelayCallMethod('延时跳转.罗汉无敌关闭'/*要调用的函数名*/, 3000/*延迟时间1000毫秒*/, true/*切换地图不删除该延迟调用*/);
-    Player.Damage(Target, 1, _P_Base.技能ID.罗汉.罗汉金钟主动)
-}
-
-export function 施毒术给点伤害(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    Player.Damage(Target, 1, _P_Base.技能ID.通用.施毒术给伤害)
-}
-
-export function 查看属性(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    if (Target != null && !Target.IsPlayer() && Target.Master == null) {
-        let 生命 = Target.GetSVar(92)
-        let 攻击小 = Target.GetSVar(93)
-        let 攻击大 = Target.GetSVar(94)
-        let 防御小 = Target.GetSVar(95)
-        let 防御大 = Target.GetSVar(96)
-        // let 星星 = Target.GetSVar(97)
-        let 星数 = Target.GetSVar(怪物星数)
-        const 计算位数 = (num: string) => num.toString().replace(/\.\d+/, '').length
-        Player.SendMessage(`${Target.GetSVar(原始名字)}属性:`, 1)
-        Player.SendMessage(`生命:${大数值整数简写(生命)}  ${计算位数(生命)}位   攻击:${大数值整数简写(攻击小)}-${大数值整数简写(攻击大)} ${计算位数(攻击大)}位  防御:${大数值整数简写(防御小)}-${大数值整数简写(防御大)} ${计算位数(防御大)}位`, 1)
-        Player.SendMessage(`星星数量:${大数值整数简写(星数)} ${计算位数(星数)}位`, 1)
-        // // Player.SendMessage(`, 1)
-        // Player.SendMessage(``, 1)
-        // console.log(Target.HP)
-        // console.log(Target.MaxHP)an
-        // let 伤害值 = 0
-        // if (Player.V.种族 == '兽族') {
-        //     伤害值 = (人物属性随机(Player) - _P_Base.人物防御随机(Target) * 0.5)
-        // } else {
-        //     伤害值 = (人物属性随机(Player) - _P_Base.人物防御随机(Target))
-        // }
-        // Player.Damage(Target, 1)
-    }
-}
-
-
-
-export function 心灵召唤(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    let 宝宝: TActor
-    if (Player.SlaveCount > 0) {
-        for (let a = 0; a <= Player.SlaveCount; a++) {
-            if (Player.GetSlave(a) != null) {
-                宝宝 = Player.GetSlave(a)
-                if (Player.GetMap().CanMove(Player.GetMapX() + 1, Player.GetMapY(), true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX() + 1, Player.GetMapY())
-                } else if (Player.GetMap().CanMove(Player.GetMapX() - 1, Player.GetMapY(), true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX() - 1, Player.GetMapY())
-                } else if (Player.GetMap().CanMove(Player.GetMapX(), Player.GetMapY() + 1, true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX(), Player.GetMapY() + 1)
-                } else if (Player.GetMap().CanMove(Player.GetMapX(), Player.GetMapY() - 1, true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX(), Player.GetMapY() - 1)
-                } else if (Player.GetMap().CanMove(Player.GetMapX() - 1, Player.GetMapY() - 1, true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX() - 1, Player.GetMapY() - 1)
-                } else if (Player.GetMap().CanMove(Player.GetMapX() + 1, Player.GetMapY() - 1, true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX() + 1, Player.GetMapY() - 1)
-                } else if (Player.GetMap().CanMove(Player.GetMapX() - 1, Player.GetMapY() + 1, true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX() - 1, Player.GetMapY() + 1)
-                } else if (Player.GetMap().CanMove(Player.GetMapX() + 1, Player.GetMapY() + 1, true) == true) {
-                    宝宝.Move(Player.GetMapName(), Player.GetMapX() + 1, Player.GetMapY() + 1)
-                } else { 宝宝.Move(Player.GetMapName(), Player.GetMapX(), Player.GetMapY()) }
-
-            }
-        }
-    }
-}
-
-export function 隐身开关(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    if (Player.GetJewelrys(4) != null && Player.GetJewelrys(4).GetName() == '甘道夫之戒') {
-        if (Player.V.隐身开关 == false) {
-            Player.AddStatusBuff(6, TBuffStatusType.stObserverForMon, -1, 0, 0)
-            Player.V.隐身开关 = true
-            Player.SendMessage(`你关闭了甘道夫之戒附带的隐身功能`)
-        } else {
-            Player.AddStatusBuff(6, TBuffStatusType.stObserverForMon, 999999999, 1, 0)
-            Player.SendMessage(`你开启了甘道夫之戒附带的隐身功能`, 1)
-            Player.V.隐身开关 = false
-        }
-
-
-    }
-}
-
-
-export function 宝宝群雷(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }else{ 
-        if (Player != null && !Player.Death) {        
-            let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }
-}
-export function 猎人宝宝群攻(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }else{ 
-        if (Player != null && !Player.Death) {        
-            let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }
-}
-
-export function 怪物雷电术(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Target as TPlayObject
-    if (Player != null && !Player.Death) {
-        const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-        let 目标列表 = 获取目标范围内目标(Player, Target ,范围, true)
-        for (const 目标 of 目标列表) {
-        Source.Damage(目标, 1)
-        }
-    }
-}
-
-export function 怪物灵魂火符(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Target as TPlayObject
-    if (Target) {
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围, true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        }
-    }
-}
-
-
-export function 怪物刺杀(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Target as TPlayObject
-    Source.Damage(Target, 1)
-}
-
-
-export function 宝宝范围2(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }else{ 
-        if (Player != null && !Player.Death) {        
-            let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }
-}
-
-export function 宝宝范围3(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }else{ 
-        if (Player != null && !Player.Death) {        
-            let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }
-}
-
-export function 宝宝范围4(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }else{ 
-        if (Player != null && !Player.Death) {        
-            let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }
-}
-
-export function 宝宝范围5(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }else{ 
-        if (Player != null && !Player.Death) {        
-            let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }
-}
-
-export function 宝宝范围6(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-        if (Player != null && !Player.Death) {
-            const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-            let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }else{ 
-        if (Player != null && !Player.Death) {        
-            let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-            for (const 目标 of 目标列表) {
-            Source.Damage(目标, 1)
-            }
-        } 
-    }
-}
-
-export function 宝宝范围6新(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    if (GameLib.ServerName.includes('包区')){
-    if (Player != null && !Player.Death) {
-        const 范围 = Math.min(Number(Player.R.攻击范围)+1 , 4)
-        let 目标列表 = 获取目标范围内目标(Player, Target ,范围 , true)
-        for (const 目标 of 目标列表) {
-        Source.Damage(目标, 1)
-        }
-    } 
-}else{ 
-    if (Player != null && !Player.Death) {        
-        let 目标列表 = 获取目标范围内目标(Player, Target ,1 , true)
-        for (const 目标 of 目标列表) {
-        Source.Damage(目标, 1)
-        }
-    } 
-}
-}
-export function BOSS范围1(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function BOSS范围2(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function BOSS范围3(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function BOSS单体(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function BOSS飓风(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-
-export function BOSS地钉(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-
-export function BOSS范围5(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-
-export function 二BOSS单体(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function 二BOSS群1(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function 二BOSS群2(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function 一BOSS单体(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-
-export function 四BOSS单体(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    Source.Damage(Target, 1)
-}
-export function 五BOSS单体(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let 伤害值 = (randomRange(Source.GetDCMin(), Source.GetDCMax()) - _P_Base.人物防御随机(Target))
-    // Target.SetState(0,30,0)
-    // Target.SetState(1,30,0)
-    Source.Damage(Target, 1)
-}
-
-
-
-
-export function 宝宝攻杀(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    let 上限 = 0
-    let 下限 = 0
-    if (Player) {
-        // 上限 = Source.GetDCMin()
-        // 下限 = Source.GetDCMax()
-        // let 最小值 = (下限 - 上限) / 9 * Player.V.幸运值
-        // let 伤害值 = randomRange(上限 + 最小值, 下限)
-        // let 总伤害 = 0
-        // if (Player.V.种族 == '兽族') {
-        //     总伤害 = 伤害值 * 1.2 - _P_Base.人物防御随机(Target) * 0.5
-        // } else {
-        //     总伤害 = 伤害值 * 1.2 - _P_Base.人物防御随机(Target)
-        // }
-        // if (总伤害 >= 922000000000000 * 10000) { 总伤害 = 922000000000000 * 10000 }
-        Source.Damage(Target, 1)
-    }
-}
-export function 宝宝刺杀(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    // let 上限 = 0
-    // let 下限 = 0
-    if (Player) {
-        //     上限 = Source.GetDCMin()
-        //     下限 = Source.GetDCMax()
-        //     let 最小值 = (下限 - 上限) / 9 * Player.V.幸运值
-        //     let 伤害值 = randomRange(上限 + 最小值, 下限)
-        //     let 总伤害 = 0
-        //     if (Player.V.种族 == '兽族') {
-        //         总伤害 = 伤害值 - _P_Base.人物防御随机(Target) * 0.5
-        //     } else {
-        //         总伤害 = 伤害值 - _P_Base.人物防御随机(Target)
-        //     }
-        //     if (总伤害 >= 922000000000000 * 10000) { 总伤害 = 922000000000000 * 10000 }
-        Source.Damage(Target, 1)
-    }
-}
-
-export function 宝宝半月(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    let 上限 = 0
-    let 下限 = 0
-    if (Player) {
-        // 上限 = Source.GetDCMin()
-        // 下限 = Source.GetDCMax()
-        // let 最小值 = (下限 - 上限) / 9 * Player.V.幸运值
-        // let 伤害值 = randomRange(上限 + 最小值, 下限)
-        // let 总伤害 = 0
-        // if (Player.V.种族 == '兽族') {
-        //     总伤害 = 伤害值 * 1.2 - _P_Base.人物防御随机(Target) * 0.5
-        // } else {
-        //     总伤害 = 伤害值 * 1.2 - _P_Base.人物防御随机(Target)
-        // }
-        // if (总伤害 >= 922000000000000 * 10000) { 总伤害 = 922000000000000 * 10000 }
-        Source.Damage(Target, 1)
-    }
-}
-export function 宝宝烈火(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    let 上限 = 0
-    let 下限 = 0
-    if (Player) {
-        // 上限 = Source.GetDCMin()
-        // 下限 = Source.GetDCMax()
-        // let 最小值 = (下限 - 上限) / 9 * Player.V.幸运值
-        // let 伤害值 = randomRange(上限 + 最小值, 下限)
-        // let 总伤害 = 0
-        // if (Player.V.种族 == '兽族') {
-        //     总伤害 = 伤害值 * 2 - _P_Base.人物防御随机(Target) * 0.5
-        // } else {
-        //     总伤害 = 伤害值 * 2 - _P_Base.人物防御随机(Target)
-        // }
-        // if (总伤害 >= 922000000000000 * 10000) { 总伤害 = 922000000000000 * 10000 }
-        Source.Damage(Target, 1)
-    }
-}
-export function 宝宝倚天(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let bPlayer: TPlayObject = Target as TPlayObject
-    if (bPlayer.IsPlayer() && random(100) >= bPlayer.R.抵抗异常) {
-    } else {
-        Target.SetState(5, 1, 0)
-    }
-    let Player = Source.Master as TPlayObject
-    let 上限 = 0
-    let 下限 = 0
-    if (Player) {
-        // 上限 = Source.GetDCMin()
-        // 下限 = Source.GetDCMax()
-        // let 最小值 = (下限 - 上限) / 9 * Player.V.幸运值
-        // let 伤害值 = randomRange(上限 + 最小值, 下限)
-        // let 总伤害 = 0
-        // if (Player.V.种族 == '兽族') {
-        //     总伤害 = 伤害值 * 1.2 - _P_Base.人物防御随机(Target) * 0.5
-        // } else {
-        //     总伤害 = 伤害值 * 1.2 - _P_Base.人物防御随机(Target)
-        // }
-        // if (总伤害 >= 922000000000000 * 10000) { 总伤害 = 922000000000000 * 10000 }
-        Source.Damage(Target, 1)
-    }
-}
-export function 宝宝逐日(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    let 上限 = 0
-    let 下限 = 0
-    if (Player) {
-        // 上限 = Source.GetDCMin()
-        // 下限 = Source.GetDCMax()
-        // let 最小值 = (下限 - 上限) / 9 * Player.V.幸运值
-        // let 伤害值 = randomRange(上限 + 最小值, 下限)
-        // let 总伤害 = 0
-        // if (Player.V.种族 == '兽族') {
-        //     总伤害 = 伤害值 * 1.5 - _P_Base.人物防御随机(Target) * 0.5
-        // } else {
-        //     总伤害 = 伤害值 * 1.5 - _P_Base.人物防御随机(Target)
-        // }
-        // if (总伤害 >= 922000000000000 * 10000) { 总伤害 = 922000000000000 * 10000 }
-        Source.Damage(Target, 1)
-    }
-}
-export function 宝宝开天斩(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player = Source.Master as TPlayObject
-    let 上限 = 0
-    let 下限 = 0
-    if (Player) {
-        // 上限 = Source.GetDCMin()
-        // 下限 = Source.GetDCMax()
-        // let 最小值 = (下限 - 上限) / 9 * Player.V.幸运值
-        // let 伤害值 = randomRange(上限 + 最小值, 下限)
-        // let 总伤害 = 0
-        // if (Player.V.种族 == '兽族') {
-        //     总伤害 = 伤害值 * 1.5 - _P_Base.人物防御随机(Target) * 0.5
-        // } else {
-        //     总伤害 = 伤害值 * 1.5 - _P_Base.人物防御随机(Target)
-        // }
-        // if (总伤害 >= 922000000000000 * 10000) { 总伤害 = 922000000000000 * 10000 }
-
-        Source.Damage(Target, 1)
-    }
-}
-
-
-
-
-
-let MagicExecutes = {}
-MagicExecutes["嘲讽吸怪"] = 嘲讽吸怪
-MagicExecutes["万剑归宗"] = 万剑归宗
-MagicExecutes["圣光打击"] = 圣光打击
-MagicExecutes["愤怒"] = 愤怒
-MagicExecutes["审判救赎"] = 审判救赎
-MagicExecutes["冰霜之环"] = 冰霜之环
-MagicExecutes["萌萌浣熊"] = 萌萌浣熊
-MagicExecutes["嗜血狼人"] = 嗜血狼人
-MagicExecutes["丛林虎王"] = 丛林虎王
-MagicExecutes["雷暴之怒"] = 雷暴之怒
-MagicExecutes["剧毒火海"] = 剧毒火海
-MagicExecutes["妙手回春"] = 妙手回春
-MagicExecutes["互相伤害"] = 互相伤害
-MagicExecutes["弱点"] = 弱点
-MagicExecutes["增伤"] = 增伤
-MagicExecutes["暗影杀阵"] = 暗影杀阵
-MagicExecutes["暗影杀阵闪现"] = 暗影杀阵闪现
-MagicExecutes["鬼舞斩"] = 鬼舞斩
-MagicExecutes["鬼舞术"] = 鬼舞术
-MagicExecutes["群魔乱舞"] = 群魔乱舞
-MagicExecutes["复仇"] = 复仇
-MagicExecutes["分裂箭"] = 分裂箭
-MagicExecutes["召唤宠物"] = 召唤宠物
-MagicExecutes["宠物突变"] = 宠物突变
-MagicExecutes["碎石破空"] = 碎石破空
-MagicExecutes["天雷阵"] = 天雷阵
-MagicExecutes["至高武术"] = 至高武术
-MagicExecutes["金刚护体"] = 金刚护体
-MagicExecutes["擒龙功"] = 擒龙功
-MagicExecutes["金刚护法"] = 金刚护法
-MagicExecutes["罗汉金钟"] = 罗汉金钟
-MagicExecutes["宝宝群雷"] = 宝宝群雷
-MagicExecutes["猎人宝宝群攻"] = 猎人宝宝群攻
-MagicExecutes["万箭齐发啊"] = 万箭齐发啊    
-
-
-MagicExecutes["施毒术给点伤害"] = 施毒术给点伤害
-
-MagicExecutes["怪物雷电术"] = 怪物雷电术
-MagicExecutes["怪物灵魂火符"] = 怪物灵魂火符
-MagicExecutes["召唤战神"] = 召唤战神
-MagicExecutes["轮回之道"] = 轮回之道
-
-MagicExecutes["宝宝范围2"] = 宝宝范围2
-MagicExecutes["宝宝范围3"] = 宝宝范围3
-MagicExecutes["宝宝范围4"] = 宝宝范围4
-MagicExecutes["宝宝范围5"] = 宝宝范围5
-MagicExecutes["宝宝范围6"] = 宝宝范围6
-MagicExecutes["宝宝范围6新"] = 宝宝范围6新
-MagicExecutes["心灵召唤"] = 心灵召唤
-MagicExecutes["宝宝攻杀"] = 宝宝攻杀
-MagicExecutes["宝宝刺杀"] = 宝宝刺杀
-MagicExecutes["宝宝半月"] = 宝宝半月
-MagicExecutes["宝宝烈火"] = 宝宝烈火
-MagicExecutes["宝宝倚天"] = 宝宝倚天
-MagicExecutes["宝宝逐日"] = 宝宝逐日
-MagicExecutes["宝宝开天斩"] = 宝宝开天斩
-
-MagicExecutes["BOSS范围1"] = BOSS范围1
-MagicExecutes["BOSS范围2"] = BOSS范围2
-MagicExecutes["BOSS范围3"] = BOSS范围3
-MagicExecutes["BOSS单体"] = BOSS单体
-MagicExecutes["BOSS飓风"] = BOSS飓风
-MagicExecutes["BOSS地钉"] = BOSS地钉
-MagicExecutes["BOSS范围5"] = BOSS范围5
-MagicExecutes["二BOSS单体"] = 二BOSS单体
-MagicExecutes["二BOSS群1"] = 二BOSS群1
-MagicExecutes["二BOSS群2"] = 二BOSS群2
-MagicExecutes["一BOSS单体"] = 一BOSS单体
-MagicExecutes["四BOSS单体"] = 四BOSS单体
-MagicExecutes["五BOSS单体"] = 五BOSS单体
-MagicExecutes["怪物刺杀"] = 怪物刺杀
-MagicExecutes["查看属性"] = 查看属性
-MagicExecutes["隐身开关"] = 隐身开关
-
-GameLib.onSkillActionExecute = (Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string) => {
-    let func = MagicExecutes[AMethod]
-    if (func && Target)
-        func(Source, Target, nParam1, nParam2, sParam1, sParam2)
-}
-
-export function 闪现啊(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    let Player: TPlayObject = ASource as TPlayObject;
-    Player.FlashMove(AMouseX, AMouseY, true)
-    // Player.MagicAttack(ATarget,10030)
-    // console.log(AMouseX)
-    // console.log(AMouseY)
-    return true
-}
-export function 命运刹印(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-export function 冰咆哮(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-export function 雷电术(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-export function 群星火雨(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    let Player: TPlayObject = ASource as TPlayObject;
-    const 范围 = Math.min(Number(Player.R.攻击范围) + 1, 4)
-
-    // 如果有目标则以目标为中心，否则以玩家为中心
-    let 目标列表 = ATarget ? 获取目标范围内目标(Player, ATarget, 范围 , false) : []
-    for (const 目标 of 目标列表) {
-        Player.Damage(目标, 1, _P_Base.技能ID.火神.流星火雨主动)
-    }
-    return false
-}
-export function 暴风雨(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    let Player: TPlayObject = ASource as TPlayObject;
-    const 范围 = Math.min(Number(Player.R.攻击范围) + 1 , 4)
-    // 如果有目标则以目标为中心，否则以玩家为中心
-    let 目标列表 = ATarget ? 获取目标范围内目标(Player, ATarget, 范围 , false) : []
-    for (const 目标 of 目标列表) {
-        Player.Damage(目标, 1, _P_Base.技能ID.冰法.暴风雨主动)
-    }
-    return false
-}
-export function 寒冬领域(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    // console.log('111')
-    return true
-}
-
-export function 灵魂火符(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-export function 飓风破(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return false
-    //true恢复
-}
-
-export function 剧毒火海(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    let Player: TPlayObject = ASource as TPlayObject;
-    const 范围 = Math.min(Number(Player.R.攻击范围) + 1 , 4)
-    // 如果有目标则以目标为中心，否则返回空数组
-    let 目标列表 = ATarget ? 获取目标范围内目标(Player, ATarget, 范围 , false) : []
-    for (const 目标 of 目标列表) {
-        Player.Damage(目标, 1, _P_Base.技能ID.牧师.剧毒火海主动)
-    }
-    return false
-}
-export function 末日降临(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-export function 万箭齐发(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    let Player: TPlayObject = ASource as TPlayObject;
-    const 范围 = Math.min(4 , Number(Player.R.攻击范围))
-    // 如果有目标则以目标为中心，否则返回空数组
-    let 目标列表 = ATarget ? 获取目标范围内目标(Player, ATarget, 范围 , false) : []
-    for (const 目标 of 目标列表) {
-        Player.Damage(目标, 1, _P_Base.技能ID.神射手.万箭齐发主动)
-    }
-    return false
-}
-
-export function 神灵救赎(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-
-export function 罗汉棍法(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-export function 达摩棍法(ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic): boolean {
-    return true
-}
-
-let funcMap = {}
-funcMap["闪现啊"] = 闪现啊
-funcMap["罗汉棍法"] = 罗汉棍法
-funcMap["达摩棍法"] = 达摩棍法
-funcMap["命运刹印"] = 命运刹印
-funcMap["冰咆哮"] = 冰咆哮
-funcMap["雷电术"] = 雷电术
-funcMap["群星火雨"] = 群星火雨
-funcMap["暴风雨"] = 暴风雨
-funcMap["寒冬领域"] = 寒冬领域
-funcMap["灵魂火符"] = 灵魂火符
-funcMap["飓风破"] = 飓风破
-funcMap["剧毒火海"] = 剧毒火海
-funcMap["末日降临"] = 末日降临
-funcMap["万箭齐发"] = 万箭齐发
-funcMap["神灵救赎"] = 神灵救赎
-funcMap["嘲讽吸怪"] = 嘲讽吸怪
-  
-
-
-GameLib.onMagicNpcExecute = (AMethod: string, ASource: TActor, ATarget: TActor, ATargetX: number, ATargetY: number, AMouseX: number, AMouseY: number, AList: TActorList, AMagic: TUserMagic) => {
-    let func = funcMap[AMethod]
-    if (func) {
-        return func(ASource, ATarget, ATargetX, ATargetY, AMouseX, AMouseY, AList, AMagic);
-    }
-    return true
-}
-/**
- * 获取以玩家为中心范围内的所有有效目标
- * @param Player 玩家对象
- * @param 范围 攻击范围，如果不传则使用默认值
- * @returns 返回以玩家为中心的范围内的所有怪物目标数组
- */
-export function 获取玩家范围内目标(Player: TPlayObject, 范围?: number): TActor[] {
-    const 攻击范围 = 范围 ;
+// ==================== 通用函数 ====================
+export function 获取玩家范围内目标(Player: TPlayObject, 范围: number): TActor[] {
+    if (范围 <= 0) return [];
     const 目标列表: TActor[] = [];
-    
-    if (攻击范围 <= 0) {
-        return 目标列表;
-    }
-    
-    const AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 攻击范围);
-    
-    if (AActorList.Count > 0) {
-        for (let i = 0; i < AActorList.Count; i++) {
-            const Actor = AActorList.Actor(i);
-            if (Actor != null && 
-                !Actor.GetDeath() && 
-                !Actor.IsNPC() && 
-                Actor.GetHandle() != Player.GetHandle() && 
-                !Actor.IsPlayer() &&
-                !Actor.Master) {
-                目标列表.push(Actor);
-            }
+    const AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 范围);
+    const count = AActorList.Count;
+    const playerHandle = Player.GetHandle();
+    for (let i = 0; i < count; i++) {
+        const Actor = AActorList.Actor(i);
+        if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== playerHandle && !Actor.IsPlayer() && !Actor.Master) {
+            目标列表.push(Actor);
         }
     }
-    
     return 目标列表;
 }
 
-/**
- * 获取以目标为中心范围内的所有有效目标
- * @param Player 玩家对象
- * @param 目标 中心目标对象
- * @param 范围 攻击范围
- * @param 排除目标本身 是否排除中心目标本身，默认为true
- * @returns 返回以目标为中心的范围内的所有怪物目标数组
- */
-export function 获取目标范围内目标(Player: TPlayObject, 目标: TActor, 范围: number, 排除目标本身: boolean = true): TActor[] {
+export function 获取目标范围内目标(Player: TPlayObject, 目标: TActor, 范围: number): TActor[] {
+    if (范围 <= 0 || !目标 || 目标.GetDeath()) return [];
     const 目标列表: TActor[] = [];
-    
-    if (范围 <= 0 || !目标 || 目标.GetDeath()) {
-        return 目标列表;
-    }
-    
     const AActorList = 目标.Map.GetActorListInRange(目标.MapX, 目标.MapY, 范围);
-    
-    if (AActorList.Count > 0) {
-        for (let i = 0; i < AActorList.Count; i++) {
-            const Actor = AActorList.Actor(i);
-            if (Actor != null && 
-                !Actor.GetDeath() && 
-                !Actor.IsNPC() && 
-                Actor.GetHandle() != Player.GetHandle() && 
-                (!排除目标本身 || Actor.GetHandle() != Player.GetHandle()) && // 根据参数决定是否排除目标本身
-                !Actor.IsPlayer() &&
-                !Actor.Master) {
-                目标列表.push(Actor);
-            }
+    const count = AActorList.Count;
+    const playerHandle = Player.GetHandle();
+    for (let i = 0; i < count; i++) {
+        const Actor = AActorList.Actor(i);
+        if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== playerHandle && !Actor.IsPlayer() && !Actor.Master) {
+            目标列表.push(Actor);
         }
     }
-    
     return 目标列表;
 }
 
-/**
- * 获取杀怪范围内目标（兼容性函数）
- * @deprecated 请使用 获取玩家范围内目标 或 获取目标范围内目标
- */
-export function 获取杀怪范围内目标(Player: TPlayObject, 目标: TActor, 范围?: number): TActor[] {
-    if (目标 && 范围) {
-        return 获取目标范围内目标(Player, 目标, 范围);
-    } else {
-        return 获取玩家范围内目标(Player, 范围);
+// ==================== 基础技能 ====================
+// 攻杀剑术: 被动，几率触发攻杀造成200%伤害，每级提高20%
+export function 攻杀剑术(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.攻杀剑术);
+}
+
+// 刺杀剑术: 被动
+export function 刺杀剑术(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.刺杀剑术);
+}
+
+// 半月弯刀: 被动,对周围目标造成150%伤害,每级提高15%
+export function 半月弯刀(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.半月弯刀);
+}
+
+// 雷电术: 主动,对目标造成200%伤害,每级提高20%
+export function 雷电术(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.雷电术);
+}
+
+// 暴风雪: 主动,对目标3格敌人造成100%伤害,15%几率冰冻1秒,每级提升10%
+export function 暴风雪(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.暴风雪);
+    // 15%几率冰冻1秒
+    if (Math.random() < 0.15) {
+        Target.SetState(5, 1, 0);
     }
 }
 
-/**
- * 攻击杀怪范围内的所有目标
- * @param Player 玩家对象
- * @param 范围 攻击范围，如果不传则使用 Number(Player.R.攻击范围)
- * @param 攻击方式 攻击方式：'kill' = 直接击杀，'attack' = 普通攻击，默认为 'kill'
- * @returns 返回攻击的目标数量
- */
-// export function 攻击杀怪范围内目标(Player: TPlayObject, 范围?: number, 攻击方式: 'kill' | 'attack' = 'kill'): number {
-//     const 目标列表 = 获取杀怪范围内目标(Player, 范围);
-    
-//     for (const 目标 of 目标列表) {
-//         if (攻击方式 === 'kill') {
-//             目标.SetHP(0); // 直接设置血量为0
-//         } else if (攻击方式 === 'attack') {
-//             Player.MagicAttack(目标, 0); // 使用魔法攻击，技能ID为0表示普通攻击
-//         }
-//     }
-    
-//     return 目标列表.length;
-// }
+// 灵魂火符: 主动,对目标造成200%伤害,每级提高20%
+export function 灵魂火符(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.灵魂火符);
+}
 
-// export function 杀怪范围(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-//     const Player: TPlayObject = Source as TPlayObject;
-    
-//     // 使用新的封装函数
-//     攻击杀怪范围内目标(Player, undefined, 'kill');
-// }
+// 飓风破: 主动,对目标3格敌人造成120%伤害,每级提升12%
+export function 飓风破(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.飓风破);
+}
 
-export function 嘲讽吸怪(Source: TActor, Target: TActor, AMethod: string, nParam1: number, nParam2: number, sParam1: string, sParam2: string): void {
-    let Player: TPlayObject = Source as TPlayObject;
-    // console.log(Player.GetSVar(94) +`fff` + Player.GetSVar(93))
+// 暴击术: 被动,对目标造成150%伤害,并且使你的暴击几率提高10%,每级提高15%伤害,1%几率
+export function 暴击术(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.暴击术);
+}
+
+// 霜月: 被动,对周围目标造成150%伤害,每级提高15%
+export function 霜月(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.霜月);
+}
+
+// 精准箭术: 被动,对目标造成200%伤害,每级提高20%
+export function 精准箭术(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.精准箭术);
+}
+
+// 万箭齐发: 主动,对目标3格敌人造成120%伤害,每级提升12%
+export function 万箭齐发(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.万箭齐发);
+}
+
+// 罗汉棍法: 开启后,对直线4格内敌人造成150%伤害,每级提升15%
+export function 罗汉棍法(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.罗汉棍法);
+}
+
+// 天雷阵: 开启后,对3格内敌人造成120%伤害,每级提升12%
+export function 天雷阵(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.Damage(Target, 1, _P_Base.技能ID.基础技能.天雷阵);
+
+}
+
+
+// ==================== 天枢职业技能 ====================
+// 怒斩: 主动,对目标周围3码内所有敌人造成伤害200%,每级提高20%
+export function 怒斩(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    const 范围 = 3 + (Player.R.怒斩范围 || 0);
+    const 目标列表 = Target ? 获取目标范围内目标(Player, Target, 范围) : [];
+    for (const 目标 of 目标列表) {
+        // 目标.ShowEffectEx2(_P_Base.特效.怒斩, -10, 20, true, 1);
+        Player.Damage(目标, 1, _P_Base.技能ID.天枢.怒斩);
+    }
+}
+
+// 人之怒: 被动,攻击时20%几率使你造成得伤害额外提高400%,每级提高40% (被动技能,在攻击计算中处理)
+export function 人之怒(_Source: TActor, _Target: TActor): void {
+    // 被动技能,伤害加成在攻击计算模块处理
+}
+
+// 地之怒: 被动,攻击时10%几率使你造成得伤害额外提高600%,每级提高60% (被动技能)
+export function 地之怒(_Source: TActor, _Target: TActor): void {
+    // 被动技能,伤害加成在攻击计算模块处理
+}
+
+// 天之怒: 被动,攻击时5%几率使你造成得伤害额外提高800%,每级提高80% (被动技能)
+export function 天之怒(_Source: TActor, _Target: TActor): void {
+    // 被动技能,伤害加成在攻击计算模块处理
+}
+
+// 神之怒: 被动,攻击时1%几率使你造成得伤害额外提高1000%,每级提高100% (被动技能)
+export function 神之怒(_Source: TActor, _Target: TActor): void {
+    // 被动技能,伤害加成在攻击计算模块处理
+}
+
+// ==================== 血神职业技能 ====================
+// 血气献祭: 主动,消耗1%的生命,对目标造成500%的伤害,每级提高50%(血量低于10%时不发动)
+export function 血气献祭(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (Player.HP < Player.MaxHP * 0.1) { Player.SendMessage('血量低于10%,血气献祭无法发动!'); return; }
+    Player.HP = Math.max(1, Player.HP - Math.floor(Player.MaxHP * 0.01));
+    Target.ShowEffectEx2(_P_Base.特效.血气献祭, -10, 20, true, 1);
+    Player.Damage(Target, 1, _P_Base.技能ID.血神.血气献祭);
+}
+
+// 血气燃烧: 开启后,每秒对周围5码范围内敌人造成150%的伤害,每级提高15%(每秒消耗1%血量,血量低于10%时关闭)
+export function 血气燃烧(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (!Player.R.血气燃烧) {
+        Player.R.血气燃烧 = true;
+        Player.SetCustomEffect(_P_Base.永久特效.血气燃烧, _P_Base.特效.血气燃烧);
+        Player.SendMessage('血气燃烧开启', 2);
+    } else {
+        Player.R.血气燃烧 = false;
+        Player.SetCustomEffect(_P_Base.永久特效.血气燃烧, -1);
+        Player.SendMessage('血气燃烧关闭', 2);
+    }
+}
+
+// 血气吸纳: 被动,被攻击1%几率恢复5%血量,每20级几率提高1%,(最高到40) (被动技能)
+export function 血气吸纳(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在被攻击时处理
+}
+
+// 血气迸发: 被动,攻击时可吸取造成伤害的1‰转化为生命,每级提高1‰,最高到2000‰ (被动技能)
+export function 血气迸发(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理
+}
+
+// 血魔临身: 开启后,使你的攻击额外提高150%,持续时间10S(每级提高5%伤害,每10级增加1S,最高180S).冷却3分钟
+export function 血魔临身(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    const now = DateUtils.Now();
+    const cd = DateUtils.SecondSpan(now, Player.VarDateTime('血魔临身').AsDateTime);
+    if (cd >= 180) {
+        Player.VarDateTime('血魔临身').AsDateTime = now;
+        const Magic = Player.FindSkill('血魔临身');
+        const 持续时间 = Math.min(10 + Math.floor((Magic?.Level || 1) / 10), 180);
+        Player.R.血魔临身 = true;
+        Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
+        Player.SendMessage(`血魔临身开启,持续${持续时间}秒!`, 2);
+        Player.DelayCallMethod('MagicNpc.血魔临身结束', 持续时间 * 1000, false);
+    } else {
+        Player.SendCountDownMessage(`'血魔临身'技能CD剩余时间：${180 - Math.round(cd)}`, 0);
+    }
+}
+
+export function 血魔临身结束(Source: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.R.血魔临身 = false;
+    Player.SetCustomEffect(_P_Base.永久特效.血魔临身, -1);
+    Player.SendMessage('血魔临身结束', 2);
+}
+
+
+// ==================== 暗影职业技能 ====================
+// 暗影猎取: 被动,攻击1%的几率获取暗影点,每点提高1%主属性,每5级提高1点上限 (被动技能)
+export function 暗影猎取(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理暗影点获取
+}
+
+// 暗影袭杀: 主动,对目标造成500%伤害,每级提高50%
+export function 暗影袭杀(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Target.ShowEffectEx2(_P_Base.特效.暗影袭杀, -10, 20, true, 1);
+    Player.Damage(Target, 1, _P_Base.技能ID.暗影.暗影袭杀);
+}
+
+// 暗影剔骨: 开启后,对周围6码范围内敌人造成300%伤害,每级提高30%,每秒消耗1点暗影点
+export function 暗影剔骨(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (!Player.R.暗影剔骨) {
+        Player.R.暗影剔骨 = true;
+        Player.SetCustomEffect(_P_Base.永久特效.暗影剔骨, _P_Base.特效.暗影剔骨);
+        Player.SendMessage('暗影剔骨开启', 2);
+    } else {
+        Player.R.暗影剔骨 = false;
+        Player.SetCustomEffect(_P_Base.永久特效.暗影剔骨, -1);
+        Player.SendMessage('暗影剔骨关闭', 2);
+    }
+}
+
+// 暗影风暴: 主动,对目标范围5码内敌人造成400%伤害,消耗5点暗影点.每级提高40%.冷却20S
+export function 暗影风暴(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (!Player.R.暗影点 || Player.R.暗影点 < 5) { Player.SendMessage('暗影点不足5点,无法使用暗影风暴!'); return; }
+    const now = DateUtils.Now();
+    const cd = DateUtils.SecondSpan(now, Player.VarDateTime('暗影风暴').AsDateTime);
+    if (cd >= 20) {
+        Player.VarDateTime('暗影风暴').AsDateTime = now;
+        Player.R.暗影点 = Player.R.暗影点 - 5;
+        const 范围 = 5 + (Player.R.暗影风暴范围 || 0);
+        const 目标列表 = Target ? 获取目标范围内目标(Player, Target, 范围) : [];
+        for (const 目标 of 目标列表) {
+            目标.ShowEffectEx2(_P_Base.特效.暗影风暴, -10, 20, true, 1);
+            Player.Damage(目标, 1, _P_Base.技能ID.暗影.暗影风暴);
+        }
+    } else {
+        Player.SendCountDownMessage(`'暗影风暴'技能CD剩余时间：${20 - Math.round(cd)}`, 0);
+    }
+}
+
+// 暗影附体: 主动,消耗10点暗影点,使暗影袭杀的攻击提高至1000%,持续5S,每10级增加1S.冷却3分钟
+export function 暗影附体(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (!Player.R.暗影点 || Player.R.暗影点 < 10) { Player.SendMessage('暗影点不足10点,无法使用暗影附体!'); return; }
+    const now = DateUtils.Now();
+    const cd = DateUtils.SecondSpan(now, Player.VarDateTime('暗影附体').AsDateTime);
+    if (cd >= 180) {
+        Player.VarDateTime('暗影附体').AsDateTime = now;
+        Player.R.暗影点 = Player.R.暗影点 - 10;
+        const Magic = Player.FindSkill('暗影附体');
+        const 持续时间 = 5 + Math.floor((Magic?.Level || 1) / 10);
+        Player.R.暗影附体 = true;
+        Player.SetCustomEffect(_P_Base.永久特效.暗影附体, _P_Base.特效.暗影附体);
+        Player.SendMessage(`暗影附体开启,持续${持续时间}秒!`, 2);
+        Player.DelayCallMethod('MagicNpc.暗影附体结束', 持续时间 * 1000, false);
+    } else {
+        Player.SendCountDownMessage(`'暗影附体'技能CD剩余时间：${180 - Math.round(cd)}`, 0);
+    }
+}
+
+export function 暗影附体结束(Source: TActor): void {
+    const Player = Source as TPlayObject;
+    Player.R.暗影附体 = false;
+    Player.SetCustomEffect(_P_Base.永久特效.暗影附体, -1);
+    Player.SendMessage('暗影附体结束', 2);
+}
+
+// ==================== 烈焰职业技能 ====================
+// 火焰追踪: 主动,对目标造成200%伤害,每级提高20%
+export function 火焰追踪(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    Target.ShowEffectEx2(_P_Base.特效.爆裂火冢, -10, 20, true, 1);
+    Player.Damage(Target, 1, _P_Base.技能ID.烈焰.火焰追踪);
+    // 火镰狂舞：被动,每10级可为火焰追踪的目标增加一个
+    const 火镰狂舞等级 = Player.V.火镰狂舞等级 || 0;
+    if (火镰狂舞等级 > 0) {
+        const 额外目标数 = Math.floor(火镰狂舞等级 / 10);
+        if (额外目标数 > 0) {
+            const targetHandle = Target.GetHandle();
+            const 目标列表 = 获取目标范围内目标(Player, Target, 8);
+            for (let i = 0, count = 0; i < 目标列表.length && count < 额外目标数; i++) {
+                if (目标列表[i].GetHandle() !== targetHandle) {
+                    目标列表[i].ShowEffectEx2(_P_Base.特效.爆裂火冢, -10, 20, true, 1);
+                    Player.Damage(目标列表[i], 1, _P_Base.技能ID.烈焰.火焰追踪);
+                    count++;
+                }
+            }
+        }
+    }
+}
+
+// 火镰狂舞: 被动,每10级可为火焰追踪的目标增加一个 (被动技能,在火焰追踪中处理)
+export function 火镰狂舞(_Source: TActor, _Target: TActor): void {
+    // 被动技能,效果在火焰追踪中实现
+}
+
+// 烈焰护甲: 开启后,每2秒对周围4格内的目标造成300%伤害,每级提高30%
+export function 烈焰护甲(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (!Player.R.烈焰护甲) {
+        Player.R.烈焰护甲 = true;
+        Player.SetCustomEffect(_P_Base.永久特效.烈焰护甲, _P_Base.特效.烈焰护甲);
+        Player.SendMessage('烈焰护甲开启', 2);
+    } else {
+        Player.R.烈焰护甲 = false;
+        Player.SetCustomEffect(_P_Base.永久特效.烈焰护甲, -1);
+        Player.SendMessage('烈焰护甲关闭', 2);
+    }
+}
+
+// 爆裂火冢: 被动,击中目标20%几率造成8格范围300%伤害,每级提高30% (被动技能)
+export function 爆裂火冢(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理
+}
+
+// 烈焰突袭: 被动,每攻击5次,使你下次伤害提升至200%,每重+20% (被动技能)
+export function 烈焰突袭(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理
+}
+
+
+// ==================== 正义职业技能 ====================
+// 圣光(正义): 开启后,每秒对周围5码内所有目标造成200%伤害,每级提高20%
+export function 圣光(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (!Player.R.圣光) {
+        Player.R.圣光 = true;
+        Player.SetCustomEffect(_P_Base.永久特效.圣光, _P_Base.特效.圣光);
+        Player.SendMessage('圣光光环开启', 2);
+    } else {
+        Player.R.圣光 = false;
+        Player.SetCustomEffect(_P_Base.永久特效.圣光, -1);
+        Player.SendMessage('圣光光环关闭', 2);
+    }
+}
+
+
+// 行刑: 被动,对普通怪物的伤害增加200%，每级提高20% (被动技能)
+export function 行刑(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理
+}
+
+// 洗礼: 被动,对精英以上怪物的伤害增加100%，每级提高10% (被动技能)
+export function 洗礼(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理
+}
+
+// 审判: 被动,对满血目标造成10%血量切割，每20级+1%切割,封顶40% (被动技能)
+export function 审判(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理
+}
+
+// 神罚: 被动,攻击10%几率使目标遭受神罚，损失当前生命的1%，每40级+1% (被动技能)
+export function 神罚(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在攻击计算模块处理
+}
+
+// ==================== 不动职业技能 ====================
+// 如山: 开启后,每秒对周围5码内造成400%伤害,每级提高40%
+export function 如山(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    if (!Player.R.如山) {
+        Player.R.如山 = true;
+        Player.SetCustomEffect(_P_Base.永久特效.如山, _P_Base.特效.如山);
+        Player.SendMessage('如山开启', 2);
+    } else {
+        Player.R.如山 = false;
+        Player.SetCustomEffect(_P_Base.永久特效.如山, -1);
+        Player.SendMessage('如山关闭', 2);
+    }
+}
+
+// 泰山: 被动,主属性提高30%,每级增加3% (被动技能)
+export function 泰山(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在属性计算模块处理
+}
+
+// 人王盾: 主动,释放技能提供一个防御上限值1000%的护盾，每级提高100%，CD10秒
+export function 人王盾(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
+    const now = DateUtils.Now();
+    const cd = DateUtils.SecondSpan(now, Player.VarDateTime('人王盾').AsDateTime);
+    if (cd >= 10) {
+        Player.VarDateTime('人王盾').AsDateTime = now;
+        const Magic = Player.FindSkill('人王盾');
+        const 等级 = Magic?.Level || 1;
+        // 护盾值 = 防御上限 * (1000% + 每级100%)
+        const 防御上限 = Player.GetSVar(96) || '1000';
+        const 护盾倍率 = 10 + 等级;
+        Player.R.人王盾护盾值 = 智能计算(防御上限, String(护盾倍率), 3);
+        Player.SetCustomEffect(_P_Base.永久特效.人王盾, _P_Base.特效.人王盾);
+        Player.SendMessage(`人王盾开启,护盾值:${大数值整数简写(Player.R.人王盾护盾值)}`, 2);
+    } else {
+        Player.SendCountDownMessage(`'人王盾'技能CD剩余时间：${10 - Math.round(cd)}`, 0);
+    }
+}
+
+// 铁布衫: 被动,提供20%格挡，每10级提高1%（50上限）(被动技能)
+export function 铁布衫(_Source: TActor, _Target: TActor): void {
+    // 被动技能,在属性计算模块处理
+}
+
+// 金刚掌: 主动,对目标周围8格范围造成500%伤害,并麻痹目标3秒，CD15秒,每级提高50%
+export function 金刚掌(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    const now = DateUtils.Now();
+    const cd = DateUtils.SecondSpan(now, Player.VarDateTime('金刚掌').AsDateTime);
+    if (cd >= 15) {
+        Player.VarDateTime('金刚掌').AsDateTime = now;
+        if (!Target) return;
+        const 目标列表 = 获取目标范围内目标(Player, Target, 8);
+        for (const 目标 of 目标列表) {
+            目标.ShowEffectEx2(_P_Base.特效.金刚掌, -10, 20, true, 1);
+            目标.SetState(5, 3, 0); // 麻痹3秒
+            Player.Damage(目标, 1, _P_Base.技能ID.不动.金刚掌);
+        }
+    } else {
+        Player.SendCountDownMessage(`'金刚掌'技能CD剩余时间：${15 - Math.round(cd)}`, 0);
+    }
+}
+
+
+// ==================== 嘲讽吸怪 ====================
+export function 嘲讽吸怪(Source: TActor, _Target: TActor): void {
+    const Player = Source as TPlayObject;
     if (Player.R.嘲讽吸怪_范围 > 0) {
-        let AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, Player.R.嘲讽吸怪_范围)
+        const AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, Player.R.嘲讽吸怪_范围);
         if (AActorList.Count > 0) {
             for (let i = 0; i < AActorList.Count; i++) {
-                let Actor = AActorList.Actor(i);
+                const Actor = AActorList.Actor(i);
                 if (Actor != null && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() != Player.GetHandle() && !Actor.IsPlayer()) {
-                    if (Actor.Master && Actor.Master.Handle == Player.Handle) { continue }
-                    let 坐标X = Player.MapX
-                    let 坐标Y = Player.MapY
+                    if (Actor.Master && Actor.Master.Handle == Player.Handle) { continue; }
+                    let 坐标X = Player.MapX;
+                    let 坐标Y = Player.MapY;
                     switch (true) {
-                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y; break
-                        case Player.GetMap().CanMove(坐标X - 1, 坐标Y, false): 坐标X = 坐标X - 1; 坐标Y = 坐标Y; break
-                        case Player.GetMap().CanMove(坐标X, 坐标Y + 1, false): 坐标X = 坐标X; 坐标Y = 坐标Y + 1; break
-                        case Player.GetMap().CanMove(坐标X, 坐标Y - 1, false): 坐标X = 坐标X; 坐标Y = 坐标Y - 1; break
-                        case Player.GetMap().CanMove(坐标X - 1, 坐标Y - 1, false): 坐标X = 坐标X - 1; 坐标Y = 坐标Y - 1; break
-                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 1, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 1; break
-                        case Player.GetMap().CanMove(坐标X - 1, 坐标Y + 1, false): 坐标X = 坐标X - 1; 坐标Y = 坐标Y + 1; break
-                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 1, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 1; break
-
-                        case Player.GetMap().CanMove(坐标X + 2, 坐标Y + 1, false): 坐标X = 坐标X + 2; 坐标Y = 坐标Y + 1; break
-                        case Player.GetMap().CanMove(坐标X - 2, 坐标Y + 1, false): 坐标X = 坐标X - 2; 坐标Y = 坐标Y + 1; break
-                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 2, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 2; break
-                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 2, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 2; break
-                        case Player.GetMap().CanMove(坐标X - 2, 坐标Y - 2, false): 坐标X = 坐标X - 2; 坐标Y = 坐标Y - 2; break
-                        case Player.GetMap().CanMove(坐标X + 2, 坐标Y - 2, false): 坐标X = 坐标X + 2; 坐标Y = 坐标Y - 2; break
-                        case Player.GetMap().CanMove(坐标X - 2, 坐标Y + 2, false): 坐标X = 坐标X - 2; 坐标Y = 坐标Y + 2; break
-                        case Player.GetMap().CanMove(坐标X + 2, 坐标Y + 2, false): 坐标X = 坐标X + 2; 坐标Y = 坐标Y + 2; break
+                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y, false): 坐标X = 坐标X + 1; break;
+                        case Player.GetMap().CanMove(坐标X - 1, 坐标Y, false): 坐标X = 坐标X - 1; break;
+                        case Player.GetMap().CanMove(坐标X, 坐标Y + 1, false): 坐标Y = 坐标Y + 1; break;
+                        case Player.GetMap().CanMove(坐标X, 坐标Y - 1, false): 坐标Y = 坐标Y - 1; break;
+                        case Player.GetMap().CanMove(坐标X - 1, 坐标Y - 1, false): 坐标X = 坐标X - 1; 坐标Y = 坐标Y - 1; break;
+                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 1, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 1; break;
+                        case Player.GetMap().CanMove(坐标X - 1, 坐标Y + 1, false): 坐标X = 坐标X - 1; 坐标Y = 坐标Y + 1; break;
+                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 1, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 1; break;
+                        case Player.GetMap().CanMove(坐标X + 2, 坐标Y + 1, false): 坐标X = 坐标X + 2; 坐标Y = 坐标Y + 1; break;
+                        case Player.GetMap().CanMove(坐标X - 2, 坐标Y + 1, false): 坐标X = 坐标X - 2; 坐标Y = 坐标Y + 1; break;
+                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 2, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 2; break;
+                        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 2, false): 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 2; break;
+                        case Player.GetMap().CanMove(坐标X - 2, 坐标Y - 2, false): 坐标X = 坐标X - 2; 坐标Y = 坐标Y - 2; break;
+                        case Player.GetMap().CanMove(坐标X + 2, 坐标Y - 2, false): 坐标X = 坐标X + 2; 坐标Y = 坐标Y - 2; break;
+                        case Player.GetMap().CanMove(坐标X - 2, 坐标Y + 2, false): 坐标X = 坐标X - 2; 坐标Y = 坐标Y + 2; break;
+                        case Player.GetMap().CanMove(坐标X + 2, 坐标Y + 2, false): 坐标X = 坐标X + 2; 坐标Y = 坐标Y + 2; break;
                     }
-                    Actor.FlashMove(坐标X, 坐标Y, false)
+                    Actor.FlashMove(坐标X, 坐标Y, false);
                 }
             }
         }
     } else {
-        Player.SendCenterMessage(`你当前没有使用此技能的权限。`, 0, 3000)
+        Player.SendCenterMessage(`你当前没有使用此技能的权限。`, 0, 3000);
     }
-    Player.SendCenterMessage(`你使用了嘲讽吸怪技能。`, 0, 3000)
+    Player.SendCenterMessage(`你使用了嘲讽吸怪技能。`, 0, 3000);
 }
 
-export function 驯兽师召宝宝(Player: TPlayObject, 怪物名字: string, 攻击距离: number, 继承倍率: number, 召唤数量: number): void {
-    let 宝宝攻击小 = Player.R.自定属性[153], 宝宝攻击大 = Player.R.自定属性[163], 宝宝防御小 = js_number(Player.R.自定属性[158], `100`, 3), 宝宝防御大 = js_number(Player.R.自定属性[168], `100`, 3), 宝宝血量 = js_number(Player.GetSVar(92), `10`, 3),
-        攻速移速 = 1000 - (Player.R.所有宝宝速度 + Player.R.驯兽宝宝速度), 坐标X = Player.GetMapX(), 坐标Y = Player.GetMapY()
-    let Actor: TActor
-    let 野蛮等级 = Player.V.凶猛野兽 + Player.R.凶猛野兽 + Player.R.所有技能等级
-    宝宝攻击小 = js_number(宝宝攻击小, String(继承倍率), 3)
-    宝宝攻击大 = js_number(js_number(宝宝攻击大, `5`, 3), String(继承倍率), 3)
+// ==================== 怪物技能 ====================
+export function 怪物火球术(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10030);
+}
 
-    宝宝攻击小 = js_number(js_number(js_number(Player.R.凶猛野兽等级, 宝宝攻击小, 3), `0.1`, 3), 宝宝攻击小, 1)
-    宝宝攻击大 = js_number(js_number(js_number(Player.R.凶猛野兽等级, 宝宝攻击大, 3), `0.1`, 3), 宝宝攻击大, 1)
+export function 怪物疾光电影(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10031);
+}
 
-    宝宝血量 = js_number(js_number(js_number(Player.R.凶猛野兽等级, 宝宝血量, 3), `0.1`, 3), 宝宝血量, 1)
+export function 怪物爆裂火焰(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10032);
+}
 
-    Player.V.速度专精激活 ? 攻速移速 = 攻速移速 - Player.R.速度点数 * 20 * 2 : 攻速移速 = 攻速移速 - Player.R.速度点数 * 2
-    switch (true) {
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y + 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y - 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y - 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y + 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 1; break
-    }
-    let List = GameLib.MonGen(Player.Map.MapName, 怪物名字, 召唤数量, 坐标X, 坐标Y, 0, 0, 0, 1, true, true, true, true)
-    Player.KillSlave(怪物名字)
-    for (let i = List.Count - 1; i >= 0; i--) {
-        Actor = List.Actor(i)
-        Actor.SetMaxHP(1000000)
-        Actor.SetHP(1000000)
-        Actor.SetDCMin(999)
-        Actor.SetDCMax(999)
-        Actor.SetMaster(Player)
-        Actor.SetMasterRoyaltyTick(108000000)
-        Actor.SetThroughHuman(true)
-        Actor.SetAttackSpeed(Math.max(100, 攻速移速 - 野蛮等级 * 6))
-        Actor.SetWalkSpeed(Math.max(100, 攻速移速 - 野蛮等级 * 6))
-        Actor.SetAttackRange(攻击距离)
-        Actor.SetSVar(原始名字, 怪物名字)
-        Actor.SetTriggerAINpcExecute(true)
-        Actor.SetTriggerSelectMagicBeforeAttack(true)
-        Actor.SetViewRange(12)
-        Actor.SetSVar(92, String(宝宝血量))
-        Actor.SetSVar(91, Actor.GetSVar(92))
-        Actor.SetSVar(93, String(宝宝攻击小))
-        Actor.SetSVar(94, String(宝宝攻击大))
-        Actor.SetSVar(95, String(宝宝防御小))
-        Actor.SetSVar(96, String(宝宝防御大))
-        Player.SendMessage(`当前宝宝血量:${大数值整数简写(Actor.GetSVar(92))},攻击:${大数值整数简写(宝宝攻击小)} - ${大数值整数简写(宝宝攻击大)},防御:${大数值整数简写(宝宝防御大)},速度:${Actor.GetAttackSpeed()}`);
-        let 新字符 = { 怪物名字: Actor.Name, 怪物等级: String(Actor.Level), 血量: 宝宝血量, 攻击: 宝宝攻击大, 防御: 宝宝防御大, 怪物颜色: '', 怪物标志: 0, }
-        GameLib.R.怪物信息 = GameLib.R.怪物信息 || {};
-        GameLib.R.怪物信息[`${Actor.Handle}`] = JSON.stringify(新字符)
-        Actor.SetSVar(98, JSON.stringify(新字符))
-        if (Player.R.宝宝释放群雷) {
-            Actor.SetNVar(_M_N_宝宝释放群雷, 1)
-        }
-        Actor.SetConfuseBitTimeBeAttacked(false)
-        血量显示(Actor)
+export function 怪物地狱雷光(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10033);
+}
+
+export function 怪物半月(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10034);
+}
+
+export function 怪物攻杀(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10035);
+}
+
+export function 怪物治愈(Source: TActor, _Target: TActor): void {
+    if (Number(Source.GetSVar(91)) < Number(Source.GetSVar(92))) {
+        const 治疗值 = 智能计算(Source.GetSVar(92), '100', 4);
+        实时回血(Source, 治疗值);
     }
 }
 
-export function 猎人召唤宝宝(Player: TPlayObject, 怪物名字: string, 攻击距离: number, 继承倍率: number, 召唤数量: number): void {
-    let 宝宝攻击小 = Player.R.自定属性[155], 宝宝攻击大 = Player.R.自定属性[165], 宝宝防御小 = js_number(Player.R.自定属性[158], `100`, 3), 宝宝防御大 = js_number(Player.R.自定属性[168], `100`, 3), 宝宝血量 = js_number(Player.GetSVar(92), `10`, 3),
-        攻速移速 = 1000 - (Player.R.所有宝宝速度 + Player.R.驯兽宝宝速度), 坐标X = Player.GetMapX(), 坐标Y = Player.GetMapY()
-    let Actor: TActor
-    let 人宠合一等级 = Player.V.人宠合一 + Player.R.人宠合一 + Player.R.所有技能等级
-    宝宝攻击小 = js_number(js_number(js_number(Player.R.召唤宠物等级, 宝宝攻击小, 3), `0.05`, 3), 宝宝攻击小, 1)
-    宝宝攻击大 = js_number(js_number(js_number(Player.R.召唤宠物等级, 宝宝攻击大, 3), `0.05`, 3), 宝宝攻击大, 1)
-
-    Player.V.速度专精激活 ? 攻速移速 = 攻速移速 - Player.R.速度点数 * 20 * 2 : 攻速移速 = 攻速移速 - Player.R.速度点数 * 2
-    switch (true) {
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y + 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y - 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y - 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y + 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 1; break
-    }
-
-    let List = GameLib.MonGen(Player.Map.MapName, 怪物名字, 召唤数量, 坐标X, 坐标Y, 0, 0, 0, 1, true, true, true, true)
-    Player.KillSlave(怪物名字)
-    for (let i = List.Count - 1; i >= 0; i--) {
-        Actor = List.Actor(i)
-        Actor.SetMaxHP(1000000)
-        Actor.SetHP(1000000)
-        Actor.SetDCMin(999)
-        Actor.SetDCMax(999)
-        Actor.SetMaster(Player)
-        Actor.SetMasterRoyaltyTick(108000000)
-        Actor.SetThroughHuman(true)
-        Actor.SetAttackSpeed(Math.max(100, 攻速移速 - 人宠合一等级 * 6))
-        Actor.SetWalkSpeed(Math.max(100, 攻速移速 - 人宠合一等级 * 6))
-        Actor.SetAttackRange(攻击距离)
-        Actor.SetTriggerAINpcExecute(true)
-        Actor.SetTriggerSelectMagicBeforeAttack(true)
-        Actor.SetViewRange(12)
-        Actor.SetSVar(原始名字, 怪物名字)
-        Actor.SetSVar(92, String(宝宝血量))
-        Actor.SetSVar(91, Actor.GetSVar(92))
-        Actor.SetSVar(93, String(宝宝攻击小))
-        Actor.SetSVar(94, String(宝宝攻击大))
-        Actor.SetSVar(95, String(宝宝防御小))
-        Actor.SetSVar(96, String(宝宝防御大))
-        Player.SendMessage(`当前宝宝血量:${大数值整数简写(Actor.GetSVar(92))},攻击:${大数值整数简写(宝宝攻击小)} - ${大数值整数简写(宝宝攻击大)},防御:${大数值整数简写(宝宝防御大)},速度:${Actor.GetAttackSpeed()}`);
-        let 新字符 = { 怪物名字: Actor.Name, 怪物等级: String(Actor.Level), 血量: 宝宝血量, 攻击: 宝宝攻击大, 防御: 宝宝防御大, 怪物颜色: '', 怪物标志: 0, }
-        GameLib.R.怪物信息 = GameLib.R.怪物信息 || {};
-        GameLib.R.怪物信息[`${Actor.Handle}`] = JSON.stringify(新字符)
-        Actor.SetSVar(98, JSON.stringify(新字符))
-        if (Player.R.猎人宝宝释放群攻) {
-            Actor.SetNVar(_M_N_猎人宝宝群攻, 1)
-        }
-        Actor.SetConfuseBitTimeBeAttacked(false)
-        血量显示(Actor)
-    }
+export function 怪物刺杀(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10037);
 }
 
-export function 战神宝宝(Player: TPlayObject, 怪物名字: string, 攻击距离: number, 继承倍率: number, 召唤数量: number): void {
-    let 宝宝攻击小 = Player.R.自定属性[151], 宝宝攻击大 = Player.R.自定属性[161], 宝宝防御小 = Player.R.自定属性[158], 宝宝防御大 = Player.R.自定属性[168], 宝宝血量 = Player.GetSVar(92),
-        攻速移速 = 1000 - (Player.R.所有宝宝速度 + Player.R.驯兽宝宝速度), 坐标X = Player.GetMapX(), 坐标Y = Player.GetMapY()
-    let Actor: TActor
-
-    let 战神附体 = Player.V.战神附体 + Player.R.战神附体 + Player.R.所有技能等级
-    宝宝攻击小 = js_number(宝宝攻击小, String(继承倍率), 3)
-    宝宝攻击大 = js_number(宝宝攻击大, String(继承倍率), 3)
-    宝宝攻击小 = js_number(js_number(js_number(Player.R.召唤战神等级, 宝宝攻击小, 3), `0.5`, 3), 宝宝攻击小, 1)
-    宝宝攻击大 = js_number(js_number(js_number(Player.R.召唤战神等级, 宝宝攻击大, 3), `0.5`, 3), 宝宝攻击大, 1)
-    宝宝血量 = js_number(js_number(js_number(Player.R.召唤战神等级, 宝宝血量, 3), `0.4`, 3), 宝宝血量, 1)
-
-
-    Player.V.速度专精激活 ? 攻速移速 = 攻速移速 - Player.R.速度点数 * 20 * 2 : 攻速移速 = 攻速移速 - Player.R.速度点数 * 2
-    switch (true) {
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y + 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y - 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y - 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y + 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 1; break
-    }
-
-    let List = GameLib.MonGen(Player.Map.MapName, 怪物名字, 召唤数量, 坐标X, 坐标Y, 0, 0, 0, 11, true, true, true, true)
-    Player.KillSlave(怪物名字)
-    for (let i = List.Count - 1; i >= 0; i--) {
-        Actor = List.Actor(i)
-        if (Player.V.战神学习基础) {
-            Actor.SetNVar(宝宝基础技能, 1)
-        }
-        if (Player.V.战神学习高级) {
-            Actor.SetNVar(宝宝高级技能, 1)
-        }
-        Actor.SetMaxHP(1000000)
-        Actor.SetHP(1000000)
-        Actor.SetDCMin(999)
-        Actor.SetDCMax(999)
-        Actor.SetMaster(Player)
-        Actor.SetMasterRoyaltyTick(108000000)
-        Actor.SetThroughHuman(true)
-        Actor.SetAttackSpeed(Math.max(100, 攻速移速 - Player.V.战神强化等级 * 9))
-        Actor.SetWalkSpeed(Math.max(100, 攻速移速 - Player.V.战神强化等级 * 9))
-        Actor.SetAttackRange(攻击距离)
-        // Player.SendMessage(`当前宝宝血量:${Actor.GetMaxHP()},攻击:${Actor.GetDCMin()} - ${Actor.GetDCMax()},防御:${Actor.GetACMax()},速度:${Actor.GetAttackSpeed()}`);
-        Actor.SetSVar(原始名字, 怪物名字)
-        Actor.SetSVar(92, String(宝宝血量))
-        Actor.SetSVar(91, Actor.GetSVar(92))
-        Actor.SetSVar(93, String(宝宝攻击小))
-        Actor.SetSVar(94, String(宝宝攻击大))
-        Actor.SetSVar(95, String(宝宝防御小))
-        Actor.SetSVar(96, String(宝宝防御大))
-        Player.SendMessage(`当前宝宝血量:${大数值整数简写(Actor.GetSVar(92))},攻击:${大数值整数简写(宝宝攻击小)} - ${大数值整数简写(宝宝攻击大)},防御:${大数值整数简写(宝宝防御大)},速度:${Actor.GetAttackSpeed()}`);
-        // Player.SendMessage(`当前宝宝血量:${Actor.GetSVar(92)},攻击:${宝宝攻击小} - ${宝宝攻击大},防御:${宝宝防御大},速度:${Actor.GetAttackSpeed()}`);
-        let 新字符 = { 怪物名字: Actor.Name, 怪物等级: String(Actor.Level), 血量: 宝宝血量, 攻击: 宝宝攻击大, 防御: 宝宝防御大, 怪物颜色: '', 怪物标志: 0, }
-        GameLib.R.怪物信息 = GameLib.R.怪物信息 || {};
-        GameLib.R.怪物信息[`${Actor.Handle}`] = JSON.stringify(新字符)
-        Actor.SetSVar(98, JSON.stringify(新字符))
-        Actor.SetTriggerAINpcExecute(true)
-        Actor.SetTriggerSelectMagicBeforeAttack(true)
-        Actor.SetViewRange(12)
-        Actor.SetConfuseBitTimeBeAttacked(false)
-        血量显示(Actor)
-    }
+export function 怪物烈火(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10038);
 }
 
-export function 罗汉宝宝(Player: TPlayObject, 怪物名字: string, 攻击距离: number, 继承倍率: number, 召唤数量: number): void {
-    let 宝宝攻击小 = Player.R.自定属性[156], 
-        宝宝攻击大 = Player.R.自定属性[166], 
-        宝宝防御小 = Player.R.自定属性[158], 
-        宝宝防御大 = Player.R.自定属性[168], 
-        宝宝血量   = Player.GetSVar(92),
-        攻速移速   = 1000 - (Player.R.所有宝宝速度 + Player.R.驯兽宝宝速度), 坐标X = Player.GetMapX(), 坐标Y = Player.GetMapY()
-    let Actor: TActor
+export function 怪物冰咆哮(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10039);
+}
 
-    宝宝攻击小 = js_number(宝宝攻击小, String(继承倍率), 3)
-    宝宝攻击大 = js_number(宝宝攻击大, String(继承倍率), 3)
-    宝宝攻击小 = js_number(js_number(js_number(String(Player.R.轮回之道等级), 宝宝攻击小, 3), `0.01`, 3), 宝宝攻击小, 1)
-    宝宝攻击大 = js_number(js_number(js_number(String(Player.R.轮回之道等级), 宝宝攻击大, 3), `0.01`, 3), 宝宝攻击大, 1)
-    宝宝血量 = js_number(js_number(js_number(String(Player.R.轮回之道等级), 宝宝血量, 3), `0.04`, 3), 宝宝血量, 1)
+export function 怪物雷电术(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10041);
+}
 
-    Player.V.速度专精激活 ? 攻速移速 = 攻速移速 - Player.R.速度点数 * 20 * 2 : 攻速移速 = 攻速移速 - Player.R.速度点数 * 2
-    switch (true) {
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y + 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X, 坐标Y - 1, true) == true: 坐标X = 坐标X; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y - 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y - 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y - 1; break
-        case Player.GetMap().CanMove(坐标X - 1, 坐标Y + 1, true) == true: 坐标X = 坐标X - 1; 坐标Y = 坐标Y + 1; break
-        case Player.GetMap().CanMove(坐标X + 1, 坐标Y + 1, true) == true: 坐标X = 坐标X + 1; 坐标Y = 坐标Y + 1; break
-    }
+export function 怪物气功波(_Source: TActor, Target: TActor): void {
+    Target.Push(_Source.GetDirection(), 1);
+}
 
-    if (Player.V.轮回次数 < 30) { 攻击距离 = 3 }
-    if (Player.V.轮回次数 >= 30 && Player.V.轮回次数 < 40) { 攻击距离 = 4 }
-    if (Player.V.轮回次数 >= 40 && Player.V.轮回次数 <= 50) { 攻击距离 = 5 }
+export function 怪物寒冰掌(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10043);
+}
 
-    let List = GameLib.MonGen(Player.Map.MapName, 怪物名字, 召唤数量, 坐标X, 坐标Y, 0, 0, 0, 11, true, true, true, true)
-    // GameLib.MonGen(Monster.Map.MapName, Monster.Name, 1, 生成X, 生成Y, 0, 0 ,0 ,TAG, true, true, true, true).Actor(0);
-    Player.KillSlave(怪物名字)
-    for (let i = List.Count - 1; i >= 0; i--) {
-        Actor = List.Actor(i)
-        Actor.SetMaxHP(10000000)
-        Actor.SetHP(10000000)
-        Actor.SetDCMin(99)
-        Actor.SetDCMax(99)
-        Actor.SetMaster(Player)
-        Actor.SetMasterRoyaltyTick(108000000)
-        Actor.SetThroughHuman(true)
-        if (Actor.GetName() == '天道轮回兽') {
-            Actor.SetBlendColor(52)
-        }
-        Actor.SetAttackSpeed(Math.max(100, 攻速移速 - Player.V.轮回次数 * 18))
-        Actor.SetWalkSpeed(Math.max(100, 攻速移速 - Player.V.轮回次数 * 18))
-        Actor.SetAttackRange(攻击距离)
-        // Player.SendMessage(`当前宝宝血量:${大数值整数简写(Actor.GetMaxHP())},攻击:${大数值整数简写(宝宝攻击小)} - ${大数值整数简写(宝宝攻击大)},防御:${大数值整数简写(宝宝防御大)},速度:${Actor.GetAttackSpeed()}`);
-        // Player.SendMessage(`当前宝宝血量:${Actor.GetMaxHP()},攻击:${Actor.GetDCMin()} - ${Actor.GetDCMax()},防御:${Actor.GetACMax()},速度:${Actor.GetWalkSpeed()}`);
-        Actor.SetSVar(原始名字, 怪物名字)
-        Actor.SetSVar(92, String(宝宝血量))
-        Actor.SetSVar(91, Actor.GetSVar(92))
-        Actor.SetSVar(93, String(宝宝攻击小))
-        Actor.SetSVar(94, String(宝宝攻击大))
-        Actor.SetSVar(95, String(宝宝防御小))
-        Actor.SetSVar(96, String(宝宝防御大))
-        Player.SendMessage(`当前宝宝血量:${大数值整数简写(Actor.GetSVar(92))},攻击:${大数值整数简写(宝宝攻击小)} - ${大数值整数简写(宝宝攻击大)},防御:${大数值整数简写(宝宝防御大)},速度:${Actor.GetAttackSpeed()}`);
-        let 新字符 = { 怪物名字: Actor.Name, 怪物等级: String(Actor.Level), 血量: 宝宝血量, 攻击: 宝宝攻击大, 防御: 宝宝防御大, 怪物颜色: '', 怪物标志: 0, }
-        GameLib.R.怪物信息 = GameLib.R.怪物信息 || {};
-        GameLib.R.怪物信息[`${Actor.Handle}`] = JSON.stringify(新字符)
-        Actor.SetSVar(98, JSON.stringify(新字符))
-        Actor.SetTriggerAINpcExecute(true)
-        Actor.SetTriggerSelectMagicBeforeAttack(true)
-        Actor.SetViewRange(12)
-        Actor.SetConfuseBitTimeBeAttacked(false)
-        血量显示(Actor)
-    }
+export function 怪物噬血术(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10044);
+}
+
+export function 怪物灭天火(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10045);
+}
+
+export function 怪物流星火雨(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10046);
+}
+
+export function 怪物灵魂火符(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10047);
+}
+
+export function 怪物飓风破(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10048);
+}
+
+export function 怪物倚天辟地(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10049);
+}
+
+export function 怪物彻地钉(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10050);
+}
+
+export function 怪物群体雷电术(Source: TActor, Target: TActor): void {
+    Source.Damage(Target, 1, 10051);
 }
 
 
+// ==================== 技能执行注册 ====================
+// 注意：技能名称必须与_P_玩家登录.ts中的技能列表保持一致
+const MagicExecutes: { [key: string]: (Source: TActor, Target: TActor) => void } = {
+    // ========== 基础技能 ==========
+    "攻杀剑术": 攻杀剑术,
+    "刺杀剑术": 刺杀剑术,
+    "半月弯刀": 半月弯刀,
+    "雷电术": 雷电术,
+    "暴风雪": 暴风雪,
+    "灵魂火符": 灵魂火符,
+    "飓风破": 飓风破,
+    "暴击术": 暴击术,
+    "霜月": 霜月,
+    "精准箭术": 精准箭术,  // 注意：登录文件中使用"精准箭术"
+    "万箭齐发": 万箭齐发,
+    "罗汉棍法": 罗汉棍法,
+    "天雷阵": 天雷阵,
+    
+    // ========== 天枢职业 ==========
+    "怒斩": 怒斩,
+    "人之怒": 人之怒,
+    "地之怒": 地之怒,
+    "天之怒": 天之怒,
+    "神之怒": 神之怒,
+    
+    // ========== 血神职业 ==========
+    "血气献祭": 血气献祭,
+    "血气燃烧": 血气燃烧,
+    "血气吸纳": 血气吸纳,
+    "血气迸发": 血气迸发,
+    "血魔临身": 血魔临身,
+    
+    // ========== 暗影职业 ==========
+    "暗影猎取": 暗影猎取,
+    "暗影袭杀": 暗影袭杀,
+    "暗影剔骨": 暗影剔骨,
+    "暗影风暴": 暗影风暴,
+    "暗影附体": 暗影附体,
+    
+    // ========== 烈焰职业 ==========
+    "火焰追踪": 火焰追踪,
+    "火镰狂舞": 火镰狂舞,
+    "烈焰护甲": 烈焰护甲,
+    "爆裂火冢": 爆裂火冢,
+    "烈焰突袭": 烈焰突袭,
+    
+    // ========== 正义职业 ==========
+    "圣光": 圣光,  // 登录文件中使用"圣光"，函数内部调用正义函数
+    "行刑": 行刑,
+    "洗礼": 洗礼,
+    "审判": 审判,
+    "神罚": 神罚,
+    
+    // ========== 不动职业 ==========
+    "如山": 如山,
+    "泰山": 泰山,
+    "人王盾": 人王盾,
+    "铁布衫": 铁布衫,
+    "金刚掌": 金刚掌,
+    
+    // ========== 其他 ==========
+    "嘲讽吸怪": 嘲讽吸怪,
+    
+    // ========== 怪物技能 ==========
+    "怪物火球术": 怪物火球术,
+    "怪物疾光电影": 怪物疾光电影,
+    "怪物爆裂火焰": 怪物爆裂火焰,
+    "怪物地狱雷光": 怪物地狱雷光,
+    "怪物半月": 怪物半月,
+    "怪物攻杀": 怪物攻杀,
+    "怪物治愈": 怪物治愈,
+    "怪物刺杀": 怪物刺杀,
+    "怪物烈火": 怪物烈火,
+    "怪物冰咆哮": 怪物冰咆哮,
+    "怪物雷电术": 怪物雷电术,
+    "怪物气功波": 怪物气功波,
+    "怪物寒冰掌": 怪物寒冰掌,
+    "怪物噬血术": 怪物噬血术,
+    "怪物灭天火": 怪物灭天火,
+    "怪物流星火雨": 怪物流星火雨,
+    "怪物灵魂火符": 怪物灵魂火符,
+    "怪物飓风破": 怪物飓风破,
+    "怪物倚天辟地": 怪物倚天辟地,
+    "怪物彻地钉": 怪物彻地钉,
+    "怪物群体雷电术": 怪物群体雷电术,
+};
+
+GameLib.onSkillActionExecute = (Source: TActor, Target: TActor, AMethod: string, _nParam1: number, _nParam2: number, _sParam1: string, _sParam2: string) => {
+    const func = MagicExecutes[AMethod];
+    if (func) {
+        func(Source, Target);
+    }
+};

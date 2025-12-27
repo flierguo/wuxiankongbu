@@ -1,7 +1,3 @@
-/*装备回收*/
-import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法";
-import { _P_P_AbilityData, } from "../[玩家]/_P_Base"
-import { 基础属性第一条, 基础属性第十条, 备用四 } from "./_ITEM_Base";
 
 // 常量定义
 const 装备类型 = [4, 5, 6, 10, 11, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 68, 35]

@@ -1,4 +1,4 @@
-import { 装备属性统计 } from '../../应用智能优化版';
+import { 装备属性统计 } from '../../性能优化/index_智能优化';
 import { 特效 } from "../[玩家]/_P_Base";
 
 
@@ -174,7 +174,7 @@ export function 开始转职(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             Player.AddSkill('护法灭魔');
             Player.SetJob(5)
             Player.V.武僧 = true
-            Player.ShowEffectEx2(特效.鬼舞群魔乱舞, -10, 20, true, 99999)
+            // Player.ShowEffectEx2(特效.鬼舞群魔乱舞, -10, 20, true, 99999)
             break
         case 12:
             Player.AddSkill('罗汉棍法', 3);

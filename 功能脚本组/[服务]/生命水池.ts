@@ -1,5 +1,5 @@
-import { 实时回血 } from "../../大数值版本/字符计算"
-import { 装备属性统计 } from "../../大数值版本/装备属性统计"
+import { 实时回血 } from "../../核心功能/字符计算"
+import { 装备属性统计 } from "../../核心功能/装备属性统计"
 import { 特效 } from "../[玩家]/_P_Base"
 import { 装备特效 } from "../[装备]/_ITEM_Base"
 
@@ -12,7 +12,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
         {S=[任务转职];C=254}  <{S=付费转职;HINT=需要消耗5000元宝}/@转职>      [摧毁物品]  <销毁物品/@@Question(摧毁的装备将无法恢复请谨慎使用!,@销毁物品,1)>\\\\
 
     `
-    Npc.SayEx(Player, 'NPC小窗口中下1框', S)
+    Npc.SayEx(Player, '综合功能带框', S)
     // {S=[装备幻化];C=154}  <类别幻化/@类别置换>
 }
 const 幻化 = [
@@ -68,7 +68,7 @@ export function 类别置换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         M = ReplaceStr(M, '$武器2$', '')
         M = ReplaceStr(M, '$武器3$', '')
     }
-    Npc.SayEx(Player, 'NPC小窗口中下1框返回', M)
+    Npc.SayEx(Player, '综合功能带框', M)
 }
 export function 置换武器(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let 装备 = Player.GetCustomItem(0)

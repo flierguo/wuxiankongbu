@@ -1,11 +1,21 @@
-import { NUMBER_UNIT } from "./大数值单位";
+import { 大数值单位 } from "./大数值单位";
 
-const MaxAccuracy = 13
-//浮点数最大位数 
-const MaxFloatLen = 300
+const MaxAccuracy = 13;
+//浮点数最大位数
+const MaxFloatLen = 300;
+
+// 一些常量缓存，避免重复计算
+const LOG10_E = Math.LOG10E; // Math.log10(Math.E)
+const LN_10 = Math.LN10; // 自然对数 ln(10)
+const LOG2_10 = 3.32192809488736234787; // log2(10)
+
+// 内部工具：尽量避免对已经是 Decimal 的值再次 new
+function toDecimal(v: any): Decimal {
+    return v instanceof Decimal ? v : new Decimal(v);
+}
 
 export class Decimal {
-    l: number
+    l: number;
 
     static fromValue(v) {
         return new Decimal(v);
@@ -16,15 +26,15 @@ export class Decimal {
         } else if (v instanceof Decimal) {
             this.l = v.l;
         } else {
-            let type = typeof v
+            let type = typeof v;
             if (type == "string") {
-                var findE = v.indexOf("e");
+                const findE = v.indexOf("e");
                 if (findE == -1) {
-                    let str = v
-                    let len = 0
+                    let str = v;
+                    let len = 0;
                     if (v.length > MaxFloatLen) {
-                        str = v.substr(0, MaxFloatLen)
-                        len = v.length - MaxFloatLen
+                        str = v.substr(0, MaxFloatLen);
+                        len = v.length - MaxFloatLen;
                     }
                     this.l = Math.log10(str) + len;
                 } else if (findE == 0) {
@@ -43,14 +53,14 @@ export class Decimal {
     }
 
     static fromNumber(v): Decimal {
-        var tmp = new Decimal(null);
+        const tmp = Object.create(Decimal.prototype) as Decimal;
         tmp.l = Math.log10(v);
         return tmp;
     }
 
     static fromString(v) {
-        var tmp = new Decimal(null);
-        var findE = v.indexOf("e");
+        const tmp = Object.create(Decimal.prototype) as Decimal;
+        const findE = v.indexOf("e");
         if (findE == -1) {
             tmp.l = Math.log10(v);
         } else if (findE == 0) {
@@ -65,8 +75,8 @@ export class Decimal {
 
     //由log10的底数直接初始化 方便引擎储存
     static fromLog10(v: number): Decimal {
-        var tmp = new Decimal(null);
-        tmp.l = v
+        const tmp = Object.create(Decimal.prototype) as Decimal;
+        tmp.l = v;
         return tmp;
     }
 
@@ -76,29 +86,27 @@ export class Decimal {
      * @param dw 单位
      */
     static fromNumberAndDw(v: number, dw: number): Decimal {
-        var tmp: Decimal = Decimal.fromNumber(v)
-        tmp.l += dw
-        return tmp
+        const tmp: Decimal = Decimal.fromNumber(v);
+        tmp.l += dw;
+        return tmp;
     }
 
     toNumberAndDw(): number[] {
         if (this.l < -10) {
-            return [0, 0]
-        }
-        else if (this.l < 1) {
-            let num = this.toNumber()
-            return [num, 0]
-        }
-        else {
-            let dw = Math.floor(this.l)
-            let sy = this.l - dw
-            let num = Math.pow(10, sy)
-            return [num, dw]
+            return [0, 0];
+        } else if (this.l < 1) {
+            const num = this.toNumber();
+            return [num, 0];
+        } else {
+            const dw = Math.floor(this.l);
+            const sy = this.l - dw;
+            const num = Math.pow(10, sy);
+            return [num, dw];
         }
     }
 
     static fromMantissaExponent(m, e) {
-        var v = new Decimal(null);
+        const v = Object.create(Decimal.prototype) as Decimal;
         v.l = e + Math.log10(m);
         return v;
     }
@@ -108,7 +116,7 @@ export class Decimal {
     }
 
     static toString(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l == Number.NEGATIVE_INFINITY) return "0";
         if (v.l == Number.POSITIVE_INFINITY) {
             return "Infinity";
@@ -117,7 +125,7 @@ export class Decimal {
             return "e" + v.l;
         }
         if (v.l >= 21 || v.l < -6) {
-            var logInt = Math.floor(v.l);
+            const logInt = Math.floor(v.l);
             return Math.pow(10, v.l - logInt) + "e" + logInt;
         }
         return Math.pow(10, v.l).toString();
@@ -128,17 +136,17 @@ export class Decimal {
     }
     //转成补单位的string
     static format(v, fixed = 2) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l == Number.NEGATIVE_INFINITY) return "0";
         if (v.l == Number.POSITIVE_INFINITY) return "Infinity";
         if (v.e <= 4) return v.toFixed(0);
         if (v.e <= 16) {
-            let unit = Math.floor(v.e / 4);
+            const unit = Math.floor(v.e / 4);
             const nums = (
                 v.m * Math.pow(10, v.e - Math.floor(v.e / 4) * 4)
             ).toFixed(fixed);
             return (
-                nums + (unit <= 4 ? `${NUMBER_UNIT[unit]}` : ` [${unit}W]`)
+                nums + (unit <= 4 ? `${大数值单位[unit]}` : ` [${unit}W]`)
             );
         }
         var logInt = Math.floor(v.l);
@@ -152,23 +160,19 @@ export class Decimal {
     //转成补0的string
     static toFixedString(v: Decimal, fixed: number = 2, accuracy: number = MaxAccuracy): string {
         if (accuracy > MaxAccuracy) {
-            accuracy = MaxAccuracy
+            accuracy = MaxAccuracy;
         }
         if (v.l < -10) {
-            return '0'
-        }
-        else if (v.l > accuracy) {
-            let exp = Math.floor(v.l) - accuracy
-            let num = v.l - exp
-            let str: string = Math.round(Math.pow(10, num)).toFixed(0)
-            let end = ''
-            for (let i = 0; i < exp; i++) {
-                end += '0'
-            }
-            return `${str}${end}`
-        }
-        else {
-            return Math.pow(10, v.l).toFixed(fixed)
+            return "0";
+        } else if (v.l > accuracy) {
+            const exp = Math.floor(v.l) - accuracy;
+            const num = v.l - exp;
+            const str: string = Math.round(Math.pow(10, num)).toFixed(0);
+            // 使用 repeat 构造 0 字符串，避免循环拼接
+            const end = "0".repeat(exp);
+            return `${str}${end}`;
+        } else {
+            return Math.pow(10, v.l).toFixed(fixed);
         }
     }
     //转成补0的string
@@ -178,8 +182,8 @@ export class Decimal {
 
     //随机
     static random(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         v2.l = Math.random() * (v2.l - v1.l) + v1.l;
         return v2;
     }
@@ -190,7 +194,7 @@ export class Decimal {
 
     //转数字
     static toNumber(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l >= 309) return Number.POSITIVE_INFINITY;
         if (v.l <= -309) return 0;
         return Math.pow(10, v.l);
@@ -201,7 +205,7 @@ export class Decimal {
     }
     //转科学计数法
     static toPrecision(v, dp) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l == Number.NEGATIVE_INFINITY) return (0).toPrecision(dp);
         if (v.l == Number.POSITIVE_INFINITY) {
             return "Infinity";
@@ -210,7 +214,7 @@ export class Decimal {
             return "e" + v.l;
         }
         if (v.l >= dp || v.l < 6) {
-            var logInt = Math.floor(v.l);
+            const logInt = Math.floor(v.l);
             return Math.pow(10, v.l - logInt).toPrecision(dp) + "e" + logInt;
         }
         return Math.pow(10, v.l).toPrecision(dp);
@@ -221,7 +225,7 @@ export class Decimal {
     }
 
     static toFixed(v, dp) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l < -dp - 1) return (0).toFixed(dp);
         if (v.l == Number.POSITIVE_INFINITY) {
             return "Infinity";
@@ -230,7 +234,7 @@ export class Decimal {
             return "e" + v.l;
         }
         if (v.l >= 21) {
-            var logInt = Math.floor(v.l);
+            const logInt = Math.floor(v.l);
             return Math.pow(10, v.l - logInt).toFixed(dp) + "e" + Math.floor(v.l);
         }
         return Math.pow(10, v.l).toFixed(dp);
@@ -242,7 +246,7 @@ export class Decimal {
 
     //转科学计数法
     static toExponential(v, dp) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l == Number.NEGATIVE_INFINITY) return (0).toExponential(dp);
         if (v.l == Number.POSITIVE_INFINITY) {
             return "Infinity";
@@ -250,7 +254,7 @@ export class Decimal {
         if (v.l >= 1e21 || v.l <= -1e21) {
             return "e" + v.l;
         }
-        var logInt = Math.floor(v.l);
+        const logInt = Math.floor(v.l);
         return Math.pow(10, v.l - logInt).toFixed(dp) + "e" + logInt;
     }
 
@@ -260,9 +264,9 @@ export class Decimal {
 
     //加法
     static add(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
-        var expdiff = v1.l - v2.l;
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
+        const expdiff = v1.l - v2.l;
         if (expdiff >= 15 || v2.l == Number.NEGATIVE_INFINITY) return v1;
         if (expdiff <= -15 || v1.l == Number.NEGATIVE_INFINITY) return v2;
         v2.l = v2.l + Math.log10(1 + Math.pow(10, expdiff));
@@ -285,9 +289,9 @@ export class Decimal {
 
     //减法
     static sub(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
-        var expdiff = v1.l - v2.l;
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
+        const expdiff = v1.l - v2.l;
         if (expdiff < 0) {
             v1.l = Number.NEGATIVE_INFINITY;
             return v1;
@@ -320,8 +324,8 @@ export class Decimal {
 
     //乘法
     static mul(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         v1.l = v1.l + v2.l;
         return v1;
     }
@@ -347,8 +351,8 @@ export class Decimal {
     }
     //除法
     static div(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         if (
             (v1.l == Number.POSITIVE_INFINITY ||
                 v1.l == Number.NEGATIVE_INFINITY) &&
@@ -391,7 +395,7 @@ export class Decimal {
 
     //倒数
     static recip(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         v.l = -v.l;
         return v;
     }
@@ -418,8 +422,8 @@ export class Decimal {
 
     //余数
     static mod(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         if (
             (v1.l == Number.POSITIVE_INFINITY ||
                 v1.l == Number.NEGATIVE_INFINITY) &&
@@ -428,12 +432,12 @@ export class Decimal {
             v1.l = Number.NEGATIVE_INFINITY;
             return v1;
         }
-        var expdiff = v1.l - v2.l;
+        const expdiff = v1.l - v2.l;
         if (expdiff < 0) return v1;
         if (expdiff >= 15 || expdiff == 0) v2.l = Number.NEGATIVE_INFINITY;
         else {
-            var mod = Math.pow(10, expdiff);
-            var modInt = Math.floor(mod);
+            const mod = Math.pow(10, expdiff);
+            const modInt = Math.floor(mod);
             if (mod == modInt) v2.l = Number.NEGATIVE_INFINITY;
             else v2.l = v2.l + Math.log10(mod - modInt);
         }
@@ -454,7 +458,7 @@ export class Decimal {
 
     //指数
     static pow(v, power) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         v.l = v.l * power;
         return v;
     }
@@ -476,7 +480,7 @@ export class Decimal {
     }
     //平方
     static sqr(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         v.l = v.l * 2;
         return v;
     }
@@ -494,7 +498,7 @@ export class Decimal {
     }
     //立方
     static cub(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         v.l = v.l * 3;
         return v;
     }
@@ -513,8 +517,8 @@ export class Decimal {
     }
 
     static exp(v) {
-        v = new Decimal(v);
-        v.l = v.l * Math.log10(Math.E);
+        v = toDecimal(v);
+        v.l = v.l * LOG10_E;
         return v;
     }
 
@@ -523,7 +527,7 @@ export class Decimal {
     }
 
     static root(v, power) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         v.l = v.l / power;
         return v;
     }
@@ -533,7 +537,7 @@ export class Decimal {
     }
 
     static sqrt(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         v.l = v.l / 2;
         return v;
     }
@@ -543,7 +547,7 @@ export class Decimal {
     }
 
     static cbrt(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         v.l = v.l / 3;
         return v;
     }
@@ -553,7 +557,7 @@ export class Decimal {
     }
 
     static log10(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         return v.l;
     }
 
@@ -562,7 +566,7 @@ export class Decimal {
     }
 
     static log10integer(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         return Math.floor(v.l);
     }
 
@@ -571,7 +575,7 @@ export class Decimal {
     }
 
     static log10remainder(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         return v.l - Math.floor(v.l);
     }
 
@@ -580,12 +584,12 @@ export class Decimal {
     }
 
     static log2(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l >= 5.411595565927716e307) {
-            v.l = Math.log10(v.l) + Math.log10(3.32192809488736234787);
+            v.l = Math.log10(v.l) + Math.log10(LOG2_10);
             return v;
         }
-        return v.l * 3.32192809488736234787;
+        return v.l * LOG2_10;
     }
 
     log2() {
@@ -593,8 +597,8 @@ export class Decimal {
     }
 
     static log(v, b) {
-        v = new Decimal(v);
-        b = new Decimal(b);
+        v = toDecimal(v);
+        b = toDecimal(b);
         return v.l / b.l;
     }
 
@@ -607,8 +611,8 @@ export class Decimal {
     }
 
     static ln(v) {
-        v = new Decimal(v);
-        return v.l * 2.30258509299404568402;
+        v = toDecimal(v);
+        return v.l * LN_10;
     }
 
     ln() {
@@ -616,7 +620,7 @@ export class Decimal {
     }
 
     static floor(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l < 0) v.l = Number.NEGATIVE_INFINITY;
         else if (v.l < 15)
             v.l = Math.log10(
@@ -630,7 +634,7 @@ export class Decimal {
     }
 
     static ceil(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l == Number.NEGATIVE_INFINITY) return v;
         else if (v.l < 0) v.l = 0;
         else if (v.l < 15)
@@ -643,7 +647,7 @@ export class Decimal {
     }
 
     static round(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         if (v.l <= -1) v.l = Number.NEGATIVE_INFINITY;
         else if (v.l < 15) v.l = Math.log10(Math.round(Math.pow(10, v.l)));
         return v;
@@ -655,8 +659,8 @@ export class Decimal {
 
     //最小值
     static min(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         if (v1.l > v2.l) return v2;
         return v1;
     }
@@ -666,8 +670,8 @@ export class Decimal {
     }
     //最大值
     static max(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         if (v1.l > v2.l) return v1;
         return v2;
     }
@@ -677,8 +681,8 @@ export class Decimal {
     }
     //比大小
     static cmp(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         if (v1.l > v2.l) return 1;
         if (v1.l < v2.l) return -1;
         return 0;
@@ -701,8 +705,8 @@ export class Decimal {
     }
 
     static lt(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         return v1.l < v2.l;
     }
 
@@ -711,8 +715,8 @@ export class Decimal {
     }
 
     static lte(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         return v1.l <= v2.l;
     }
 
@@ -721,8 +725,8 @@ export class Decimal {
     }
     //相等
     static eq(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         return v1.l == v2.l;
     }
     //相等
@@ -739,8 +743,8 @@ export class Decimal {
     }
     //不相等
     static neq(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         return v1.l != v2.l;
     }
     //不相等
@@ -757,8 +761,8 @@ export class Decimal {
     }
 
     static gte(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         return v1.l >= v2.l;
     }
 
@@ -767,8 +771,8 @@ export class Decimal {
     }
 
     static gt(v1, v2) {
-        v1 = new Decimal(v1);
-        v2 = new Decimal(v2);
+        v1 = toDecimal(v1);
+        v2 = toDecimal(v2);
         return v1.l > v2.l;
     }
 
@@ -777,7 +781,7 @@ export class Decimal {
     }
 
     static isFinite(v) {
-        v = new Decimal(v);
+        v = toDecimal(v);
         return v.l < Number.POSITIVE_INFINITY;
     }
 
@@ -787,7 +791,7 @@ export class Decimal {
 
     get mantissaAndExponent() {
         if (this.l == Number.NEGATIVE_INFINITY) return { m: 0, e: 0 };
-        var logInt = Math.floor(this.l);
+        const logInt = Math.floor(this.l);
         return { m: Math.pow(10, this.l - logInt), e: logInt };
     }
     get e() {
@@ -799,7 +803,7 @@ export class Decimal {
     }
     get m() {
         if (this.l == Number.NEGATIVE_INFINITY) return 0;
-        var logInt = Math.floor(this.l);
+        const logInt = Math.floor(this.l);
         return Math.pow(10, this.l - logInt);
     }
     get mantissa() {

@@ -1,6 +1,5 @@
 
-import { _P_P_AbilityData } from "../[玩家]/_P_Base"
-import { 装备属性统计 } from '../../应用智能优化版';
+import { 装备属性统计 } from '../../性能优化/index_智能优化';
 import { js_number } from "../../全局脚本[公共单元]/utils/计算方法_优化版";
 export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUserItem): void {
     Randomize()

@@ -1,373 +1,357 @@
-import { 实时回血, 数字转单位2, 数字转单位3 } from "../../大数值版本/字符计算"
-import { 装备属性统计 } from "../../大数值版本/装备属性统计"
-import { 特效 } from "../[玩家]/_P_Base"
-import { 职业词条 } from "./延时跳转"
+// import { 数字转单位2, 数字转单位3 } from "../../大数值版本/大数值版本/字符计算";
+import { 装备属性统计 } from "../../核心功能/装备属性统计";
+// import { 特效 } from "../[玩家]/_P_Base";
+import { 人物登录BUFF } from "../[玩家]/_P_玩家登录";
 
-const 战神骑士 = `\\\\\\
-                            职业分支:战神                                                                      职业分支:骑士\\\\
-          {S=狂怒:[被动]10%几率造成200%伤害,每级增加20%伤害;C=250}                                {S=圣光打击:[被动]攻击目标时20%的几率对3格范围敌人造成100%伤害,每级增加20%;C=250}\\\\
-          {S=召唤战神:[主动]使用技能召唤战神,可在庄园对战神进行强化,;C=254}                       {S=愤怒:[被动]受到伤害时反击自身100%攻击给目标,每级增加20%伤害;C=254}\\
-          {S=战神继承攻击100%,每级+5%;C=254}\\
-          {S=战神附体:[被动]每级增加5%生命值;C=251}                                               {S=防御姿态:[被动]每级提升15%防御;C=251}\\\\
-          {S=天神附体:[被动]受到的伤害减少20%,每3级增加1%;C=154}                                  {S=惩罚:[被动]被攻击时有5%几率冰冻敌方1秒,每2级提升1%;C=154}\\\\
-          {S=万剑归宗:[主动]对周围5格敌人造成300%伤害,麻痹3秒;C=253}                              {S=审判救赎:[主动]对5格范围目标每秒造成200%伤害,持续3秒;C=253}\\
-          {S=每级增加40%伤害.CD10秒;C=253}                                                        {S=每级提升40%伤害.CD10秒;C=253}\\\\\\
-                             <选择职业/@职业选择.职业选择(1,战神,0)>                                                                            <选择职业/@职业选择.职业选择(2,骑士,0)>`
-const 冰法火法 = `\\\\\\
-                            职业分支:火神                                                                      职业分支:冰法\\\\
-          {S=法术奥义:[被动]每级增加3%魔法;C=250}                                                 {S=暴风雨:[主动]对目标3格敌人造成100%伤害,15%几率冰冻1秒,每级提升20%伤害;C=250}\\\\
-          {S=闪现:[主动]在屏幕中5格距离任意传送.CD5秒;C=254}                                      {S=魔法盾:[主动]开启后可吸收部分伤害;C=254}\\\\
-          {S=致命一击:[被动]每级增加0.01倍攻;C=251}                                               {S=冰霜之环:[被动]每3秒对3格敌人造成100%伤害,冰冻1秒,每级提升20%伤害;C=251}\\\\
-          {S=火墙之术:[被动]目标受到伤害后脚下会释放一个火墙,造成100%伤害,每级增加20%;C=154}      {S=打击符文:[被动]每级增加4%伤害;C=154}\\\\
-          {S=群星火雨:[主动]释放技能对目标造成100%伤害,每级增加20%;C=253}                         {S=寒冬领域:[主动]对5格范围内目标造成300%伤害,并且冰冻4秒;C=253}\\
-                                                                                        {S=每级提升40%伤害.CD15秒;C=253}\\\\\\
-                             <选择职业/@职业选择.职业选择(3,火神,1)>                                                                            <选择职业/@职业选择.职业选择(4,冰法,1)>`
-const 驯兽牧师 = `\\\\\\
-                             职业分支:驯兽师                                                                     职业分支:牧师\\\\
-          {S=萌萌浣熊:[主动]召唤一只浣熊,继承攻击100%,每级+5%;C=250}                              {S=剧毒火海:[主动]对目标3格范围敌人造成100%伤害并且中毒,每级增加20%;C=250}\\\\
-          {S=凶猛野兽:[被动]每级增加宠物10%攻击和血量;C=254}                                      {S=妙手回春:[主动]使用技能,让附近5格队友回血,恢复为道术的2倍,每级加20%;C=254} \\\\
-          {S=嗜血狼人:[主动]召唤一个嗜血狼人远程攻击,攻击目标时给人物回血;C=251}                  {S=互相伤害:[被动]受到伤害对5格范围敌人造成50%伤害,每级加20%;C=251}\\
-          {S=继承攻击100%.每级加5%;C=251}\\
-                                                                                        {S=恶魔附体:[被动]每级增加5%道术;C=154}\\
-          {S=丛林虎王:[主动]召唤一只老虎,老虎存在时人物的暴击提高20%;C=154}\\
-          {S=继承攻击200%.每级加10%;C=154}                                                        {S=末日降临:[主动]对5格范围敌人造成300%伤害,麻痹1秒,每级加40%,CD10秒;C=253}\\\\
-          {S=雷暴之怒:[主动]使用技能后,宠物攻击时附带群体雷电术,持续40秒,CD60秒;C=253}\\\\
-                             <选择职业/@职业选择.职业选择(5,驯兽师,2)>                                                                            <选择职业/@职业选择.职业选择(6,牧师,2)>`
-const 刺客鬼舞者 = `\\\\\\
-                            职业分支:刺客                                                                      职业分支:鬼舞者\\\\
-          {S=潜行:[主动]可以对人和怪物隐身,隐身时无法使用技能和道具,获得2点暗影值,CD5秒;C=250}       {S=鬼舞斩:[被动]对周围2格敌人造成100%伤害,每级提升20%;C=250}\\\\
-          {S=弱点:[主动]消耗1点暗影值,释放技能对自身4格范围敌人造成200%伤害,每级增加20%;C=254}       {S=鬼舞术:[被动]每过5秒钟攻击时对目标造成3次伤害,每次伤害为50%,每级增加30%;C=254} \\\\
-          {S=致命打击:[被动]攻击有10%几率获得1点暗影值,每级加1%几率,每级加2%暴击伤害;C=251}          {S=鬼舞之殇:[被动]攻击目标有10%几率恢复自身5%血量,每级提升1%;C=251}\\\\
-          {S=增伤:[主动]消耗1点暗影值,增加暴击几率10%,每级加1%,持续110秒,CD120秒;C=154}              {S=鬼舞者:[被动]每级增加5%刺术;C=154}\\\\\\
-          {S=暗影杀阵:[主动]闪现到目标处并对目标5格敌人造成500%伤害,每级增加40%,CD10秒;C=253}        {S=群魔乱舞:[被动]每3秒对自身3格范围敌人造成300%伤害,每级增加20%;C=253}\\\\\\
-                             <选择职业/@职业选择.职业选择(7,刺客,3)>                                                                            <选择职业/@职业选择.职业选择(8,鬼舞者,3)>`
-
-const 神射手猎人 = `\\\\\\
-                            职业分支:神射手                                                                      职业分支:猎人\\\\
-          {S=复仇:[被动]每第三次攻击对目标造成200%伤害,每级增加20%;C=250}                      {S=分裂箭:[被动]对目标3格范围敌人造成100%伤害,每级增加20%;C=250}\\\\
-          {S=成长:[被动]每级增加5%射术;C=254}                                                  {S=召唤宠物:[主动]召唤一只宠物,继承人物射术100%攻击,每级增加+5%;C=254}\\\\
-          {S=生存:[被动][被动]击杀目标后恢复自身10%血量,每6级增加2%;C=251}                      {S=宠物突变:[主动]将你的宠物变成远程群攻,伤害和生命提高100%,持续30秒,CD60秒;C=251}\\\\
-          {S=万箭齐发:[主动]对目标3格敌人造成100%伤害,每级增加20%;C=154}                       {S=人宠合一:[被动]你和你的宠物击杀目标都会使你和你的宠物恢复1%血量,每6级增加1%;C=154}\\\\
-          {S=神灵救赎:[主动]对目标5格范围敌人造成400%伤害,并且冰冻2秒;C=253}                   {S=命运刹印:[主动]对5格范围敌人造成500%伤害,每级增加40%,CD10秒;C=253}\\
-          {S=每级增加40%,CD10秒;C=253}\\\\\\
-                             <选择职业/@职业选择.职业选择(9,神射手,4)>                                                                            <选择职业/@职业选择.职业选择(10,猎人,4)>`
-const 武僧罗汉 = `\\\\\\
-                            职业分支:武僧                                                                      职业分支:罗汉\\\\
-          {S=天雷阵:[被动]每秒对自身3格范围敌人造成100%伤害,每级增加20%;C=250}                 {S=金刚护法:[被动]攻击时7%几率对目标5格范围敌人造成100%伤害,每级提升20%;C=250}\\\\
-          {S=护法灭魔:[被动]每级增加5%武术;C=254}                                              {S=转生:[被动]消耗书页进行转生,每转+0.02倍攻,每重技能再加0.02倍攻;C=254}\\\\
-          {S=至高武术:[主动]对自身3格范围敌人麻痹2秒,每10级提升1秒,CD12秒;C=251}               {S=金刚护体:[主动]释放后增加5%伤害,持续40秒,每级+5%,CD60秒;C=251}\\\\
-          {S=体质强化:[被动]每2秒回复自身2%血量,每8级增加1%;C=154}                             {S=擒龙功:[主动]将目标抓到自己身边并且冰冻2秒,每10级增加1秒冰冻时间,CD15秒;C=154}\\\\
-          {S=碎石破空:[主动]对自身5格范围敌人造成500%伤害,每级增加40%,CD10秒;C=253}            {S=轮回之道:[主动]召唤一只转生兽,转生次数越高,召唤兽越牛B;C=253}\\
-                                                                                     {S=继承人物200%武术,每级+10%;C=253} \\\\\\
-                             <选择职业/@职业选择.职业选择(11,武僧,5)>                                                                            <选择职业/@职业选择.职业选择(12,罗汉,5)>`
-export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const S = `\\\\\\\\\\\\\\\
-                                战士                                法师                                道士\\
-                             <{I=21;F=职业图标.DATA}/@职业选择.Main(1)>                         <{I=157;F=职业图标.DATA}/@职业选择.Main(2)>                         <{I=396;F=职业图标.DATA}/@职业选择.Main(3)>\\\\
-                                刺客                               弓箭手                               武僧\\
-                             <{I=5;F=职业图标.DATA}/@职业选择.Main(4)>                         <{I=183;F=职业图标.DATA}/@职业选择.Main(5)>                         <{I=305;F=职业图标.DATA}/@职业选择.Main(6)>\\\\
-                           $职业$
-    `
-    let M = S
-
-    switch (true) {
-        case Args.Int[0] == 1: M = ReplaceStr(M, '$职业$', `${战神骑士}`); break
-        case Args.Int[0] == 2: M = ReplaceStr(M, '$职业$', `${冰法火法}`); break
-        case Args.Int[0] == 3: M = ReplaceStr(M, '$职业$', `${驯兽牧师}`); break
-        case Args.Int[0] == 4: M = ReplaceStr(M, '$职业$', `${刺客鬼舞者}`); break
-        case Args.Int[0] == 5: M = ReplaceStr(M, '$职业$', `${神射手猎人}`); break
-        case Args.Int[0] == 6: M = ReplaceStr(M, '$职业$', `${武僧罗汉}`); break
-        default: M = ReplaceStr(M, '$职业$', ``); break
-    }
-    Npc.SayEx(Player, '职业选择', M)
-
+// 新职业技能数据
+const 职业数据 = {
+    天枢: {
+        技能: [
+            { 图标: 120, 名称: '怒斩', 描述: '主动,对目标周围3码内所有敌人造成伤害200%,每级提高20%.' },
+            { 图标: 122, 名称: '人之怒', 描述: '被动,攻击时20%几率使你造成得伤害额外提高400%,每级提高40%.' },
+            { 图标: 130, 名称: '地之怒', 描述: '被动,攻击时10%几率使你造成得伤害额外提高600%,每级提高60%.' },
+            { 图标: 126, 名称: '天之怒', 描述: '被动,攻击时5%几率使你造成得伤害额外提高800%,每级提高80%.' },
+            { 图标: 172, 名称: '神之怒', 描述: '被动,攻击时1%几率使你造成得伤害额外提高1000%,每级提高100%.' },
+        ]
+    },
+    血神: {
+        技能: [
+            { 图标: 822, 名称: '血气献祭', 描述: '主动,消耗1%的生命,对目标造成500%的伤害,每级提高50%(血量低于10%时不发动.)' },
+            { 图标: 862, 名称: '血气燃烧', 描述: '开启后,每秒对周围5码范围内敌人造成150%的伤害,每级提高15%.(每秒消耗1%血量.血量低于10%时关闭)' },
+            { 图标: 924, 名称: '血气吸纳', 描述: '被动,被攻击1%几率恢复5%血量,每20级几率提高1%,(最高到40).' },
+            { 图标: 928, 名称: '血气迸发', 描述: '被动,攻击时可吸取造成伤害的1‰转化为生命,每级提高1‰,最高到2000‰.' },
+            { 图标: 840, 名称: '血魔临身', 描述: '开启后,使你的攻击额外提高150%,持续时间10S(每级提高5%伤害,每10级增加1S,最高180S).冷却3分钟.' },
+        ]
+    },
+    暗影: {
+        技能: [
+            { 图标: 890, 名称: '暗影猎取', 描述: '被动,攻击1%的几率获取暗影点,每点提高1%主属性,每5级提高1点上限.' },
+            { 图标: 900, 名称: '暗影袭杀', 描述: '主动,对目标造成500%伤害,每级提高50%.' },
+            { 图标: 910, 名称: '暗影剔骨', 描述: '开启后,对周围6码范围内敌人造成300%伤害,每级提高30%,每秒消耗1点暗影点.' },
+            { 图标: 940, 名称: '暗影风暴', 描述: '主动,对目标范围5码内敌人造成400%伤害,消耗5点暗影点.每级提高40%.冷却20S.' },
+            { 图标: 942, 名称: '暗影附体', 描述: '主动,消耗10点暗影点,使暗影袭杀的攻击提高至1000%,持续5S,每10级增加1S.冷却3分钟' },
+        ]
+    },
+    烈焰: {
+        技能: [
+            { 图标: 308, 名称: '火焰追踪', 描述: '主动,对目标造成200%伤害,每级提高20%.' },
+            { 图标: 302, 名称: '火镰狂舞', 描述: '被动,每10级可为火焰追踪的目标增加一个.' },
+            { 图标: 644, 名称: '烈焰护甲', 描述: '开启后,每2秒对周围4格内的目标造成300%伤害,每级提高30%.' },
+            { 图标: 660, 名称: '爆裂火冢', 描述: '被动,击中目标20%几率造成8格范围300%伤害,每级提高30%.' },
+            { 图标: 662, 名称: '烈焰突袭', 描述: '被动,每攻击5次,使你下次伤害提升至200%,每重+20%.' },
+        ]
+    },
+    正义: {
+        技能: [
+            { 图标: 640, 名称: '圣光', 描述: '开启后,每秒对周围5码内所有目标造成200%伤害,每级提高20%.' },
+            { 图标: 678, 名称: '行刑', 描述: '被动,对普通怪物的伤害增加200%，每级提高20%.' },
+            { 图标: 680, 名称: '洗礼', 描述: '被动,对精英以上怪物的伤害增加100%，每级提高10%.' },
+            { 图标: 684, 名称: '审判', 描述: '被动,对满血目标造成10%血量切割，每20级+1%切割,封顶40%.' },
+            { 图标: 668, 名称: '神罚', 描述: '被动,攻击10%几率使目标遭受神罚，损失当前生命的1%，每40级+1%.' },
+        ]
+    },
+    不动: {
+        技能: [
+            { 图标: 914, 名称: '如山', 描述: '开启后,每秒对周围5码内造成400%伤害,每级提高40%.' },
+            { 图标: 908, 名称: '泰山', 描述: '被动,主属性提高30%,每级增加3%.' },
+            { 图标: 964, 名称: '人王盾', 描述: '主动,释放技能提供一个防御上限值1000%的护盾，每级提高100%，CD10秒' },
+            { 图标: 978, 名称: '铁布衫', 描述: '被动,提供20%格挡，每10级提高1%（50上限）' },
+            { 图标: 1010, 名称: '金刚掌', 描述: '主动,对目标周围8格范围造成500%伤害,并麻痹目标3秒，CD15秒,每级提高50%.' },
+        ]
+    },
 }
 
 
+// 本职业技能数据 (根据GetJob返回值 0-5 对应 战士 法师 道士 刺客 弓箭 武僧)
+const 本职业数据: { [key: number]: { 名称: string, 技能: { 图标: number, 名称: string, 描述: string }[] } } = {
+    0: { // 战士
+        名称: '战士',
+        技能: [
+            { 图标: 2298, 名称: '攻杀剑术', 描述: '被动，几率触发攻杀造成200%伤害，每级提高20%.' },
+            { 图标: 2312, 名称: '半月弯刀', 描述: '被动,对周围目标造成150%伤害,每级提高15%.' },
+        ]
+    },
+    1: { // 法师
+        名称: '法师',
+        技能: [
+            { 图标: 36, 名称: '雷电术', 描述: '主动,对目标造成200%伤害,每级提高20%.' },
+            { 图标: 853, 名称: '暴风雪', 描述: '主动,对目标3格敌人造成100%伤害,15%几率冰冻1秒,每级提升10%.' },
+        ]
+    },
+    2: { // 道士
+        名称: '道士',
+        技能: [
+            { 图标: 1735, 名称: '灵魂火符', 描述: '主动,对目标造成200%伤害,每级提高20%.' },
+            { 图标: 324, 名称: '飓风破', 描述: '主动,对目标3格敌人造成120%伤害,每级提升12%.' },
+        ]
+    },
+    3: { // 刺客
+        名称: '刺客',
+        技能: [
+            { 图标: 678, 名称: '暴击术', 描述: '被动,对目标造成150%伤害,并且使你的暴击几率提高10%,每级提高15%伤害,1%几率.' },
+            { 图标: 169, 名称: '霜月', 描述: '被动,对周围目标造成150%伤害,每级提高15%.' },
+        ]
+    },
+    4: { // 弓箭
+        名称: '弓箭',
+        技能: [
+            { 图标: 150, 名称: '精准剑术', 描述: '被动:对目标造成200%伤害,每级提高20%.' },
+            { 图标: 694, 名称: '万箭齐发', 描述: '主动,对目标3格敌人造成120%伤害,每级提升12%.' },
+        ]
+    },
+    5: { // 武僧
+        名称: '武僧',
+        技能: [
+            { 图标: 1000, 名称: '罗汉棍法', 描述: '开启后,对直线4格内敌人造成150%伤害,每级提升15%.' },
+            { 图标: 1030, 名称: '天雷阵', 描述: '开启后,对3格内敌人造成120%伤害,每级提升12%.' },
+        ]
+    },
+}
 
-export function 职业选择(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.V.战神 || Player.V.骑士 || Player.V.火神 || Player.V.冰法 || Player.V.驯兽师 || Player.V.牧师 ||
-        Player.V.刺客 || Player.V.鬼舞者 || Player.V.神射手 || Player.V.猎人 || Player.V.武僧 || Player.V.罗汉) { Player.MessageBox('你已经选择过职业了!'); return }
-    Player.ClearSkill()
-    let item: TUserItem
-    let 武器名字 = ''
-    Player.AddSkill('心灵召唤');
-    Player.AddSkill('查看属性');
-    Player.AddSkill('嘲讽吸怪');
-    switch (Args.Int[0]) {
-        case 1:
-            Player.AddSkill('基本剑术', 3);
-            Player.AddSkill('攻杀剑术', 3);
-            Player.AddSkill('刺杀剑术', 3);
-            Player.AddSkill('狂怒');
-            Player.AddSkill('战神附体');
-            Player.SetJob(0)
-            Player.V.战神 = true
-            武器名字 = '乌木剑'
-            break
-        case 2:
-            Player.AddSkill('基本剑术', 3);
-            Player.AddSkill('攻杀剑术', 3);
-            Player.AddSkill('刺杀剑术', 3);
-            Player.AddSkill('圣光打击');
-            Player.AddSkill('防御姿态');
-            Player.SetJob(0)
-            Player.V.骑士 = true
-            武器名字 = '乌木剑'
-            break
-        case 3:
-            Player.AddSkill('雷电术', 3);
-            Player.AddSkill('冰咆哮', 3);
-            Player.AddSkill('法术奥义');
-            Player.AddSkill('闪现');
-            Player.SetJob(1)
-            Player.V.火神 = true
-            武器名字 = '乌木剑'
-            break
-        case 4:
-            Player.AddSkill('雷电术', 3);
-            Player.AddSkill('冰咆哮', 3);
-            Player.AddSkill('暴风雨');
-            Player.AddSkill('打击符文');
-            Player.SetJob(1)
-            Player.V.冰法 = true
-            武器名字 = '乌木剑'
-            break
-        case 5:
-            Player.AddSkill('精神力战法', 3);
-            Player.AddSkill('灵魂火符', 3);
-            Player.AddSkill('施毒术', 3);
-            Player.AddSkill('隐身术', 3);
-            Player.AddSkill('飓风破', 3);
-            Player.AddSkill('萌萌浣熊');
-            Player.AddSkill('凶猛野兽');
-            Player.SetJob(2)
-            Player.V.驯兽师 = true
-            武器名字 = '乌木剑'
-            break
-        case 6:
-            Player.AddSkill('精神力战法', 3);
-            Player.AddSkill('灵魂火符', 3);
-            Player.AddSkill('施毒术', 3);
-            Player.AddSkill('隐身术', 3);
-            Player.AddSkill('飓风破', 3);
-            Player.AddSkill('剧毒火海');
-            Player.AddSkill('妙手回春');
-            Player.SetJob(2)
-            Player.V.牧师 = true
-            武器名字 = '乌木剑'
-            break
-        case 7:
-            Player.AddSkill('精准术', 3);
-            Player.AddSkill('霜月X', 3);
-            Player.AddSkill('潜行', 3);
-            Player.AddSkill('弱点');
-            Player.SetJob(3)
-            Player.V.刺客 = true
-            武器名字 = '青铜匕首'
-            break
-        case 8:
-            Player.AddSkill('精准术', 3);
-            Player.AddSkill('霜月X', 3);
-            Player.AddSkill('鬼舞斩');
-            Player.AddSkill('鬼舞者');
-            Player.SetJob(3)
-            Player.V.鬼舞者 = true
-            武器名字 = '青铜匕首'
-            break
-        case 9:
-            Player.AddSkill('精准箭术', 3);
-            Player.AddSkill('天罡震气', 3);
-            Player.AddSkill('成长');
-            Player.AddSkill('万箭齐发');
-            Player.SetJob(4)
-            Player.V.神射手 = true
-            武器名字 = '劣质的木弓'
-            break
-        case 10:
-            Player.AddSkill('精准箭术', 3);
-            Player.AddSkill('天罡震气', 3);
-            Player.AddSkill('分裂箭');
-            Player.AddSkill('召唤宠物');
-            Player.SetJob(4)
-            Player.V.猎人 = true
-            武器名字 = '劣质的木弓'
-            break
-        case 11:
-            Player.AddSkill('罗汉棍法', 3);
-            Player.AddSkill('达摩棍法', 3);
-            Player.AddSkill('天雷阵');
-            Player.AddSkill('护法灭魔');
-            Player.SetJob(5)
-            Player.V.武僧 = true
-            Player.ShowEffectEx2(特效.武僧天雷阵, -10, 20, true, 99999)
-            武器名字 = '盘龙棍'
-            break
-        case 12:
-            Player.AddSkill('罗汉棍法', 3);
-            Player.AddSkill('达摩棍法', 3);
-            Player.AddSkill('金刚护法');
-            Player.AddSkill('转生');
-            Player.SetJob(5)
-            Player.V.罗汉 = true
-            武器名字 = '盘龙棍'
-            break
-    }
+// 获取本职业技能名称列表
+function 获取本职业技能列表(jobId: number): string[] {
+    const 数据 = 本职业数据[jobId]
+    if (!数据) return []
+    return 数据.技能.map(t => t.名称)
+}
 
-    Player.V.第一次选择职业 ??= true
+// 获取新职业技能名称列表
+function 获取新职业技能列表(职业名: string): string[] {
+    const 数据 = 职业数据[职业名 as keyof typeof 职业数据]
+    if (!数据) return []
+    return 数据.技能.map(t => t.名称)
+}
 
-    if(Player.V.第一次选择职业 == true){
-        item = Player.GiveItem(武器名字)
-        if (item) {
-            let 基本属性_职业 = []
-            let 基本属性_数值 = []
-            let 装备属性记录 = {
-                职业属性_职业: 基本属性_职业,
-                职业属性_属性: 基本属性_数值,
-            }
-            let 装备属性 = `12000`
-            let 前端数字 = 数字转单位2(装备属性)
-            let 后端单位 = 数字转单位3(装备属性)
-            item.SetOutWay1(0, 19)
-            item.SetOutWay2(0, 1)
-            for (let a = 0; a < 6; a++) {
-                item.SetOutWay1(2 + a, 33+a)
-                item.SetOutWay2(2 + a, Number(前端数字))
-                item.SetOutWay3(2 + a, Number(后端单位))
-                基本属性_职业.push(33 + a)
-                基本属性_数值.push(装备属性)
+// 主界面 - 默认显示天枢职业技能
+export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
+    显示职业技能内部(Npc, Player, '天枢')
+}
+
+// 显示职业技能
+export function 显示职业技能(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 职业名 = Args.Str[0] as keyof typeof 职业数据
+    显示职业技能内部(Npc, Player, 职业名)
+}
+
+
+// 内部显示职业技能函数
+function 显示职业技能内部(Npc: TNormNpc, Player: TPlayObject, 职业名: keyof typeof 职业数据): void {
+    const 数据 = 职业数据[职业名]
+    if (!数据) { Player.MessageBox('职业数据不存在!'); return }
+
+    const 技能列表 = 数据.技能
+    let 技能显示 = ''
+    const Y基准 = 120
     
-            }
-            item.SetCustomDesc(JSON.stringify(装备属性记录))
-            item.Rename(`新手${item.GetName()}[破碎]`)
-            Player.UpdateItem(item)
-        }
-        item = Player.GiveItem('新手盾牌')
-        if (item) {
-            item.SetBind(true)
-            item.SetNeverDrop(true)
-            item.State.SetNoDrop(true)
-            Player.UpdateItem(item)
-        }
-        if (Player.GetGender() == 0) {
-            item = Player.GiveItem('布衣(男)')
-            if (item) {
-                let 基本属性_职业 = []
-                let 基本属性_数值 = []
-                let 装备属性记录 = {
-                    职业属性_职业: 基本属性_职业,
-                    职业属性_属性: 基本属性_数值,
-                }
-                let 装备属性 = `12000`
-                let 前端数字 = 数字转单位2(装备属性)
-                let 后端单位 = 数字转单位3(装备属性)
-                item.SetOutWay1(0, 19)
-                item.SetOutWay2(0, 1)
-                for (let a = 0; a < 2; a++) {
-                    item.SetOutWay1(2 + a, 31+a)
-                    item.SetOutWay2(2 + a, Number(前端数字))
-                    item.SetOutWay3(2 + a, Number(后端单位))
-                    基本属性_职业.push(31 + a)
-                    基本属性_数值.push(装备属性)
-        
-                }
-                item.SetCustomDesc(JSON.stringify(装备属性记录))
-                item.Rename(`新手${item.GetName()}`)
-                Player.UpdateItem(item)
-            }
-        } else {
-            item = Player.GiveItem('布衣(女)')
-            if (item) {
-                let 基本属性_职业 = []
-                let 基本属性_数值 = []
-                let 装备属性记录 = {
-                    职业属性_职业: 基本属性_职业,
-                    职业属性_属性: 基本属性_数值,
-                }
-                let 装备属性 = `12000`
-                let 前端数字 = 数字转单位2(装备属性)
-                let 后端单位 = 数字转单位3(装备属性)
-                item.SetOutWay1(0, 19)
-                item.SetOutWay2(0, 1)
-                for (let a = 0; a < 2; a++) {
-                    item.SetOutWay1(2 + a, 31+a)
-                    item.SetOutWay2(2 + a, Number(前端数字))
-                    item.SetOutWay3(2 + a, Number(后端单位))
-                    基本属性_职业.push(31 + a)
-                    基本属性_数值.push(装备属性)
-        
-                }
-                item.SetCustomDesc(JSON.stringify(装备属性记录))
-                item.Rename(`新手${item.GetName()}`)
-                Player.UpdateItem(item)
-            }
-        }
-        Player.V.第一次选择职业 = false
-        Npc.Give(Player, '回城石')
-        Npc.Give(Player, '随机传送石')
-        Player.SetGold(Player.GetGold() + 100000)
-        Player.GoldChanged()
+    for (let i = 0; i < 技能列表.length; i++) {
+        const 技能 = 技能列表[i]
+        const Y位置 = Y基准 + i * 40
+        技能显示 += `{i=${技能.图标};f=magicon2.wzl;X=20;Y=${Y位置}}  {S=${技能.名称};X=55;Y=${Y位置 };C=215}  {S=${技能.描述};X=110;Y=${Y位置 };W=280;C=229}\\\\`
     }
-    Player.CloseWindow('职业选择')
-    Player.RecalcAbilitys()
-    装备属性统计(Player,undefined,undefined,undefined);
 
-}
-export function 种族选择(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.V.战神 == false && Player.V.骑士 == false && Player.V.火神 == false && Player.V.冰法 == false && Player.V.驯兽师 == false && Player.V.牧师 == false &&
-        Player.V.刺客 == false && Player.V.鬼舞者 == false && Player.V.神射手 == false && Player.V.猎人 == false && Player.V.武僧 == false && Player.V.罗汉 == false) { Player.MessageBox('请先选择职业!'); return }
-        const S = `
-        {I=35;F=装备图标.DATA;X=25;Y=85}{S=人族:;X=100;Y=65}
-        {S=生命加成2% 主属性加成3% 防御加成1%;X=100;Y=85}         <{S=加入种族;y=85}/@选择种族(人族)>
-        {S=你的主属性额外提高10%;x=100;y=105}
-        
-        {I=38;F=装备图标.DATA;X=25;Y=165}{S=牛头:;X=100;Y=145}
-        {S=生命加成4% 主属性加成1% 防御加成1%;X=100;Y=165}         <{S=加入种族;y=165}/@选择种族(牛头)>
-        {S=你的生命额外提高20%;x=100;y=185}
-        
-        {I=32;F=装备图标.DATA;X=25;Y=245}{S=精灵:;X=100;Y=225}
-        {S=生命加成2% 主属性加成2% 防御加成2%;X=100;Y=245}         <{S=加入种族;y=245}/@选择种族(精灵)>
-        {S=你的闪避几率额外提高15%;x=100;y=265}
-        
-        {I=37;F=装备图标.DATA;X=25;Y=325}{S=兽族:;X=100;Y=305}
-        {S=生命加成1% 主属性加成1% 防御加成4%;X=100;Y=325}         <{S=加入种族;y=325}/@选择种族(兽族)>
-        {S=你的防御额外提高10%;x=100;y=345}
-        
-        `
-               Npc.SayEx(Player, '大大窗口', S)
-
-}
-export function 选择种族(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.V.种族 != '') { Player.MessageBox('你已经选择过种族了!'); return }
-    let 种族 = Args.Str[0]
-    Player.V.种族 = 种族
-    Player.MapMove('主城', 100 + random(5), 115 + random(5))
-    装备属性统计(Player,undefined,undefined,undefined);
-    实时回血(Player, Player.GetSVar(92))
-}
-
-
-export function Main22222(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    // 职业名称使用FS=14放大字体
     const S = `
-{I=35;F=装备图标.DATA;X=25;Y=85}{S=人族:;X=100;Y=65}
-{S=生命加成2% 主属性加成3% 防御加成1%;X=100;Y=85}         <{S=加入种族;y=85}/@选择种族(人族)>
-{S=你的主属性额外提高10%;x=100;y=105}
-
-{I=38;F=装备图标.DATA;X=25;Y=165}{S=牛头:;X=100;Y=145}
-{S=生命加成4% 主属性加成1% 防御加成1%;X=100;Y=165}         <{S=加入种族;y=165}/@选择种族(牛头)>
-{S=你的生命额外提高20%;x=100;y=185}
-
-{I=32;F=装备图标.DATA;X=25;Y=245}{S=精灵:;X=100;Y=225}
-{S=生命加成2% 主属性加成2% 防御加成2%;X=100;Y=245}         <{S=加入种族;y=245}/@选择种族(精灵)>
-{S=你的闪避几率额外提高15%;x=100;y=265}
-
-{I=37;F=装备图标.DATA;X=25;Y=325}{S=兽族:;X=100;Y=305}
-{S=生命加成1% 主属性加成1% 防御加成4%;X=100;Y=325}         <{S=加入种族;y=325}/@选择种族(兽族)>
-{S=你的防御额外提高10%;x=100;y=345}
-
-{S=当前强化等级 :;C=149;x=25;y=35}{S=${Player.V.种族阶数};C=151;OX=5;y=35}
-<{S=强化种族;HINT=200阶封顶;C=253;x=450;y=245}/@强化种族>
-<{S=重置种族;HINT=重置种族会清空强化等级#92需求2000元宝;C=253;x=450;y=325}/@重置种族>
-`
-       Npc.SayEx(Player, '大大窗口', S)
+                              请选择你的职业\\\\\\
+    <{S=天枢;C=${职业名 === '天枢' ? 249 : 251};FS=14}/@显示职业技能(天枢)>       <{S=血神;C=${职业名 === '血神' ? 249 : 251};FS=14}/@显示职业技能(血神)>       <{S=暗影;C=${职业名 === '暗影' ? 249 : 251};FS=14}/@显示职业技能(暗影)>       <{S=烈焰;C=${职业名 === '烈焰' ? 249 : 251};FS=14}/@显示职业技能(烈焰)>       <{S=正义;C=${职业名 === '正义' ? 249 : 251};FS=14}/@显示职业技能(正义)>       <{S=不动;C=${职业名 === '不动' ? 249 : 251};FS=14}/@显示职业技能(不动)>\\\\
+${技能显示}\\\\
+                                     <{S=选择${职业名};X=350;Y=350}/@选择职业(${职业名})>\\\\\\
+             <{S=重置系统职业;C=250;X=80;Y=350;FS=13;HINT=重置战士,法师,道士这类}/@重置本职业>    <{S=重置新职业;C=191;X=210;Y=350;FS=13;HINT=需要2000元宝}/@重置新职业>
+    `
+    Npc.SayEx(Player, 'NPC大窗口', S);
 }
+
+// 选择职业
+export function 选择职业(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 职业 = Args.Str[0]
+    if (Player.V.职业 != '') { Player.MessageBox('你已经选择过职业了!'); return }
+
+    Player.V.职业 = 职业
+    Player.AddSkill('心灵召唤', 3);
+    Player.AddSkill('查看属性', 3);
+    Player.CancelToMonster()
+    
+    // 添加本职业技能
+    const jobId = Player.Job
+    const 本职业技能 = 获取本职业技能列表(jobId)
+    for (const 技能名 of 本职业技能) {
+        Player.AddSkill(技能名)
+    }
+    
+    // 添加新职业技能
+    const 新职业技能 = 获取新职业技能列表(职业)
+    for (const 技能名 of 新职业技能) {
+        Player.AddSkill(技能名)
+    }
+    
+    人物登录BUFF(Player)
+    装备属性统计(Player, undefined, undefined, undefined)
+    显示职业技能内部(Npc, Player, 职业 as keyof typeof 职业数据)
+}
+
+
+// 重置本职业 - 显示职业选择界面
+export function 重置本职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
+    const S = `\\\\
+                              选择本职业转职\\\\\\
+                    {S=请选择要转职的本职业;C=249}\\\\
+                    {S=转职将清空所有职业技能及技能等级;C=253}\\\\\\
+    <{S=战士;C=251;FS=14;X=60;Y=200}/@选择本职业转职(0)>       <{S=法师;C=251;FS=14;X=120;Y=200}/@选择本职业转职(1)>       <{S=道士;C=251;FS=14;X=180;Y=200}/@选择本职业转职(2)>\\\\\\
+    <{S=刺客;C=251;FS=14;X=60;Y=250}/@选择本职业转职(3)>       <{S=弓箭手;C=251;FS=14;X=120;Y=250}/@选择本职业转职(4)>       <{S=武僧;C=251;FS=14;X=180;Y=250}/@选择本职业转职(5)>\\\\\\
+                                     <{S=返回;X=120;Y=350}/@Main>
+    `
+    Npc.SayEx(Player, 'NPC中大窗口', S);
+}
+
+// 选择本职业转职 - 显示确认界面
+export function 选择本职业转职(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const jobId = Number(Args.Str[0])
+    const 本职业 = 本职业数据[jobId]
+    if (!本职业) { Player.MessageBox('无效的职业ID!'); return }
+    
+    const 职业名 = 本职业.名称
+    const 当前JobId = Player.Job
+    
+    // 如果是当前职业，不需要转职
+    if (jobId === 当前JobId) {
+        Player.MessageBox('你当前已经是该职业，无需转职!')
+        return
+    }
+    
+    const S = `\\\\
+                              确认转职本职业\\\\\\
+                              {S=转职目标：【${职业名}】;C=249}\\\\
+                    {S=转职将清空所有职业技能及技能等级;C=253}\\\\
+                    {S=是否确认转职？;C=250}\\\\\\
+    <{S=确认转职;C=250;X=100;Y=300;HINT=转职将清空所有职业技能及技能等级}/@确认转职本职业(${jobId})>\\\\\\
+    <{S=取消;X=200;Y=300}/@重置本职业>
+    `
+    Npc.SayEx(Player, 'NPC中大窗口', S);
+}
+
+// 确认转职本职业
+export function 确认转职本职业(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const jobId = Number(Args.Str[0])
+    const 本职业 = 本职业数据[jobId]
+    if (!本职业) { Player.MessageBox('无效的职业ID!'); return }
+    
+    const vAny = Player.V as any
+    const rAny = Player.R as any
+    
+    // 先保存新职业信息（如果存在）
+    const 当前新职业 = Player.V.职业
+    
+    // 清除所有技能
+    Player.ClearSkill()
+    
+    // 重置所有本职业技能等级和魔次
+    for (const [key] of Object.entries(本职业数据)) {
+        const 技能列表 = 获取本职业技能列表(Number(key))
+        for (const 技能名 of 技能列表) {
+            vAny[`${技能名}等级`] = 1
+            rAny[`${技能名}魔次`] = '0'
+        }
+    }
+    
+    // 重置新职业技能等级和魔次（如果已选择新职业）
+    if (当前新职业) {
+        const 新职业技能 = 获取新职业技能列表(当前新职业)
+        for (const 技能名 of 新职业技能) {
+            vAny[`${技能名}等级`] = 1
+            rAny[`${技能名}魔次`] = '0'
+        }
+    }
+    
+    // 设置新的职业
+    Player.Job = jobId
+    
+    // 添加新职业的基础技能
+    Player.AddSkill('心灵召唤', 3);
+    Player.AddSkill('查看属性', 3);
+    
+    // 添加新本职业技能
+    const 新本职业技能 = 获取本职业技能列表(jobId)
+    for (const 技能名 of 新本职业技能) {
+        Player.AddSkill(技能名, 1)
+    }
+    
+    // 如果有新职业，重新添加新职业技能
+    if (当前新职业) {
+        const 新职业技能 = 获取新职业技能列表(当前新职业)
+        for (const 技能名 of 新职业技能) {
+            Player.AddSkill(技能名, 1)
+        }
+    }
+    
+    Player.SendMessage(`转职成功！已转为【${本职业.名称}】,所有技能已重置为1级!`)
+    
+    人物登录BUFF(Player)
+    装备属性统计(Player, undefined, undefined, undefined)
+    显示职业技能内部(Npc, Player, 当前新职业 ? (当前新职业 as keyof typeof 职业数据) : '天枢')
+}
+
+// 重置新职业 - 显示确认界面
+export function 重置新职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
+    if (Player.V.职业 == '') { 
+        Player.MessageBox('你还未选择新职业,无法重置!'); 
+        return 
+    }
+    
+    if (Player.GetGameGold() < 2000) { 
+        Player.MessageBox('元宝不足2000,重置失败!'); 
+        return 
+    }
+    
+    const S = `\\\\
+                              确认重置新职业\\\\\\
+                              {S=当前职业：【${Player.V.职业}】;C=249}\\\\
+                    {S=重置将清空新职业技能及技能等级;C=253}\\\\
+                    {S=需要消耗2000元宝;C=250}\\\\
+                    {S=是否确认重置？;C=250}\\\\\\
+    <{S=确认重置;C=250;X=100;Y=300;HINT=重置将清空新职业技能及技能等级}/@确认重置新职业>\\\\\\
+    <{S=取消;X=200;Y=300}/@Main>
+    `
+    Npc.SayEx(Player, 'NPC中大窗口', S);
+}
+
+// 确认重置新职业
+export function 确认重置新职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
+    if (Player.GetGameGold() < 2000) { 
+        Player.MessageBox('元宝不足2000,重置失败!'); 
+        return 
+    }
+    
+    if (Player.V.职业 == '') { 
+        Player.MessageBox('你还未选择新职业,无法重置!'); 
+        return 
+    }
+    
+    const vAny = Player.V as any
+    const rAny = Player.R as any
+    
+    // 先保存旧职业信息（必须在清空前获取）
+    const 旧职业 = Player.V.职业
+    
+    // 获取旧职业技能列表（必须在清空前获取）
+    const 旧职业技能 = 获取新职业技能列表(旧职业)
+    
+    // 扣除元宝
+    Player.SetGameGold(Player.GetGameGold() - 2000)
+    Player.GoldChanged()
+    
+    // 清除新职业技能
+    for (const 技能名 of 旧职业技能) {
+        Player.DelSkill(技能名)
+        vAny[`${技能名}等级`] = 1
+        rAny[`${技能名}魔次`] = '0'
+    }
+    
+    // 清空新职业
+    Player.V.职业 = ''
+    
+    Player.SendMessage('新职业已重置,所有新职业技能已清空!')
+    
+    人物登录BUFF(Player)
+    装备属性统计(Player, undefined, undefined, undefined)
+    显示职业技能内部(Npc, Player, '天枢')
+}
+

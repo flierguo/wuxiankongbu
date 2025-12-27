@@ -1,4 +1,4 @@
-import { 装备属性统计 } from '../../应用智能优化版';
+import { 装备属性统计 } from '../../性能优化/index_智能优化';
 import { 特效 } from "../[玩家]/_P_Base";
 
 /*充值使者*/
@@ -424,7 +424,7 @@ export function InPutString22(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): 
                 a.AddSkill('护法灭魔');
                 a.SetJob(5)
                 a.V.武僧 = true
-                a.ShowEffectEx2(特效.武僧天雷阵, -10, 20, true, 99999)
+                // a.ShowEffectEx2(特效.武僧天雷阵, -10, 20, true, 99999)
                 break
             case '罗汉':
                 a.AddSkill('罗汉棍法', 3);

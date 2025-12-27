@@ -1,5 +1,5 @@
 import { js_number, js_numberRandom2 } from "../../全局脚本[公共单元]/utils/计算方法"
-import { 删除属性, 删除职业, 数字转单位2, 数字转单位3, 新返回, 添加属性, 添加职业 } from "../../大数值版本/字符计算"
+import { 删除属性, 删除职业, 数字转单位2, 数字转单位3, 新返回, 添加属性, 添加职业 } from "../../核心功能/字符计算"
 import { 种族第四, 种族第五, 职业分割, 装备特效 } from "../[装备]/_ITEM_Base"
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {

@@ -1,343 +1,21 @@
-import { fTime } from "../[功能]/_GN_空的"
-import { _G_GA_DonationData, 显示图标, 特效 } from "../[玩家]/_P_Base";
+
 import { 原始名字, 怪物星数, 怪物超星数, 怪物颜色 } from "../[怪物]/_M_Base"
 import { 分钟检测无人60分清理怪物, 按分钟检测, 秒钟第一次进入刷怪 } from "../[怪物]/_M_Robot";
 import { 种族第二, 种族第三, 种族第一, 基础属性分割, 备用三 } from "../[装备]/_ITEM_Base";
-import { 开始攻沙巴克, 结束攻沙巴克, 结束沙巴克1小时清空 } from "../../系统固定NPC/RobotManageNpc";
-import { 装备属性统计 } from '../../应用智能优化版';
-import { 实时回血, 实时扣血, 数字转单位2, 数字转单位3, 血量显示 } from "../../大数值版本/字符计算";
+
+import { 装备属性统计 } from '../../性能优化/index_智能优化';
+import { 实时回血, 实时扣血, 数字转单位2, 数字转单位3, 血量显示 } from "../../核心功能/字符计算";
 import { js_number } from "../../全局脚本[公共单元]/utils/计算方法";
+import { 转大数值  , 智能计算} from "../../大数值/核心计算方法";
 import * as 地图2 from '../[地图]/地图';
-import { 快速清理, 安全清理, 深度清理, 执行完整清理 } from '../../大数值版本/清理冗余数据';
-import { 增加 } from "../[功能]/_GN_功能";
+import { 快速清理, 安全清理, 深度清理, 执行完整清理 } from '../../核心功能/清理冗余数据';
+import { 增加 } from "../[功能]/_功能";
 
-function 分辨率(Player: TPlayObject): number {
-    let 长度 = 0
-    switch (Player.ClientScreenHeight) {
-        case 1024: 长度 = -595; break
-        case 1080: 长度 = -625; break
-        case 1050: 长度 = -610; break
-        case 1200: 长度 = -685; break
-        case 960: 长度 = -565; break
-        case 900: 长度 = -535; break    //649
-        case 864: 长度 = -515; break
-        case 800: 长度 = -485; break
-        case 768: 长度 = -465; break
-        case 720: 长度 = -445; break
-        case 600: 长度 = -425; break
-    }
-    return 长度  //600-1024的长度 太长的分辨率估计没人用就没添加
-}
-
-export namespace 地方 {
-    const 智能刷怪 = [
-        { 地图名字: '主城', 怪物名字: '鸡', 坐标X: 121, 坐标Y: 127, 范围: 10, 数量: 5, 刷新时间: 30, TAG: 10 },
-        { 地图名字: '主城', 怪物名字: '鹿', 坐标X: 121, 坐标Y: 127, 范围: 10, 数量: 5, 刷新时间: 30, TAG: 10 },
-    ]
-}
-export function 会员特权(Npc: TNormNpc, Player: TPlayObject): void {
-    Player.V.会员等级 ??= 0
-    let S = ``
-    switch (true) {
-        case Player.V.总捐献礼卷数量 < 50: Player.V.会员等级 = 0; break
-        case Player.V.总捐献礼卷数量 >= 50 && Player.V.总捐献礼卷数量 < 200: Player.V.会员等级 = 1; break
-        case Player.V.总捐献礼卷数量 >= 200 && Player.V.总捐献礼卷数量 < 1000: Player.V.会员等级 = 2; break
-        case Player.V.总捐献礼卷数量 >= 1000 && Player.V.总捐献礼卷数量 < 1750: Player.V.会员等级 = 3; break
-        case Player.V.总捐献礼卷数量 >= 1750 && Player.V.总捐献礼卷数量 < 5000: Player.V.会员等级 = 4; break
-        case Player.V.总捐献礼卷数量 >= 5000 && Player.V.总捐献礼卷数量 < 10000: Player.V.会员等级 = 5; break
-        case Player.V.总捐献礼卷数量 >= 10000: Player.V.会员等级 = 6; break
-    }
-    if (Player.V.会员等级 == 0) {
-        S = `\\\\\\\\
-        {s=当前未开通VIP会员;c=8}\\\\
-        {S=VIP1属性;C=251}\\
-        {S=+20% 杀怪爆率;C=243}\\
-        {S=+20% 获取极品(获得更高级颜色装备);C=243}\\
-        {S=+20% 回收元宝;C=243}\\\\\\
-        {S=升级条件:总捐赠达到50礼卷;C=191}\\\\
-        {S=请到沙巴克捐赠处捐赠;C=250}
-`
-    }
-    if (Player.V.会员等级 == 1) {
-        S = `\\\\\\\\
-    {s=当前会员等级:${Player.V.会员等级};c=70}\\\\
-    {S=VIP2属性;C=251}\\
-    {S=+40% 杀怪爆率;C=243}\\
-    {S=+40% 获取极品(获得更高级颜色装备);C=243}\\
-    {S=+40% 回收元宝;C=243}\\\\\\
-    {S=升级条件:总捐赠达到250礼卷;C=191}\\\\
-    {S=请到沙巴克捐赠处捐赠;C=250}
-`
-    }
-    if (Player.V.会员等级 == 2) {
-        S = `\\\\\\\\
-    {s=当前会员等级:${Player.V.会员等级};c=70}\\\\
-    {S=VIP3属性;C=251}\\
-    {S=+60% 杀怪爆率;C=243}\\
-    {S=+80% 获取极品(获得更高级颜色装备);C=243}\\
-    {S=+60% 回收元宝;C=243}\\\\\\
-    {S=升级条件:总捐赠达到1250礼卷;C=191}\\\\
-    {S=请到沙巴克捐赠处捐赠;C=250}
-`
-    }
-    if (Player.V.会员等级 == 3) {
-        S = `\\\\\\\\
-    {s=当前会员等级:${Player.V.会员等级};c=70}\\\\
-    {S=VIP4属性;C=251}\\
-    {S=+80% 杀怪爆率;C=243}\\
-    {S=+120% 获取极品(获得更高级颜色装备);C=243}\\
-    {S=+80% 回收元宝;C=243}\\\\\\
-    {S=升级条件:总捐赠达到3000礼卷;C=191}\\\\
-    {S=请到沙巴克捐赠处捐赠;C=250}
-`
-    }
-    if (Player.V.会员等级 == 4) {
-        S = `\\\\\\\\
-    {s=当前会员等级:${Player.V.会员等级};c=70}\\\\
-    {S=VIP5属性;C=251}\\
-    {S=+100% 杀怪爆率;C=243}\\
-    {S=+160% 获取极品(获得更高级颜色装备);C=243}\\
-    {S=+100% 回收元宝;C=243}\\\\\\
-    {S=升级条件:总捐赠达到5000礼卷;C=191}\\\\
-    {S=请到沙巴克捐赠处捐赠;C=250}
-`
-    }
-    if (Player.V.会员等级 == 5) {
-        S = `\\\\\\\\
-    {s=当前会员等级:${Player.V.会员等级};c=70}\\\\
-    {S=VIP6属性;C=251}\\
-    {S=+150% 杀怪爆率;C=243}\\
-    {S=+200% 获取极品(获得更高级颜色装备);C=243}\\
-    {S=+150% 回收元宝;C=243}\\\\\\
-    {S=升级条件:总捐赠达到10000礼卷;C=191}\\\\
-    {S=请到沙巴克捐赠处捐赠;C=250}
-`
-    }
-    if (Player.V.会员等级 == 6) {
-        S = `\\\\\\\\
-    {s=当前会员等级:${Player.V.会员等级};c=70}\\\\
-    {S=VIP6属性;C=251}\\
-    {S=+150% 杀怪爆率;C=243}\\
-    {S=+300% 获取极品(获得更高级颜色装备);C=243}\\
-    {S=+150% 回收元宝;C=243}\\\\\\
-    {S=您已经是最高级别的会员了;C=253}\\\\
-`
-    }
-
-    Npc.SayEx(Player, 'NPC小窗口', S)
-}
-
-export function 执行新手任务(Npc: TNormNpc, Player: TPlayObject): void {
-    const S = `\\\\\\\\\\
-    {S=新人完成第一条任务后,后续任务请前往地图击杀怪物获取装备在进行完成;C=191}\\\\
-    {S=1.请将你的武器在'装备增强NPC'完成一次增强(直接增强无需材料)!;C=250}\\
-    {S=奖励说明;C=254;HINT=完成后获得:灵石*5,超级蓝水晶*1}     $任务1$     <领取奖励/@延时跳转.领取1>\\\\
-    {S=2.请将你的超级蓝水晶在'装备重组NPC'进行一次拆分!;C=251}\\
-    {S=奖励说明;C=254;HINT=#92完成后获得:种族雕像*3,超级蓝水晶*5}     $任务2$     <领取奖励/@延时跳转.领取2>\\\\
-    {S=3.请将你的[底材装备]在'装备重组NPC'完成一次重组!;C=253}\\
-    {S=奖励说明;C=254;HINT=完成后获得:书页*100}     $任务3$     <领取奖励/@延时跳转.领取3>\\\\
-    {S=4.请将你的的蓝装在'装备增强NPC'幻化一次粉装!;C=154}\\
-    {S=奖励说明;C=254;HINT=完成后获得:勋章碎片*2}     $任务4$     <领取奖励/@延时跳转.领取4>\\\\
-    `
-    let M = '';
-    M = S;
-    Player.V.任务1 ? M = ReplaceStr(M, '$任务1$', '{S=已完成;=250}') : M = ReplaceStr(M, '$任务1$', '{S=未完成;C=249}')
-    Player.V.任务2 ? M = ReplaceStr(M, '$任务2$', '{S=已完成;=250}') : M = ReplaceStr(M, '$任务2$', '{S=未完成;C=249}')
-    Player.V.任务3 ? M = ReplaceStr(M, '$任务3$', '{S=已完成;=250}') : M = ReplaceStr(M, '$任务3$', '{S=未完成;C=249}')
-    Player.V.任务4 ? M = ReplaceStr(M, '$任务4$', '{S=已完成;=250}') : M = ReplaceStr(M, '$任务4$', '{S=未完成;C=249}')
-    Npc.SayEx(Player, 'NPC中窗口', M)
-}
 export function 清理啊(Npc: TNormNpc, Player: TPlayObject): void {
     GameLib.ClearMapMon(Player.GetMapName());
     GameLib.R[Player.GetMapName()] = false
 }
-export function 领取1(Npc: TNormNpc, Player: TPlayObject): void {
-    let item: TUserItem
-    if (Player.V.任务1 == false) { Player.MessageBox('你还未完成此次新手任务,抓紧去完成吧!'); return }
-    if (Player.V.完成任务1) { Player.MessageBox('你已经完成了此新手任务!'); return }
-    if (Player.GetItemSize() + 10 > Player.GetMaxBagSize()) { Player.MessageBox('背包最少留10个空位!'); return }
-    for (let a = 0; a < 5; a++) {
-        item = Player.GiveItem('灵石')
-        if (item) {
-            item.SetBind(true)
-            item.SetNeverDrop(true)
-            item.State.SetNoDrop(true)
-            Player.UpdateItem(item)
-        }
-    }
-    item = Player.GiveItem('超级蓝水晶')
-    if (item) {
-        item.SetBind(true)
-        item.SetNeverDrop(true)
-        item.State.SetNoDrop(true)
-        Player.UpdateItem(item)
-    }
-    Player.V.完成任务1 = true
-    Player.MessageBox(`你完成了新手任务获得了灵石*5,超级蓝水晶*1`)
-    执行新手任务(Npc, Player)
-}
-export function 领取2(Npc: TNormNpc, Player: TPlayObject): void {
-    let item: TUserItem
-    if (Player.V.任务2 == false) { Player.MessageBox('你还未完成此次新手任务,抓紧去完成吧!'); return }
-    if (Player.V.完成任务2) { Player.MessageBox('你已经完成了此新手任务!'); return }
-    if (Player.GetItemSize() + 10 > Player.GetMaxBagSize()) { Player.MessageBox('背包最少留10个空位!'); return }
-    for (let a = 0; a < 3; a++) {
-        item = Player.GiveItem('种族雕像')
-        if (item) {
-            item.SetBind(true)
-            item.SetNeverDrop(true)
-            item.State.SetNoDrop(true)
-            Player.UpdateItem(item)
-        }
-    }
-    for (let a = 0; a < 5; a++) {
-        item = Player.GiveItem('超级蓝水晶')
-        if (item) {
-            item.SetBind(true)
-            item.SetNeverDrop(true)
-            item.State.SetNoDrop(true)
-            Player.UpdateItem(item)
-        }
-    }
-    Player.V.完成任务2 = true
-    Player.MessageBox(`你完成了新手任务获得了种族雕像*3,超级蓝水晶*5`)
-    执行新手任务(Npc, Player)
-}
-export function 领取3(Npc: TNormNpc, Player: TPlayObject): void {
-    let item: TUserItem
-    if (Player.V.任务3 == false) { Player.MessageBox('你还未完成此次新手任务,抓紧去完成吧!'); return }
-    if (Player.V.完成任务3) { Player.MessageBox('你已经完成了此新手任务!'); return }
-    if (Player.GetItemSize() + 100 > Player.GetMaxBagSize()) { Player.MessageBox('背包最少留100个空位!'); return }
-    for (let a = 0; a < 100; a++) {
-        item = Player.GiveItem('书页')
-        if (item) {
-            item.SetBind(true)
-            item.SetNeverDrop(true)
-            item.State.SetNoDrop(true)
-            Player.UpdateItem(item)
-        }
-    }
-    Player.ReloadBag()
-    Player.V.完成任务3 = true
-    Player.MessageBox(`你完成了新手任务获得了书页*100`)
-    执行新手任务(Npc, Player)
-}
-export function 领取4(Npc: TNormNpc, Player: TPlayObject): void {
-    let item: TUserItem
-    if (Player.V.任务4 == false) { Player.MessageBox('你还未完成此次新手任务,抓紧去完成吧!'); return }
-    if (Player.V.完成任务4) { Player.MessageBox('你已经完成了此新手任务!'); return }
-    if (Player.GetItemSize() + 5 > Player.GetMaxBagSize()) { Player.MessageBox('背包最少留5个空位!'); return }
-    for (let a = 0; a < 2; a++) {
-        item = Player.GiveItem('勋章碎片')
-        if (item) {
-            item.SetBind(true)
-            item.SetNeverDrop(true)
-            item.State.SetNoDrop(true)
-            Player.UpdateItem(item)
-        }
-    }
-    Player.ReloadBag()
-    Player.V.完成任务4 = true
-    Player.MessageBox(`你完成了新手任务获得了勋章碎片*2`)
-    执行新手任务(Npc, Player)
-}
-export function 人物属性(Npc: TNormNpc, Player: TPlayObject): void {
-    let 恢复血量 = 0
-    let 全身星星数量 = 0
-    if (Player.GetZodiacs(0) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(0).GetOutWay3(40) }
-    if (Player.GetZodiacs(1) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(1).GetOutWay3(40) }
-    if (Player.GetZodiacs(2) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(2).GetOutWay3(40) }
-    if (Player.GetZodiacs(3) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(3).GetOutWay3(40) }
-    if (Player.GetZodiacs(4) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(4).GetOutWay3(40) }
-    if (Player.GetZodiacs(5) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(5).GetOutWay3(40) }
-    if (Player.GetZodiacs(6) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(6).GetOutWay3(40) }
-    if (Player.GetZodiacs(7) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(7).GetOutWay3(40) }
-    if (Player.GetZodiacs(8) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(8).GetOutWay3(40) }
-    if (Player.GetZodiacs(9) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(9).GetOutWay3(40) }
-    if (Player.GetZodiacs(10) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(10).GetOutWay3(40) }
-    if (Player.GetZodiacs(11) != null) { 全身星星数量 = 全身星星数量 + Player.GetZodiacs(11).GetOutWay3(40) }
-    if (Player.Mount != null) { 全身星星数量 = 全身星星数量 + Player.Mount.GetOutWay3(40) }
-    switch (true) {
-        case 全身星星数量 >= 10 && 全身星星数量 < 20: Player.R.所有攻击倍数 = 0.01; break
-        case 全身星星数量 >= 20 && 全身星星数量 < 30: Player.R.所有攻击倍数 = 0.03; break
-        case 全身星星数量 >= 30 && 全身星星数量 < 40: Player.R.所有攻击倍数 = 0.06; break
-        case 全身星星数量 >= 40 && 全身星星数量 < 50: Player.R.所有攻击倍数 = 0.1; break
-        case 全身星星数量 >= 50 && 全身星星数量 < 60: Player.R.所有攻击倍数 = 0.16; break
-        case 全身星星数量 >= 60 && 全身星星数量 < 70: Player.R.所有攻击倍数 = 0.21; break
-        case 全身星星数量 >= 70 && 全身星星数量 < 80: Player.R.所有攻击倍数 = 0.28; break
-        case 全身星星数量 >= 80 && 全身星星数量 < 90: Player.R.所有攻击倍数 = 0.36; break
-        case 全身星星数量 >= 90 && 全身星星数量 < 100: Player.R.所有攻击倍数 = 0.45; break
-        case 全身星星数量 >= 100 && 全身星星数量 < 110: Player.R.所有攻击倍数 = 0.55; break
-        case 全身星星数量 >= 110 && 全身星星数量 < 120: Player.R.所有攻击倍数 = 0.66; break
-        case 全身星星数量 >= 120 && 全身星星数量 < 130: Player.R.所有攻击倍数 = 0.78; break
-        case 全身星星数量 >= 130 && 全身星星数量 < 140: Player.R.所有攻击倍数 = 1.01; break
-        case 全身星星数量 >= 140 && 全身星星数量 < 150: Player.R.所有攻击倍数 = 1.25; break
-        case 全身星星数量 >= 150 && 全身星星数量 < 160: Player.R.所有攻击倍数 = 1.5; break
-        case 全身星星数量 >= 160 && 全身星星数量 < 170: Player.R.所有攻击倍数 = 1.8; break
-        case 全身星星数量 >= 170 && 全身星星数量 < 180: Player.R.所有攻击倍数 = 2.1; break
-        case 全身星星数量 >= 180 && 全身星星数量 < 200: Player.R.所有攻击倍数 = 2.4; break
-        case 全身星星数量 >= 200: Player.R.所有攻击倍数 = 3.0; break
-    }
-    Player.V.恢复专精激活 ? 恢复血量 = Player.R.恢复点数 / 1000 * 2 : 恢复血量 = Player.R.恢复点数 / 1000
 
-    //     Player.RemoveExtendButton('人物属性')
-    //     Player.AddExtendButton('人物属性', `{S=点击刷新;C=251}\\\\{S=[种族属性];C=250}\\力量:${Player.R.力量}\\体质:${Player.R.体质}\\耐力:${Player.R.耐力}
-    // \\\\{S=[通用属性];C=251}\\生命:${Player.GetSVar(92)}\\伤害:${Player.R.造成伤害}\\攻魔速度:${Player.R.攻击魔法速度}\\吸血比例:${Player.V.种族 == '魔族' ? Player.R.击中吸血比例 + 10 : Player.R.击中吸血比例}%\\伤害减少:${Math.round(Player.R.伤害减少)}%
-    // \\抵抗异常:${Player.R.抵抗异常}%\\获取极品:${Player.R.极品率}%\\每秒恢复生命:${恢复血量}\\击中恢复生命:${Player.R.击中恢复生命}\\所有技能等级:${Player.R.所有技能等级}\\鞭尸次数:${Trunc((Player.V.鞭尸几率 + Player.V.鞭尸几率_魔戒) / 100)}次(充值获得鞭尸概率：${Player.V.鞭尸几率}%  阿拉贡魔戒鞭尸概率：${Player.V.鞭尸几率_魔戒}%)\\全属性翻倍${Player.R.所有攻击倍数 * 100}%`, '属性啊', 163, 250, 分辨率(Player))
-
-}
-export function 职业词条(Npc: TNormNpc, Player: TPlayObject): void {
-    // if (Player.V.战神) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\狂怒攻击倍数:${Player.R.狂怒倍攻}\\万剑归宗攻击倍数:${Player.R.万剑归宗倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}\\宝宝攻击倍数:${Player.R.战神宝宝攻击倍攻}\\所有宝宝攻击倍数:${Player.R.所有宝宝倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.骑士) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\圣光打击攻击倍数:${Player.R.圣光打击倍攻}\\愤怒攻击倍数:${Player.R.愤怒倍攻}\\审判救赎攻击倍数:${Player.R.审判救赎倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.冰法) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\暴风雨攻击倍数:${Player.R.暴风雨倍攻}\\冰霜之环攻击倍数:${Player.R.冰霜之环倍攻}\\寒冬领域攻击倍数:${Player.R.寒冬领域倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.火神) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\火墙之术攻击倍数:${Player.R.火墙倍攻}\\群星火雨攻击倍数:${Player.R.流星火雨倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.驯兽师) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\宝宝攻击倍数:${Player.R.驯兽宝宝攻击倍攻}\\所有宝宝攻击倍数:${Player.R.所有宝宝倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.牧师) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\剧毒之海攻击倍数:${Player.R.剧毒火海倍攻}\\互相伤害攻击倍数:${Player.R.互相伤害倍攻 }\\末日降临攻击倍数:${Player.R.末日降临倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.神射手) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\复仇攻击倍数:${Player.R.复仇倍攻}\\万箭齐发攻击倍数:${Player.R.万箭齐发倍攻 }\\神灵救赎攻击倍数:${Player.R.神灵救赎倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.猎人) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\分裂箭攻击倍数:${Player.R.分裂箭倍攻}\\命运刹印攻击倍数:${Player.R.命运刹印倍攻 }\\宝宝攻击倍数:${Player.R.猎人宝宝攻击倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.刺客) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\弱点攻击倍数:${Player.R.弱点倍攻}\\暗影杀阵攻击倍数:${Player.R.暗影杀阵倍攻 }\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.鬼舞者) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\鬼舞斩攻击倍数:${Player.R.鬼舞斩倍攻}\\鬼舞术攻击倍数:${Player.R.鬼舞术倍攻 }\\群魔乱舞攻击倍数::${Player.R.群魔乱舞倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-    // if (Player.V.武僧) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\天雷阵攻击倍数:${Player.R.天雷阵倍攻}\\至高武术攻击倍数:${Player.R.至高武术倍攻 }\\碎石破空攻击倍数::${Player.R.碎石破空倍攻 }\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player)) 
-    // }
-    // if (Player.V.罗汉) {
-    //     Player.RemoveExtendButton('职业词条')
-    //     Player.AddExtendButton('职业词条', `{S=点击刷新;C=251}\\\\{S=职业词条;C=251}\\金刚护法攻击倍数:${Player.R.金刚护法倍攻}\\宝宝攻击倍数:${Player.V.轮回次数 >= 50 ? js_number(js_number(js_number(Player.R.战神宝宝攻击倍攻,Player.R.猎人宝宝攻击倍攻,1), Player.R.驯兽宝宝攻击倍攻, 1),Player.R.罗汉宝宝攻击倍攻,1) : Player.R.罗汉宝宝攻击倍攻 }\\所有宝宝攻击倍数:${Player.R.所有宝宝倍攻}\\所有技能倍攻:${Player.R.人物技能倍攻}`, '词条啊', 175, 350, 分辨率(Player))
-    // }
-
-
-}
 export function 交易市场(Npc: TNormNpc, Player: TPlayObject): void {
     // Player.RemoveExtendButton('交易市场')
     // Player.AddExtendButton('交易市场', `\\{S=点击查看交易中心;C=251}`, '交易市场啊', 172, 450, 分辨率(Player))
@@ -349,75 +27,67 @@ export function 会员(Npc: TNormNpc, Player: TPlayObject): void {
     // Player.AddExtendButton('会员', `{S=点击查看会员;C=251}`, '会员啊', 189, 1, 分辨率(Player))
     Player.AddSidebarButton("", "特殊")
 }
-export function 新手任务(Npc: TNormNpc, Player: TPlayObject): void {
-    // Player.RemoveExtendButton('新手任务')
-    // Player.AddExtendButton('新手任务', `{S=打开查看新手任务;C=251}`, '新手任务啊', 192, 1, 分辨率(Player) - 25)
+
+
+export function 人物死亡(Npc: TNormNpc, Player: TPlayObject): void {
+    const S = `\\\\
+                {S=--------------------------;C=249}\\
+                        {S=人物死亡;C=249}\\
+                {S=--------------------------;C=249}\\\\
+                    <免费复活/@延时跳转.免费复活> {S=返回安全区;C=224}\\\\
+                    <原地复活/@延时跳转.收费复活> {S=消耗300元宝;C=243}\\\\
+    `
+    Player.SayEx('人物死亡', S)
 }
 
-export function 玩家复活(Npc: TNormNpc, Player: TPlayObject): void {
-    // Player.SetSVar(91, Player.GetSVar(92))  //当前血量
-    // Player.SetSVar(91, Player.V.自定属性[1052])  //当前血量
-    // Player.SetSVar(92, Player.GetSVar(92))    //当前最大血量
-    // Player.HP = Player.MaxHP   
-    // 实时回血(Player, Player.GetSVar(92))
-    实时回血(Player, Player.GetSVar(92))
-    血量显示(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
-
-    Player.ReAlive()
-    Player.MapMove('主城', 105, 120)
-
-    // activation(Player);/*重新计算玩家身上的装备*/
-    Player.RecalcAbilitys;/*重新计算能力值*/
-    Npc.CloseDialog(Player)
-    // Debug(Player.V.自定属性[1051] + `当前` +  Player.V.自定属性[1052] + `最大`);
-}
-
-export function 原地复活(Npc: TNormNpc, Player: TPlayObject): void {
-    // if (Player.GetHP() >= 0) {
-    //     Player.MessageBox('你还没有死亡！');
-    //     return;
-    // }
-
-    // 检查元宝是否足够
-    if (Player.GetGameGold() < 5000) {
-        Player.MessageBox('原地复活需要5000元宝，你的元宝不足！');
-        return;
-    }
-
-    // 扣除元宝
-    Player.SetGameGold(Player.GetGameGold() - 5000);
-    Player.GoldChanged();
-
-    实时回血(Player, Player.GetSVar(92)) //当前血量
-
-    血量显示(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
-
-    Player.ReAlive()
-
-    Player.RecalcAbilitys;/*重新计算能力值*/
-    Npc.CloseDialog(Player)
-    // Debug(Player.V.自定属性[10er.V.自定属性[1051] + `当前` +  Player.V.自定属性[1052] + `最大`);
-}
-export function 允许随机(Npc: TNormNpc, Player: TPlayObject): void {
-    Player.R.被攻击状态 = false
-    if (Player.GetHP() < Player.GetMaxHP() * 0.5) {
-        Player.SetHP(Player.GetMaxHP() * 0.5)
-        Player.SendCountDownMessage(`退出战斗血量低于50%自动恢复至50%`, 0);
-    }
-}
 export function 多开踢出(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     Player.Kick();
 }
 
-const 刷BOSS = [
-    { 地图名字: '诸天神殿[一幕]', BOSS名字: '远古树精' },
-    { 地图名字: '诸天神殿[二幕]', BOSS名字: '暗黑法师' },
-    { 地图名字: '诸天神殿[三幕]', BOSS名字: '圣光骑士' },
-    { 地图名字: '诸天神殿[四幕]', BOSS名字: '暗影虎王' },
-    { 地图名字: '诸天神殿[五幕]', BOSS名字: '地狱九头蛇' },
-]
+export function 免费复活(Npc: TNormNpc, Player: TPlayObject): void {
+    Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
+    Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
+    // 血量显示(Player)
+    装备属性统计(Player, undefined, undefined, undefined)
+
+    Player.ReAlive()
+    Player.GoHome()
+    // activation(Player);/*重新计算玩家身上的装备*/
+    Player.RecalcAbilitys;/*重新计算能力值*/
+}
+
+export function 收费复活(Npc: TNormNpc, Player: TPlayObject): void {
+    if (Player.GetGameGold() < 300) { Player.MessageBox(`元宝不足300,无法原地复活`); return }
+    Player.SetGameGold(Player.GetGameGold() - 300)
+    Player.GoldChanged()
+    Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
+    Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
+    // 血量显示(Player)
+    装备属性统计(Player, undefined, undefined, undefined)
+    Player.ReAlive()
+    // Player.GoHome()
+    // activation(Player);/*重新计算玩家身上的装备*/
+    Player.RecalcAbilitys;/*重新计算能力值*/
+}
+
+export function 玩家复活(Npc: TNormNpc, Player: TPlayObject): void {
+    Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
+    Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
+
+
+    Player.ReAlive()
+    Player.GoHome()
+
+    // 血量显示(Player)
+    装备属性统计(Player, undefined, undefined, undefined)
+    // activation(Player);/*重新计算玩家身上的装备*/
+    Player.RecalcAbilitys;/*重新计算能力值*/
+}
+export function 从新登录(Npc: TNormNpc, Player: TPlayObject): void {
+    Player.Kick()
+}
+
+
 export const UnitList = [
     { len: 0, name: "", 图片位置: 999999 },
     { len: 4, name: "万", 图片位置: 12 },
@@ -923,6 +593,7 @@ export function 随机小数(min: number, max: number): number {
     }
     return Math.random() * (max - min) + min;
 }
+
 export function 测试用的(Npc: TNormNpc, Player: TPlayObject): void {
     Randomize()
     if (Player.IsAdmin) {
@@ -951,7 +622,7 @@ export function 测试用的(Npc: TNormNpc, Player: TPlayObject): void {
     <召唤宝宝/@延时跳转.召唤>     <刷稻草人/@延时跳转.刷稻草人>    <来个生肖/@延时跳转.来个生肖>     <清理地图/@延时跳转.清理地图>    <技能范围/@延时跳转.技能范围>\\
     <我要秒怪/@延时跳转.我要秒怪>  <领取货币/@延时跳转.领取货币>  <刷练功师/@延时跳转.刷练功师>   <清理冗余/@延时跳转.清理冗余数据>  \\
     <给玩家刷物品/@@延时跳转.InPutString20(格式：玩家名字-物品名字-数量)>   <给玩家刷属性/@@延时跳转.InPutString21(玩家-属性-类型1（积分）、2（元宝）、3（回收比例）、4（爆率）、5（等级）、6（挑战倍数）)>  <给玩家转职/@@延时跳转.InPutString22(格式:玩家名字-职业)>\\
-    <给玩家刷特殊物品/@@延时跳转.InPutString25(格式：玩家名字-物品名字-数量)> <刷魔器/@延时跳转.刷魔器>
+    <给玩家刷特殊物品/@@延时跳转.InPutString25(格式：玩家名字-物品名字-数量)> <刷魔器/@延时跳转.刷魔器>  <学习技能/@@延时跳转.InPutString26(输入技能名字)>
     
     `
 
@@ -979,6 +650,16 @@ export function 清理冗余数据(Npc: TNormNpc, Player: TPlayObject): void {
     执行完整清理();
     console.log(`怪物数量 : ${Player.Map.MonCount}`)
 
+}
+
+export function InPutString26(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 技能名字 = Args.Str[0]
+    Player.AddSkill(技能名字, 10)
+    let Magic = Player.FindSkill(技能名字)
+    if (Magic) {
+        Magic.SetLevel(10)
+        Player.UpdateMagic(Magic);
+    }
 }
 export function InPutString25(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const str: string = Args.Str[0]
@@ -1033,144 +714,8 @@ export function InPutString22(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): 
     let PlayerName = list[0] //数组1 也就是从0开始
     let 职业 = list[1]
     let a: TPlayObject = GameLib.FindPlayer(PlayerName);
-    if (a != null) {
-        a.V.战神 = false
-        a.V.骑士 = false
-        a.V.火神 = false
-        a.V.冰法 = false
-        a.V.驯兽师 = false
-        a.V.牧师 = false
-        a.V.神射手 = false
-        a.V.猎人 = false
-        a.V.刺客 = false
-        a.V.鬼舞者 = false
-        a.V.武僧 = false
-        a.V.罗汉 = false
-        a.V.轮回次数 = 0
-        a.V.战神觉醒 = false
-        a.V.战神强化等级 = 0
-        a.V.战神学习基础 = false
-        a.V.战神学习高级 = false
-        a.V.罗汉宝宝进化 = false
-        a.ClearSkill()
-        a.RecalcAbilitys()
-        a.AddSkill('心灵召唤');
-        a.AddSkill('查看属性');
-        a.AddSkill('嘲讽吸怪');
-        switch (职业) {
-            case '战神':
-                a.AddSkill('基本剑术', 3);
-                a.AddSkill('攻杀剑术', 3);
-                a.AddSkill('刺杀剑术', 3);
-                a.AddSkill('狂怒');
-                a.AddSkill('战神附体');
-                a.SetJob(0)
-                a.V.战神 = true
-                break
-            case '骑士':
-                a.AddSkill('基本剑术', 3);
-                a.AddSkill('攻杀剑术', 3);
-                a.AddSkill('刺杀剑术', 3);
-                a.AddSkill('圣光打击');
-                a.AddSkill('防御姿态');
-                a.SetJob(0)
-                a.V.骑士 = true
-                break
-            case '火神':
-                a.AddSkill('雷电术', 3);
-                a.AddSkill('冰咆哮', 3);
-                a.AddSkill('法术奥义');
-                a.AddSkill('闪现');
-                a.SetJob(1)
-                a.V.火神 = true
-                break
-            case '冰法':
-                a.AddSkill('雷电术', 3);
-                a.AddSkill('冰咆哮', 3);
-                a.AddSkill('暴风雨');
-                a.AddSkill('打击符文');
-                a.SetJob(1)
-                a.V.冰法 = true
-                break
-            case '驯兽师':
-                a.AddSkill('精神力战法', 3);
-                a.AddSkill('灵魂火符', 3);
-                a.AddSkill('施毒术', 3);
-                a.AddSkill('飓风破', 3);
-                a.AddSkill('隐身术', 3);
-                a.AddSkill('萌萌浣熊');
-                a.AddSkill('凶猛野兽');
-                a.V.驯兽师 = true
-                a.SetJob(2)
-                break
-            case '牧师':
-                a.AddSkill('精神力战法', 3);
-                a.AddSkill('灵魂火符', 3);
-                a.AddSkill('施毒术', 3);
-                a.AddSkill('飓风破', 3);
-                a.AddSkill('隐身术', 3);
-                a.AddSkill('剧毒火海');
-                a.AddSkill('妙手回春');
-                a.SetJob(2)
-                a.V.牧师 = true
-                break
-            case '刺客':
-                a.AddSkill('精准术', 3);
-                a.AddSkill('霜月X', 3);
-                a.AddSkill('潜行', 3);
-                a.AddSkill('弱点');
-                a.SetJob(3)
-                a.V.刺客 = true
-                break
-            case '鬼舞者':
-                a.AddSkill('精准术', 3);
-                a.AddSkill('霜月X', 3);
-                a.AddSkill('鬼舞斩');
-                a.AddSkill('鬼舞者');
-                a.SetJob(3)
-                a.V.鬼舞者 = true
-                break
-            case '神射手':
-                a.AddSkill('精准箭术', 3);
-                a.AddSkill('天罡震气', 3);
-                a.AddSkill('成长');
-                a.AddSkill('万箭齐发');
-                a.SetJob(4)
-                a.V.神射手 = true
-                break
-            case '猎人':
-                a.AddSkill('精准箭术', 3);
-                a.AddSkill('天罡震气', 3);
-                a.AddSkill('分裂箭');
-                a.AddSkill('召唤宠物');
-                a.SetJob(4)
-                a.V.猎人 = true
-                break
-            case '武僧':
-                a.AddSkill('罗汉棍法', 3);
-                a.AddSkill('达摩棍法', 3);
-                a.AddSkill('天雷阵');
-                a.AddSkill('护法灭魔');
-                a.SetJob(5)
-                a.V.武僧 = true
-                a.ShowEffectEx2(特效.武僧天雷阵, -10, 20, true, 99999)
-                break
-            case '罗汉':
-                a.AddSkill('罗汉棍法', 3);
-                a.AddSkill('达摩棍法', 3);
-                a.AddSkill('金刚护法');
-                a.AddSkill('转生');
-                a.SetJob(5)
-                a.V.罗汉 = true
-                break
-            default: Player.MessageBox('职业输入的不正确'); return
-        }
-        a.MessageBox('转职完毕,请从新登录游戏!')
-        a.RecalcAbilitys()
-        装备属性统计(a, undefined, undefined, undefined);
-        // a.Kick()
-    } else { Player.MessageBox('玩家名字不正确') }
 }
+
 export function InPutString21(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //格式: 玩家名字-属性-数量  刷属性
     const str: string = Args.Str[0];
     const list: string[] = str.split('-');   // 格式：玩家名字-数量-类型
@@ -1292,7 +837,9 @@ export function 刷练功师(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     Actor.SetACMin(1)
     Actor.SetACMax(1)
     Actor.SetTriggerSelectMagicBeforeAttack(true)
-    let 宝宝血量 = '200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000'
+    // let 宝宝血量 = '200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000200020002000'
+    let 宝宝血量原始 = '5e200'
+    let 宝宝血量 = 转大数值(宝宝血量原始)  // 将 '5e200' 转换为 '5' + '0'.repeat(200)
     let 宝宝攻击小 = '1000'
     let 宝宝攻击大 = '1000'
     let 宝宝防御小 = '1'

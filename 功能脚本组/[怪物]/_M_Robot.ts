@@ -17,7 +17,6 @@
  */
 
 import * as 地图 from '../[地图]/地图';
-import { leveldifficulty } from "../../data/const";
 
 
 const 小怪刷新 = 4

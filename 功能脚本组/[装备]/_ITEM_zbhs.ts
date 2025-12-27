@@ -14,7 +14,7 @@
 */
 import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法";
 import { 大数值整数简写 } from "../[服务]/延时跳转";
-import { _P_P_AbilityData, } from "../[玩家]/_P_Base"
+// import { _P_P_AbilityData, } from "../[玩家]/_P_Base"
 import { 基础属性第一条, 基础属性第十条, 备用四 } from "./_ITEM_Base";
 import * as 技能伤害选择 from "./技能伤害选择";
 // 常量定义
@@ -772,7 +772,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {  //装备回收
     // {S=变异取消;C=9;X=350;Y=290} <{I=$怪物变异$;F=装备图标.DATA;OX=-2;Y=290}/@_ITEM_zbhs.勾选(怪物变异)>
     // <{S=清理背包;HINT=会清空背包内所有装备!!!仅测试时使用;X=50;Y=240}/@_ITEM_zbhs.清理背包>
     const M = 生成UI字符串(Player, S)
-    Npc.SayEx(Player, 'NPC中窗口', M)
+    Npc.SayEx(Player, 'NPC大窗口', M)
 }
 
 export function 信息屏蔽(Npc: TNormNpc, Player: TPlayObject): void {

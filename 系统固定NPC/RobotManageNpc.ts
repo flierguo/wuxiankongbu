@@ -1,26 +1,23 @@
 /*机器人*/
 import { RobotPlugIn } from "../功能脚本组/[功能]/_GN_Monitoring"
 import {
-    _P_P_AbilityData, _P_N_监狱计时, _P_N_可复活次数, 技能ID, _G_GA_DonationData,
-
-} from "../功能脚本组/[玩家]/_P_Base"
+    _P_N_监狱计时, _P_N_可复活次数, 技能ID } from "../功能脚本组/[玩家]/_P_Base"
+import * as _P_Base from "../功能脚本组/[玩家]/_P_Base"
 import * as _M_Robot from "../功能脚本组/[怪物]/_M_Robot"
 import { _M_N_宝宝释放群雷, _M_N_猎人宝宝群攻 } from "../功能脚本组/[怪物]/_M_Base"
 import { 基础属性第一条, 基础属性第十条, 备用四 } from "../功能脚本组/[装备]/_ITEM_Base"
-import { 实时回血 } from "../大数值版本/字符计算"
-import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法"
-import { 人物额外属性计算 } from "../大数值版本/装备属性统计"
+import { 实时回血, 血量显示 } from "../核心功能/字符计算"
+import { 智能计算, 转大数值  , js_百分比 , js_范围随机 , js_war} from "../大数值/核心计算方法";
+
+import { 人物额外属性计算 } from "../核心功能/装备属性统计"
 import * as 地图 from '../功能脚本组/[地图]/地图'
 import * as 刷怪 from '../功能脚本组/[怪物]/_M_Refresh'
 import { 回收装备 } from "../功能脚本组/[装备]/_ITEM_zbhs"
-import { 按分钟检测清理, 深度清理, 获取清理性能统计 } from '../大数值版本/清理冗余数据'
+import { 按分钟检测清理, 深度清理, 获取清理性能统计 } from '../核心功能/清理冗余数据'
 // 导入装备属性统计优化
-import { 清理装备JSON缓存, 获取装备缓存统计 } from "../大数值版本/装备属性统计"
-import { 快速验证实时清理效果, 快速验证装备掉落 } from "../大数值版本/装备掉落测试验证"
-import { 一键存入所有材料 } from "../功能脚本组/[服务]/材料仓库"
-import { 打印性能报告 } from '../应用智能优化版';
-import { 更新BUFF系统 } from '../大数值版本/BUFF';
 
+
+import { 一键存入所有材料 } from "../功能脚本组/[服务]/材料仓库"
 
 
 
@@ -81,23 +78,9 @@ export function _A_second(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void
 
     复活触发(Npc, Player, Args)
     // Player.SetHP(Player.GetMaxHP())
-    触发被动技能(Npc, Player, Args)
+    自动施法(Npc, Player, Args)
 
-    // BUFF系统更新（全局，使用全局标志确保每秒只执行一次）
-    if (!GameLib.R) {
-        GameLib.R = {};
-    }
-    if (!GameLib.R.BUFF更新时间戳) {
-        GameLib.R.BUFF更新时间戳 = 0;
-    }
     
-    const 当前时间 = GameLib.TickCount;
-    // 每100毫秒更新一次BUFF系统（更精确的伤害间隔）
-    if (当前时间 - GameLib.R.BUFF更新时间戳 >= 100) {
-        更新BUFF系统();
-        GameLib.R.BUFF更新时间戳 = 当前时间;
-    }
-
     //测试用 
     // Player.R.伤害提示 = true;
     // Player.V.宣传回收 = 0;
@@ -121,8 +104,8 @@ export function _A_second(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void
         Player.R.被攻击不允许随机 = Player.R.被攻击不允许随机 + 1
         if (Player.R.被攻击不允许随机 >= 5) {
             Player.R.被攻击状态 = false
-            if (js_war(Player.GetSVar(91), js_number(Player.GetSVar(92), `0.5`, 3)) < 0) {
-                实时回血(Player, js_number(Player.GetSVar(92), `0.5`, 3))
+            if (js_war(Player.GetSVar(91), 智能计算(Player.GetSVar(92), `0.5`, 3)) < 0) {
+                实时回血(Player, 智能计算(Player.GetSVar(92), `0.5`, 3))
                 Player.SendCountDownMessage(`退出战斗血量低于50%自动恢复至50%`, 0);
             }
         }
@@ -169,7 +152,7 @@ export function _A_second(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void
     if (Player.R.恢复点数 > 0 && js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0) {
         let 恢复血量 = 0
         Player.V.恢复专精激活 ? 恢复血量 = Player.R.恢复点数 / 1000 * 2 : 恢复血量 = Player.R.恢复点数 / 1000
-        let 血量加成 = js_number(Player.GetSVar(92), String(恢复血量), 3)
+        let 血量加成 = 智能计算(Player.GetSVar(92), String(恢复血量), 3)
         实时回血(Player, 血量加成)
     }
 
@@ -188,7 +171,7 @@ export function _A_second(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void
         }
         Player.R.回血2秒 ??= 0
         Player.R.回血2秒 = Player.R.回血2秒 + 1
-        let 回血 = js_number(Player.GetSVar(92), String(a), 3)
+        let 回血 = 智能计算(Player.GetSVar(92), String(a), 3)
         if (Player.R.回血2秒 >= 2) {
             实时回血(Player, 回血)
             Player.R.回血2秒 = 0
@@ -204,51 +187,9 @@ export function _A_second(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void
     }
 
 }
-export function 开始攻沙巴克(Npc: TNormNpc, Player: TPlayObject): void {
-    GameLib.V.攻沙巴克时间 ??= 0
-    GameLib.V.开始攻沙巴克 ??= false
-    GameLib.V.攻沙巴克时间 = GameLib.V.攻沙巴克时间 + 1
-
-    if (GameLib.V.攻沙巴克时间 >= 3) {
-        GameLib.V.开始攻沙巴克 = true
-        GameLib.V.攻沙巴克时间 = 0
-        GameLib.FindCastle('沙巴克').AddAllAttacker()  //所有行会加入攻城列表
-        GameLib.FindCastle('沙巴克').StartWall()  //开始攻城,延迟5-19秒
-    }
 
 
-}
-export function 结束攻沙巴克(Npc: TNormNpc, Player: TPlayObject): void {
-    if (GameLib.V.开始攻沙巴克) {
-        GameLib.FindCastle('沙巴克').StopWall()  //结束攻城
-        GameLib.V.开始攻沙巴克 = false
-        GameLib.V.胜利领奖 ??= false
-        GameLib.V.失败领奖 ??= false
-    }
-}
 
-export function 结束沙巴克1小时清空(Npc: TNormNpc, Player: TPlayObject): void {
-    if (GameLib.V.攻沙巴克时间 == 0) {
-        GameLib.V.首区攻杀 = true
-    }
-    delete GameLib.V.沙巴克杀人数量
-    GameLib.SetGVar(_G_GA_DonationData[0]._G_杀人数量, undefined)
-    GameLib.SetGVar(_G_GA_DonationData[1]._G_杀人数量, undefined)
-    GameLib.SetGVar(_G_GA_DonationData[2]._G_杀人数量, undefined)
-    GameLib.SetAVar(_G_GA_DonationData[0]._A_行会名字, undefined)
-    GameLib.SetAVar(_G_GA_DonationData[1]._A_行会名字, undefined)
-    GameLib.SetAVar(_G_GA_DonationData[2]._A_行会名字, undefined)
-    delete GameLib.V.胜利领奖
-    delete GameLib.V.失败领奖
-}
-
-//两点之间的距离
-export function 取两点距离(x1: number, y1: number, x2: number, y2: number): number {
-    let dx: number, dy: number
-    dx = x1 - x2;
-    dy = y1 - y2;
-    return Math.sqrt(dx * dx + dy * dy);
-}
 
 export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // 地图.分钟检测副本玩家数量()
@@ -285,45 +226,7 @@ export function _Ten_seconds(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     if (Player.V.材料入仓) {
         一键存入所有材料(Npc, Player, Args)
     }
-    const 地图等级 = 地图.取地图固定星级(Player.GetMap().GetName());
-
-    // 检查地图等级是否大于25
-    if (地图等级 > 25) {
-        const 魔器裂天装备 = Player.GetZodiacs(1);
-
-        if (!魔器裂天装备) {
-            // 没有佩戴魔器裂天
-            Player.MapMove('主城', 105, 120);
-            Npc.Take(Player, '回城石', 10);
-            Player.MessageBox('请佩戴魔器裂天');
-            return;
-        }
-
-        // 检查魔器裂天等级
-        const displayName = 魔器裂天装备.DisplayName;
-        const match = displayName.match(/『(\d+)级』/);
-
-        if (!match) {
-            // 无法识别等级
-            Player.MapMove('主城', 105, 120);
-            Npc.Take(Player, '回城石', 10);
-            Player.MessageBox('魔器裂天等级不足10级');
-            return;
-        }
-
-        const 魔器裂天等级 = Number(match[1]);
-
-        if (魔器裂天等级 < 10) {
-            // 等级不足10级
-            Player.MapMove('主城', 105, 120);
-            Npc.Take(Player, '回城石', 10);
-            Player.MessageBox(`魔器裂天不足10级,当前等级:${魔器裂天等级}级`);
-            return;
-        }
-
-        // console.log(`名字:${Player.GetName()} 装备 displayName:${displayName} 魔器裂天等级:${魔器裂天等级} 地图等级:${地图等级}`);
-    }
-
+    
 }
 /*每30S检测一次*/
 export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -359,7 +262,6 @@ export function 每分钟检测一次(Npc: TNormNpc, Player: TPlayObject, Args: 
     if (GameLib.R.定期加载 >= 10) { // 从5改为30分钟，减少CPU消耗
         // 🚀 性能优化：仅在必要时重载脚本引擎
         按分钟检测清理()
-        打印性能报告();
         GameLib.ReLoadScriptEngine();
         GameLib.R.定期加载 = 0
     }
@@ -409,74 +311,6 @@ export function 个人每日清理(Npc: TNormNpc, Player: TPlayObject, Args: TAr
     深度清理()
 }
 
-const 刷BOSS = [
-    { 地图名字: '诸天神殿[一幕]', BOSS名字: '远古树精' },
-    { 地图名字: '诸天神殿[二幕]', BOSS名字: '暗黑法师' },
-    { 地图名字: '诸天神殿[三幕]', BOSS名字: '圣光骑士' },
-    { 地图名字: '诸天神殿[四幕]', BOSS名字: '暗影虎王' },
-    { 地图名字: '诸天神殿[五幕]', BOSS名字: '地狱九头蛇' },
-]
-export function 刷世界BOSS(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void { //每4小时刷新一次
-    GameLib.V.判断新区 ??= false
-    GameLib.V.判断新区时间 ??= 0
-    if (GameLib.V.判断新区 == false) {
-        GameLib.V.判断新区时间 = GameLib.V.判断新区时间 + 1     //1分钟执行   一天 1440分钟
-        if (GameLib.V.判断新区时间 >= 1440 * 5) {
-            GameLib.V.判断新区 = true
-        }
-    }
-
-    // let AMap: TEnvirnoment
-    // GameLib.V.开始刷世界BOSS ??= 0
-    // GameLib.V.开始刷世界BOSS = GameLib.V.开始刷世界BOSS + 1
-    // if (GameLib.V.开始刷世界BOSS >= 240) {
-    //     GameLib.V.开始刷世界BOSS = 0
-    //     for (let 循环 of 刷BOSS) {
-    //         AMap = GameLib.FindMap(循环.地图名字);
-    //         if (AMap != null) {
-    //             GameLib.ClearMapMon(AMap.GetName());
-    //             GameLib.MonGen(AMap.GetName(), 循环.BOSS名字, 1, 39, 34, 0, 0, 0, 16, true, true, true, true)
-    //             GameLib.BroadcastTopMessage('世界BOSS刚刚刷新,请各位勇士前往挑战!'); //广播一个顶部滚动消息
-    //         }
-    //     }
-    // }
-}
-export function 触发被动技能(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (!Player.Death) {
-        Player.R.冰霜之环3秒 ??= 0
-        Player.R.群魔乱舞3秒 ??= 0
-        Player.R.武僧2秒回血 ??= 0
-        if (Player.V.冰法 && Player.FindSkill('冰霜之环')) {
-            Player.R.冰霜之环3秒++
-            if (Player.R.冰霜之环3秒 >= 3) {
-                Player.R.冰霜之环3秒 = 0
-                Player.MagicAttack(Player, 技能ID.冰法.冰霜之环被动)
-            }
-        }
-        if (Player.V.鬼舞者 && Player.FindSkill('群魔乱舞')) {
-            // Player.R.群魔乱舞3秒++
-            // if (Player.R.群魔乱舞3秒 >= 3) {
-            //     Player.R.群魔乱舞3秒 = 0
-            Player.MagicAttack(Player, 技能ID.鬼舞者.群魔乱舞被动)
-            //     // console.log('123')
-            // }
-        }
-
-        // Player.MagicAttack(Player,技能ID.猎人.分裂箭被动)  //技能测试
-
-        if (Player.V.武僧 && Player.FindSkill('天雷阵')) {
-            Player.MagicAttack(Player, 技能ID.武僧.天雷阵被动)
-            Player.R.武僧2秒回血++
-            let 回血 = js_number(Player.GetSVar(92), String(0.02 + (Math.floor(Player.R.体质强化等级 / 8) / 100)), 3)
-            if (Player.R.武僧2秒回血 >= 2 && Player.FindSkill('体质强化')) {
-                实时回血(Player, 回血)
-                Player.R.武僧2秒回血 = 0
-            }
-
-        }
-    }
-
-}
 
 const 圣墟点数道具配置 = [
     { 名称: '圣墟10点', 数值: 10, 类型: '圣墟点数' },
@@ -580,166 +414,163 @@ export function 自动吃元宝(Npc: TNormNpc, Player: TPlayObject, Args: TArgs)
 
 const 装备类型 = [4, 5, 6, 10, 11, 15, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 68, 35, 17, 18]
 
-// 🚀 性能优化：装备自动回收优化版
-export function 装备自动回收优化版(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    // 🚀 使用缓存避免重复初始化
-    Player.V.攻速魔速词条数值 ??= 0
-    Player.V.攻速魔速词条 ??= false
-    Player.V.吸血比例词条数值 ??= 0
-    Player.V.吸血比例词条 ??= false
 
-    let AItem: TUserItem;
-    let 元宝数量 = 0, 数量 = 0
+export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.R.施法读秒 ??= 0
+    Player.R.施法读秒++
+    
+    const V = Player.V;
+    const R = Player.R;
+    let Magic: TUserMagic;
+    let AActorList: TActorList;
 
-    // 🚀 性能优化：预分配变量，避免重复声明
-    let 生命 = 0, 防御 = 0, 攻击 = 0, 魔法 = 0, 道术 = 0, 射术 = 0, 刺术 = 0, 武术 = 0, 属性 = 0, 倍攻 = 0, 生肖 = 0, 种族 = 0, 天赋 = 0, 装备星星 = 0, 技能伤害 = 0, 攻速魔速 = 0, 吸血比例 = 0
+    // ==================== 六大新职业自动施法 ====================
+    // 根据技能描述实现持续性技能的自动施法
+    // 注意：这些技能在MagicNpc.ts中通过开启/关闭函数控制状态，这里实现持续伤害效果
+    
+    // ========== 每秒施法 ==========
+    if (R.施法读秒 % 1 === 0) {
 
-    // 🚀 性能优化：批量处理装备，每次最多处理5件，避免卡顿
-    const 批量限制 = 5
-    let 已处理数量 = 0
-
-    for (let I = Player.GetItemSize() - 1; I >= 0 && 已处理数量 < 批量限制; I--) {
-        // 🚀 重置计算变量
-        生命 = 防御 = 攻击 = 魔法 = 道术 = 射术 = 刺术 = 武术 = 属性 = 倍攻 = 生肖 = 种族 = 天赋 = 装备星星 = 技能伤害 = 攻速魔速 = 吸血比例 = 0
-        AItem = Player.GetBagItem(I);
-        if (装备类型.includes(AItem.StdMode) && !AItem.GetState().GetBind()) {
-            if ((Player.V.劣质 && AItem.DisplayName.includes('劣质')) || (Player.V.超强 && AItem.DisplayName.includes('超强')) || (Player.V.杰出 && AItem.DisplayName.includes('杰出'))
-                || (Player.V.传说 && AItem.DisplayName.includes('传说')) || (Player.V.神话 && AItem.DisplayName.includes('神话')) || (Player.V.传承 && AItem.DisplayName.includes('传承'))
-                || (Player.V.史诗 && AItem.DisplayName.includes('史诗')) || (Player.V.绝世 && AItem.DisplayName.includes('绝世')) || (Player.V.造化 && AItem.DisplayName.includes('造化'))
-                || (Player.V.混沌 && AItem.DisplayName.includes('混沌')) || (Player.V.底材 && AItem.DisplayName.includes('底材'))) {
-                if (Player.V.首饰 == false && (AItem.DisplayName.includes('艾维') || AItem.DisplayName.includes('阿拉贡') || AItem.DisplayName.includes('缺月'))) {
-                    return
+        // 天枢职业 - 怒斩：对周围8码内最近的敌人施法
+        if (V.职业 === '天枢' && !Player.InSafeZone) {
+            Magic = Player.FindSkill('怒斩');
+            if (Magic) {
+                const 最近目标 = 获取周围最近目标(Player, 8);
+                if (最近目标) {
+                    Player.MagicAttack(最近目标, _P_Base.技能ID.天枢.怒斩);
                 }
-                if (Player.V.时装 == false && AItem.DisplayName.includes('恶魔')) {
-                    return
-                }
-                if (AItem.GetCustomDesc() != ``) {
-                    let 装备字符串 = JSON.parse(AItem.GetCustomDesc())
-                    if (装备字符串.职业属性_职业) {
-                        let 装备属性条数 = 装备字符串.职业属性_职业.length
-                        for (let e = 0; e <= 装备属性条数 - 1; e++) {
-                            switch (Number(装备字符串.职业属性_职业[e])) {
-                                case 33: 攻击 = 攻击 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 34: 魔法 = 魔法 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 35: 道术 = 道术 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 36: 刺术 = 刺术 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 37: 射术 = 射术 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 38: 武术 = 武术 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 31: 生命 = 生命 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 32: 防御 = 防御 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 30: 属性 = 属性 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 350: case 351: case 352: 种族 = 种族 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 195: case 196: case 197: case 198: case 199: case 200: case 201: case 202: case 203: case 204: case 205: case 206: case 207: case 208: case 209: case 210:
-                                case 211: case 212: case 213: case 214: case 215: case 216: case 217: case 218: case 219: case 220: case 221: case 222: case 223: case 224: case 225: case 226:
-                                case 227: case 228: case 229: case 230: case 231: case 232: case 233: case 234: case 235: case 236: 倍攻 = 倍攻 + Number(装备字符串.职业属性_属性[e]); break;
-                                case 401: case 402: case 403: case 404: case 405: case 406: case 407: case 408: case 409: case 410: case 411: case 412: case 413: case 414: case 415: case 416:
-                                case 417: case 418: case 419: case 420: case 421: case 422: case 423: case 424: case 425: case 426: case 427: case 428: case 429: case 430: case 431: case 432:
-                                case 433: case 434: case 435: case 436: case 437: case 438: case 439: case 440: 技能伤害 = 技能伤害 + Number(装备字符串.职业属性_属性[e]); break;
-                                default: break;
-                            }
-                            if (Player.V.生肖词条 && (AItem.StdMode == 68 || AItem.StdMode == 35)) {
-                                // 生肖 = Decimal.plus(生肖, String(装备字符串.职业属性_属性[e]))
-                                生肖 = 生肖 + Number(AItem.GetCustomCaption(0))
-                            }
-                            if (Player.V.装备星星词条 && AItem.StdMode != 68 && AItem.StdMode != 35) {
-                                // 装备星星 = Decimal.plus(装备星星, String(装备字符串.职业属性_属性[e]))
-                                装备星星 = 装备星星 + Number(AItem.GetCustomCaption(0))
-                            }
-
-
-                        }
+            }
+        }
+        // 血神职业 - 血气燃烧
+        // 描述：开启后,每秒对周围5码范围内敌人造成150%的伤害,每级提高15%.(每秒消耗1%血量.血量低于10%时关闭)
+        if (V.职业 === '血神' && R.血气燃烧 ) {
+            // 检查血量是否低于10%，自动关闭
+            let 当前血量 = Player.GetSVar(91)
+            let 最大血量 = Player.GetSVar(92)
+            if (js_war(当前血量, 智能计算(最大血量, `0.1`, 3)) <= 0) {
+                R.血气燃烧 = false;
+                Player.SetCustomEffect(_P_Base.永久特效.关闭, -1);
+                Player.SendMessage('血量低于10%,血气燃烧自动关闭!', 2);
+            } else {
+                // 消耗1%血量
+                当前血量 = 智能计算(当前血量, 智能计算(最大血量, `0.01`, 3), 2);
+                Player.SetSVar(91, 当前血量);
+                血量显示(Player);
+                // 对周围5码敌人造成伤害
+                AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 5);
+                for (let i = 0; i < AActorList.Count; i++) {
+                    const Actor = AActorList.Actor(i);
+                    if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
+                        Player.Damage(Actor, 1, _P_Base.技能ID.血神.血气燃烧);
                     }
                 }
-                for (let i = 基础属性第一条; i <= 备用四; i++) {
-                    switch (true) {
-                        case AItem.GetOutWay1(i) >= 620 && AItem.GetOutWay1(i) <= 628: 天赋 = 天赋 + AItem.GetOutWay2(i); break
-                        case AItem.GetOutWay1(i) == 310: 攻速魔速 = 攻速魔速 + AItem.GetOutWay2(i); break
-                        case AItem.GetOutWay1(i) == 302: 吸血比例 = 吸血比例 + AItem.GetOutWay2(i); break
+            }
+        }
+
+        // 暗影职业 - 暗影剔骨
+        // 描述：开启后对周围6码范围内敌人造成300%伤害,每级提高30%,每秒消耗1点暗影点
+        if (V.职业 === '暗影' && R.暗影剔骨 && !Player.InSafeZone) {
+            // 检查暗影点，不足则自动关闭
+            if (!R.暗影点 || R.暗影点 < 1) {
+                R.暗影剔骨 = false;
+                Player.SetCustomEffect(_P_Base.永久特效.关闭, -1);
+                Player.SendMessage('暗影点不足,暗影剔骨自动关闭!', 2);
+            } else {
+                // 消耗1点暗影点
+                R.暗影点 = R.暗影点 - 1;
+                // 对周围6码敌人造成伤害
+                AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 6);
+                for (let i = 0; i < AActorList.Count; i++) {
+                    const Actor = AActorList.Actor(i);
+                    if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
+                        Player.SetCustomEffect( 1 , _P_Base.特效.暗影剔骨);
+                        Player.Damage(Actor, 1, _P_Base.技能ID.暗影.暗影剔骨);
                     }
                 }
+            }
+        }
 
-                if (Player.V.防御词条 && 防御 > Player.V.防御词条数值) { continue }
-                if (Player.V.血量词条 && 生命 > Player.V.血量词条数值) { continue }
-                if (Player.V.攻击词条 && 攻击 > Player.V.攻击词条数值) { continue }
-                if (Player.V.魔法词条 && 魔法 > Player.V.魔法词条数值) { continue }
-                if (Player.V.道术词条 && 道术 > Player.V.道术词条数值) { continue }
-                if (Player.V.刺术词条 && 刺术 > Player.V.刺术词条数值) { continue }
-                if (Player.V.射术词条 && 射术 > Player.V.射术词条数值) { continue }
-                if (Player.V.武术词条 && 武术 > Player.V.武术词条数值) { continue }
-                if (Player.V.属性词条 && 属性 > Player.V.属性词条数值) { continue }
-                if (Player.V.倍攻词条 && 倍攻 > Player.V.倍攻词条数值) { continue }
-                if (Player.V.天赋词条 && 天赋 > Player.V.天赋词条数值) { continue }
-                if (Player.V.攻速魔速词条 && 攻速魔速 > Player.V.攻速魔速词条数值) { continue }
-                if (Player.V.吸血比例词条 && 吸血比例 > Player.V.吸血比例词条数值) { continue }
-                if (Player.V.种族词条 && 种族 > Player.V.种族词条数值) { continue }
-                if (Player.V.生肖词条 && 生肖 > Player.V.生肖词条数值) { continue }
-                if (Player.V.装备星星词条 && 装备星星 > Player.V.装备星星词条数值) { continue }
-                if (Player.V.技能伤害词条 && 技能伤害 > Player.V.技能伤害词条数值) { continue }
+        // 正义职业 - 圣光（正义光环）
+        // 描述：开启后,每秒对周围5码内所有目标造成200%伤害,每级提高20%
+        if (V.职业 === '正义' && R.圣光 && !Player.InSafeZone) {
+            AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 5);
+            for (let i = 0; i < AActorList.Count; i++) {
+                const Actor = AActorList.Actor(i);
+                if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
+                    Actor.ShowEffectEx2(_P_Base.特效.圣光, -10, 20, true, 1);
 
-
-                数量++
-                switch (true) {
-                    case AItem.DisplayName.includes('[劣质]'): 元宝数量 += 0; break
-                    case AItem.DisplayName.includes('[超强]'): 元宝数量 += 1; break
-                    case AItem.DisplayName.includes('[杰出]'): 元宝数量 += 2; break
-                    case AItem.DisplayName.includes('[传说]'): 元宝数量 += 3; break
-                    case AItem.DisplayName.includes('[神话]'): 元宝数量 += 4; break
-                    case AItem.DisplayName.includes('[传承]'): 元宝数量 += 6; break
-                    case AItem.DisplayName.includes('[史诗]'): 元宝数量 += 8; break
-                    case AItem.DisplayName.includes('[绝世]'): 元宝数量 += 10; break
-                    case AItem.DisplayName.includes('[造化]'): 元宝数量 += 20; break
-                    case AItem.DisplayName.includes('[混沌]'): 元宝数量 += 50; break
-                    case AItem.DisplayName.includes('[底材]'): 元宝数量 += 2; break
-                    case AItem.DisplayName.includes('艾维'): 元宝数量 += 5; break
-                    case AItem.DisplayName.includes('阿拉贡'): 元宝数量 += 5; break
+                    Player.Damage(Actor, 1, _P_Base.技能ID.正义.圣光);
                 }
+            }
+        }
 
-                // ✅ 实时清理：自动回收时立即清理装备信息缓存
-                try {
-                    const 装备标识 = `${AItem.GetName()}_${Date.now()}`;
-                    const 装备描述 = AItem.GetCustomDesc();
-                    if (装备描述 && 装备描述.length > 0) {
-                        console.log(`🗑️ [自动回收]清理装备信息: ${装备标识}`);
-                    }
-                } catch (cleanupError) {
-                    console.log(`❌ [自动回收]清理装备信息出错: ${cleanupError}`);
+        // 不动职业 - 如山
+        // 描述：开启后,每秒对周围5码内造成400%伤害,每级提高40%
+        if (V.职业 === '不动' && R.如山 && !Player.InSafeZone) {
+            AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 5);
+            for (let i = 0; i < AActorList.Count; i++) {
+                const Actor = AActorList.Actor(i);
+                if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
+                    Actor.ShowEffectEx2(_P_Base.特效.如山, -10, 20, true, 1);
+                    Player.Damage(Actor, 1, _P_Base.技能ID.不动.如山);
                 }
-
-                // Npc.Take(Player, AItem.GetName())
-                Player.DeleteItem(AItem)
-                已处理数量++ // 🚀 性能优化：限制批量处理数量
             }
         }
     }
-    if (元宝数量 > 0) {
-        let 倍数 = 2
-        let 艾维利之戒指 = 0
-        if (Player.GetJewelrys(1) != null && Player.GetJewelrys(1).GetName() == '艾维利之戒' && Player.GetJewelrys(1).GetOutWay3(40) < 10) {
-            艾维利之戒指 = (Player.GetJewelrys(1).GetOutWay2(1) / 20 + Player.GetJewelrys(1).GetOutWay3(40) * 2) / 100
-        } else if (Player.GetJewelrys(1) != null && Player.GetJewelrys(1).GetName() == '艾维利之戒' && Player.GetJewelrys(1).GetOutWay3(40) >= 10) {
-            艾维利之戒指 = (Player.GetJewelrys(1).GetOutWay2(1) / 20 + Player.GetJewelrys(1).GetOutWay3(40) * 2 + 50) / 100
-        }
 
-        if (GameLib.V.判断新区 == false) {
-            倍数 = 4 + 艾维利之戒指
-        } else {
-            倍数 = 2 + 艾维利之戒指
+    // ========== 每2秒施法 ==========
+    if (R.施法读秒 % 2 === 0) {
+        // 烈焰职业 - 烈焰护甲
+        // 描述：开启后,每2秒对周围4格内的目标造成300%伤害,每级提高30%
+        if (V.职业 === '烈焰' && R.烈焰护甲 && !Player.InSafeZone) {
+            AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 4);
+            for (let i = 0; i < AActorList.Count; i++) {
+                const Actor = AActorList.Actor(i);
+                if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
+                    Actor.ShowEffectEx2(_P_Base.特效.烈焰护甲, -10, 20, true, 1);
+                    Player.Damage(Actor, 1, _P_Base.技能ID.烈焰.烈焰护甲);
+                }
+            }
         }
-        if (Player.GetJewelrys(1) != null && Player.GetJewelrys(1).GetName() == '艾维利之戒' && Player.GetJewelrys(1).GetOutWay3(40) >= 10) {
-            Player.SetGameGold(Player.GetGameGold() + Math.round(元宝数量 * (Player.V.回收元宝倍率 / 100) * 倍数))
-            Player.GoldChanged()
-            Player.SendMessage(`回收了{S=${数量};C=154}件装备,共获得{S=${Math.round(元宝数量 * (Player.V.回收元宝倍率 / 100) * 倍数)};C=253}枚元宝!`, 1)
-        } else {
-            Player.SetGameGold(Player.GetGameGold() + Math.round(元宝数量 / 2 * (Player.V.回收元宝倍率 / 100) * 倍数))
-            Player.GoldChanged()
-            Player.SendMessage(`回收了{S=${数量};C=154}件装备,共获得{S=${Math.round(元宝数量 / 2 * (Player.V.回收元宝倍率 / 100) * 倍数)};C=253}枚元宝!`, 1)
-        }
-
-
     }
+
 }
 
-// 🚀 保留原函数供兼容性，但现在调用优化版
-export function 装备自动回收1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    装备自动回收优化版(Npc, Player, Args)
+
+
+
+//两点之间的距离
+export function 取两点距离(x1: number, y1: number, x2: number, y2: number): number {
+    let dx: number, dy: number
+    dx = x1 - x2;
+    dy = y1 - y2;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * 获取玩家周围指定范围内最近的一个目标
+ * @param Player 玩家对象
+ * @param 范围 搜索范围（码）
+ * @returns 最近的目标，如果没找到则返回null
+ */
+export function 获取周围最近目标(Player: TPlayObject, 范围: number): TActor | null {
+    if (范围 <= 0) return null;
+    
+    const AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 范围);
+    let 最近目标: TActor | null = null;
+    let 最近距离 = Infinity;
+    const playerHandle = Player.GetHandle();
+    
+    for (let i = 0; i < AActorList.Count; i++) {
+        const Actor = AActorList.Actor(i);
+        if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== playerHandle && !Actor.IsPlayer() && !Actor.Master) {
+            const 距离 = 取两点距离(Player.MapX, Player.MapY, Actor.MapX, Actor.MapY);
+            if (距离 < 最近距离) {
+                最近距离 = 距离;
+                最近目标 = Actor;
+            }
+        }
+    }
+    
+    return 最近目标;
 }

@@ -1,7 +1,7 @@
 // import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法";
 import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法_优化版";
-import { 大数值整数简写, 人物属性 } from "../功能脚本组/[服务]/延时跳转";
-import { _P_N_可复活次数, 所有职业技能倍攻, 所有职业技能等级, 所有职业技能伤害 } from "../功能脚本组/[玩家]/_P_Base";
+import { 大数值整数简写,  } from "../功能脚本组/[服务]/延时跳转";
+import { _P_N_可复活次数, } from "../功能脚本组/[玩家]/_P_Base";
 import { 天赋五, 职业第一条 } from "../功能脚本组/[装备]/_ITEM_Base";
 import { 血量显示 } from "./字符计算";
 
@@ -555,23 +555,23 @@ class 属性处理优化器 {
 
     // 初始化映射表
     static {
-        // 动态构建技能倍攻映射 - 直接从枚举生成，确保100%覆盖
-        for (const 技能名 of Object.keys(所有职业技能倍攻).filter(key => isNaN(Number(key)))) {
-            const 枚举值 = 所有职业技能倍攻[技能名 as keyof typeof 所有职业技能倍攻];
-            // Player.R 中的属性名约定为 `技能名+倍攻`
-            this.技能倍攻映射.set(枚举值, `${技能名}倍攻`);
-        }
+        // // 动态构建技能倍攻映射 - 直接从枚举生成，确保100%覆盖
+        // for (const 技能名 of Object.keys(所有职业技能倍攻).filter(key => isNaN(Number(key)))) {
+        //     const 枚举值 = 所有职业技能倍攻[技能名 as keyof typeof 所有职业技能倍攻];
+        //     // Player.R 中的属性名约定为 `技能名+倍攻`
+        //     this.技能倍攻映射.set(枚举值, `${技能名}倍攻`);
+        // }
 
-        // 动态构建技能伤害映射 - 直接从枚举生成，确保100%覆盖
-        for (const 技能名 of Object.keys(所有职业技能伤害).filter(key => isNaN(Number(key)))) {
-            const 枚举值 = 所有职业技能伤害[技能名 as keyof typeof 所有职业技能伤害];
-            // Player.R 中的属性名约定为 `技能名+伤害`
+        // // 动态构建技能伤害映射 - 直接从枚举生成，确保100%覆盖
+        // for (const 技能名 of Object.keys(所有职业技能伤害).filter(key => isNaN(Number(key)))) {
+        //     const 枚举值 = 所有职业技能伤害[技能名 as keyof typeof 所有职业技能伤害];
+        //     // Player.R 中的属性名约定为 `技能名+伤害`
             
-            // 特殊处理宝宝速度，这些不属于伤害属性
-            if (技能名.includes('速度')) continue;
+        //     // 特殊处理宝宝速度，这些不属于伤害属性
+        //     if (技能名.includes('速度')) continue;
             
-            this.技能伤害映射.set(枚举值, `${技能名}伤害`);
-        }
+        //     this.技能伤害映射.set(枚举值, `${技能名}伤害`);
+        // }
     }
 
     /**
@@ -580,16 +580,16 @@ class 属性处理优化器 {
     private static 获取技能等级属性名(职业ID: number): string | null {
         // 根据职业ID范围返回对应的技能等级属性名
         // 这里需要根据实际的技能等级枚举来映射
-        try {
-            // 遍历所有职业技能等级枚举，找到匹配的
-            for (const [技能名, 枚举值] of Object.entries(所有职业技能等级)) {
-                if (枚举值 === 职业ID) {
-                    return `${技能名}等级`;
-                }
-            }
-        } catch (error) {
-            // 如果枚举不存在，返回null
-        }
+        // try {
+        //     // 遍历所有职业技能等级枚举，找到匹配的
+        //     for (const [技能名, 枚举值] of Object.entries(所有职业技能等级)) {
+        //         if (枚举值 === 职业ID) {
+        //             return `${技能名}等级`;
+        //         }
+        //     }
+        // } catch (error) {
+        //     // 如果枚举不存在，返回null
+        // }
         return null;
     }
 

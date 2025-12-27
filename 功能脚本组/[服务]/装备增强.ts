@@ -1,5 +1,5 @@
 import { js_number } from "../../全局脚本[公共单元]/utils/计算方法";
-import { 数字转单位2, 数字转单位3, 添加属性, 添加职业 } from "../../大数值版本/字符计算";
+import { 数字转单位2, 数字转单位3, 添加属性, 添加职业 } from "../../核心功能/字符计算";
 import { 基础属性分割, 备用三, 天赋五, 装备增强一, 装备增强二 } from "../[装备]/_ITEM_Base";
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {

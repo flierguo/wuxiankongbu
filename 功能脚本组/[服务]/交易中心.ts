@@ -1,4 +1,4 @@
-import * as 功能 from '../[功能]/_GN_功能'
+import * as 功能 from '../[功能]/_功能'
 import * as 交易市场 from "../[服务]/延时跳转"
 
 

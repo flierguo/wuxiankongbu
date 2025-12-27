@@ -3,7 +3,7 @@
 import { js_numberRandom, js_Random } from "../../全局脚本[公共单元]/utils/计算方法"
 import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法_优化版"
 
-import { 血量显示 } from "../../大数值版本/字符计算"
+import { 血量显示 } from "../../核心功能/字符计算"
 import { TAG, _M_BaseData, 原始名字, 怪物星数, 怪物爆率文件, 怪物称号, 怪物颜色 } from "./_M_Base"
 import * as 地图 from '../[地图]/地图';
 

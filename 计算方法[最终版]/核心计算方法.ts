@@ -470,7 +470,7 @@ export function js_war(n1: number | string, n2: number | string): number {
 /**
  * 高性能百分比计算
  */
-export function js_percentage(n1: string): string {
+export function js_百分比(n1: string): string {
     if (!n1 || n1 === '') return '0.00';
     
     const num = parseFloat(n1);

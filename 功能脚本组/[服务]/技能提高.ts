@@ -1,5 +1,5 @@
-import { PlayerAttr } from "../../data/player"
-import { 装备属性统计 } from "../../大数值版本/装备属性统计"
+
+import { 装备属性统计 } from "../../核心功能/装备属性统计"
 import { main } from "../[功能]/_GN_Number_To_Chinese"
 import { 特效 } from "../[玩家]/_P_Base"
 

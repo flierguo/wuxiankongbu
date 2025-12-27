@@ -1,5 +1,5 @@
 import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法";
-import { 所有职业技能伤害 } from "../[玩家]/_P_Base";
+import { 技能魔次} from "../[玩家]/_P_Base";
 
 // 常量定义
 const 选中 = 31;
@@ -14,12 +14,12 @@ export function 初始化(Player: TPlayObject) {
 
 // 获取技能名称
 function 取技能名称(技能ID: number): string {
-    for (const key in 所有职业技能伤害) {
-        // 使用类型断言和全等比较，避免类型错误
-        if (isNaN(Number(key)) && 所有职业技能伤害[key as keyof typeof 所有职业技能伤害] === 技能ID) {
-            return key;
-        }
-    }
+    // for (const key in 所有职业技能伤害) {
+    //     // 使用类型断言和全等比较，避免类型错误
+    //     if (isNaN(Number(key)) && 所有职业技能伤害[key as keyof typeof 所有职业技能伤害] === 技能ID) {
+    //         return key;
+    //     }
+    // }
     return '未知技能';
 }
 
@@ -35,7 +35,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let str = `{s=技能伤害词条保留;x=200;y=35;c=239}\n`;
     
     // 构建技能选择界面，每行4个技能
-    const 所有技能ID = Object.values(所有职业技能伤害).filter(id => typeof id === 'number') as number[];
+    const 所有技能ID = Object.values(技能魔次).filter(id => typeof id === 'number') as number[];
     
     // 移除掉466-469的技能ID（根据你提供的数据，这些是速度技能，不是伤害技能）
     const 过滤技能ID = 所有技能ID.filter(id => id < 466);

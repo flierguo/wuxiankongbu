@@ -1,6 +1,6 @@
 import { js_number } from "../../全局脚本[公共单元]/utils/计算方法";
-import { 实时回血 } from "../../大数值版本/字符计算";
-import { 装备属性统计 } from '../../应用智能优化版';
+import { 实时回血 } from "../../核心功能/字符计算";
+import { 装备属性统计 } from '../../性能优化/index_智能优化';
 import { 天赋五, 职业第一条 } from "../[装备]/_ITEM_Base";
 import { 大数值整数简写 } from "./延时跳转";
 
