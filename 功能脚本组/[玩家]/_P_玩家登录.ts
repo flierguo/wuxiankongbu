@@ -129,7 +129,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.伤害倍数 ??= 1
 	Player.R.暴击几率 ??= 0
 
-
+	Player.R.地图倍率 ??= 1
 	// 批量初始化：技能属性（等级、倍攻、范围）
 	// 六大职业技能列表
 	const 技能列表 = [

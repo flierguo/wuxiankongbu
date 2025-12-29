@@ -34,7 +34,8 @@ import * as 升级幸运 from "./功能脚本组/[服务]/升级幸运"
 
 import * as 测试NPC from "./功能脚本组/[服务]/测试NPC"
 import * as 生命水池 from "./功能脚本组/[服务]/生命水池"
-import * as 传送阵法 from "./功能脚本组/[服务]/传送阵法"
+import * as 传送阵法 from "./_核心部分/_地图/传送阵法"
+
 import * as 大陆传送 from "./功能脚本组/[服务]/大陆传送"
 import * as 勋章合成 from "./功能脚本组/[服务]/勋章合成"
 import * as _GN_功能 from "./功能脚本组/[功能]/_功能"

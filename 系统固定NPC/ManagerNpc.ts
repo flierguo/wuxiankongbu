@@ -1,8 +1,9 @@
 // import * as XXXX from "../功能脚本组/[XX]/XXXX"
 import * as _P_NewPlayer from "../功能脚本组/[玩家]/_P_玩家登录"
-import { Refresh } from "../功能脚本组/[怪物]/_M_Refresh"
-import { funcDie } from "../功能脚本组/[怪物]/_M_Die"
-import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../功能脚本组/[玩家]/_P_Base"
+import { Refresh as 旧刷怪属性 } from "../功能脚本组/[怪物]/_M_Refresh"
+import { Refresh as 新刷怪属性 } from "../_核心部分/_生物/生物属性"
+
+import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../_核心部分/基础常量"
 import { Main } from "../功能脚本组/[装备]/_ITEM_zbhs"
 import { 交易市场, 测试用的 } from "../功能脚本组/[服务]/延时跳转"
 import { 杀怪鞭尸 } from "../功能脚本组/[玩家]/_P_杀怪触发"
@@ -10,13 +11,29 @@ import * as 交易中心 from "../功能脚本组/[服务]/交易中心"
 // import { 计算伤害 } from "../大数值版本/攻击计算"
 // import { 计算伤害 } from '../应用智能优化版';
 // import { 计算伤害 } from '../性能优化/攻击计算_极致优化';
-import { 计算伤害 } from '../性能优化/攻击计算_超极致优化';
+import { 计算伤害 } from '../_核心部分/攻击计算';
 import { 装备属性统计 } from "../核心功能/装备属性统计"
 import { 实时回血, 血量显示 } from "../核心功能/字符计算"
 import { js_war } from "../全局脚本[公共单元]/utils/计算方法"
-import * as 地图1 from '../功能脚本组/[地图]/地图';
+import * as 地图1 from '../_核心部分/_地图/地图';
 import { 记录充值数据 } from "../功能脚本组/[服务]/充值属性"
 import * as 材料仓库 from "../功能脚本组/[服务]/材料仓库"
+import { 地图配置 } from "../_核心部分/世界配置"
+
+// 判断是否使用新刷怪系统的地图
+function 是新刷怪系统地图(地图名: string): boolean {
+    return 地图配置.some(c => 地图名.includes(c.地图名))
+}
+
+// 统一刷怪属性函数
+function Refresh(Envir: TEnvirnoment, Monster: TActor, Tag: number): void {
+    const 地图显示名 = Envir.DisplayName || Envir.GetName() || ''
+    if (是新刷怪系统地图(地图显示名)) {
+        新刷怪属性(Envir, Monster, Tag)
+    } else {
+        旧刷怪属性(Envir, Monster, Tag)
+    }
+}
 
 
 // ========================================
@@ -327,7 +344,7 @@ GameLib.onMonitorRevival = (Envir: TEnvirnoment, Actor: TActor, Tag: number): vo
 }
 //怪物死亡触发: Envir地图环境,Actor怪物信息,Killer击杀者,Tag为怪物标志
 GameLib.onMonitorDie = (Envir: TEnvirnoment, Actor: TActor, Killer: TActor, Tag: number): void => {
-    funcDie(Envir, Actor, Killer, Tag);
+
 }
 //怪物杀人触发: Envir地图环境,Actor怪物信息,Player被杀的玩家,Tag为怪物标志
 GameLib.onMonitorKill = (Envir: TEnvirnoment, Actor: TActor, Player: TPlayObject, Tag: number): void => { }

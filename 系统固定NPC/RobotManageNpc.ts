@@ -1,16 +1,17 @@
 /*机器人*/
 import { RobotPlugIn } from "../功能脚本组/[功能]/_GN_Monitoring"
 import {
-    _P_N_监狱计时, _P_N_可复活次数, 技能ID } from "../功能脚本组/[玩家]/_P_Base"
-import * as _P_Base from "../功能脚本组/[玩家]/_P_Base"
+    _P_N_监狱计时, _P_N_可复活次数, 技能ID } from "../_核心部分/基础常量"
+import * as _P_Base from "../_核心部分/基础常量"
 import * as _M_Robot from "../功能脚本组/[怪物]/_M_Robot"
+import * as 生物刷新 from "../_核心部分/_生物/生物刷新"
 import { _M_N_宝宝释放群雷, _M_N_猎人宝宝群攻 } from "../功能脚本组/[怪物]/_M_Base"
-import { 基础属性第一条, 基础属性第十条, 备用四 } from "../功能脚本组/[装备]/_ITEM_Base"
+
 import { 实时回血, 血量显示 } from "../核心功能/字符计算"
 import { 智能计算, 转大数值  , js_百分比 , js_范围随机 , js_war} from "../大数值/核心计算方法";
 
 import { 人物额外属性计算 } from "../核心功能/装备属性统计"
-import * as 地图 from '../功能脚本组/[地图]/地图'
+import * as 地图 from '../_核心部分/_地图/地图'
 import * as 刷怪 from '../功能脚本组/[怪物]/_M_Refresh'
 import { 回收装备 } from "../功能脚本组/[装备]/_ITEM_zbhs"
 import { 按分钟检测清理, 深度清理, 获取清理性能统计 } from '../核心功能/清理冗余数据'
@@ -23,11 +24,15 @@ import { 一键存入所有材料 } from "../功能脚本组/[服务]/材料仓�
 
 
 /*一秒执行*/
-export function _A_second(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 
     // 🚀 性能优化：使用计数器减少高频操作的执行频率
     Player.R.性能计数器 ??= 0
     Player.R.性能计数器++
+
+    // ==================== 圣耀副本爆率检测 ====================
+    // 每秒检测玩家是否离开圣耀副本，取消爆率加成
+    地图.离开圣耀副本检测(Player)
 
     // 🚀 性能优化：自动回收改为每5秒执行一次，而非每秒
     if (Player.V.自动回收 && Player.R.性能计数器 % 5 === 0) {
@@ -189,8 +194,6 @@ export function _A_second(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void
 }
 
 
-
-
 export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // 地图.分钟检测副本玩家数量()
     // _M_Robot.按分钟检测(Player)
@@ -212,11 +215,13 @@ export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 }
 
 export function 全局1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    // 新刷怪系统：检测玩家首次进入地图，10秒后刷全怪
+    生物刷新.秒钟检测首次刷怪()
+    // 旧刷怪系统保留兼容
     _M_Robot.秒钟第一次进入刷怪()
-
 }
 /*十秒执行*/
-export function _Ten_seconds(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+export function 个人10秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 
     /*监控外挂*/
     RobotPlugIn(Player);
@@ -230,9 +235,13 @@ export function _Ten_seconds(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 }
 /*每30S检测一次*/
 export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    // _M_Robot.分钟检测无人60分清理怪物()
+    // 新刷怪系统：定时补怪检测
+    生物刷新.定时补怪检测()
+    // 新刷怪系统：特殊BOSS刷新检测(击杀2000怪触发)
+    生物刷新.特殊BOSS刷新检测()
+    // 旧刷怪系统保留兼容
     _M_Robot.按分钟检测(Player)
-    // 地图.副本清理()
+    
     GameLib.R.测试属性 ??= 0
     GameLib.R.测试属性 += 1
     if (GameLib.R.测试属性 >= 100) {
@@ -247,14 +256,29 @@ export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): vo
     // ; 
 }
 
-// 🚨 修复：使用静态变量记录时间
-let 清理计数器 = 0;
-let 装备检查计数器 = 0;
-
 /*每1分钟检测一次*/
-export function 每分钟检测一次(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+export function 全局1分钟(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 
     地图.副本清理()
+    
+    // ==================== 圣耀副本清理 ====================
+    // 每分钟检测圣耀副本：24小时到期或无人30分钟后删除
+    地图.圣耀副本清理()
+    
+    // ==================== 新刷怪系统：无人地图清理 ====================
+    生物刷新.清理无人地图怪物()
+    
+    // ==================== 大陆BOSS刷新检测(TAG 6) ====================
+    // 每2小时在当前大陆所有地图刷新
+    生物刷新.大陆BOSS刷新检测()
+    
+    // ==================== 五分钟全面补怪 ====================
+    GameLib.R.五分钟补怪计数 ??= 0
+    GameLib.R.五分钟补怪计数 += 1
+    if (GameLib.R.五分钟补怪计数 >= 5) {
+        生物刷新.五分钟全面补怪()
+        GameLib.R.五分钟补怪计数 = 0
+    }
 
     // 🚀 性能优化：大幅减少脚本重载频率，从5分钟改为30分钟
     GameLib.R.定期加载 ??= 0
@@ -297,7 +321,7 @@ export function 复活触发(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     // Player.AddExtendButton('复活', '{S=当前可复活次数:;C=254}' + '{S=[;C=243}' + Player.GetNVar(_P_N_可复活次数) + '{S=];C=243}', '', 186, 1, -600)
 
 }
-export function 每日神器回收清除(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+export function 全局每日清理(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     delete GameLib.V.每日回收神器次数
     delete GameLib.V.每日宣传兑换次数
     Player.V.今日兑换礼卷 = 0
@@ -449,7 +473,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             let 最大血量 = Player.GetSVar(92)
             if (js_war(当前血量, 智能计算(最大血量, `0.1`, 3)) <= 0) {
                 R.血气燃烧 = false;
-                Player.SetCustomEffect(_P_Base.永久特效.关闭, -1);
+                Player.SetCustomEffect(_P_Base.永久特效.血气燃烧, -1);
                 Player.SendMessage('血量低于10%,血气燃烧自动关闭!', 2);
             } else {
                 // 消耗1%血量
@@ -473,7 +497,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             // 检查暗影点，不足则自动关闭
             if (!R.暗影点 || R.暗影点 < 1) {
                 R.暗影剔骨 = false;
-                Player.SetCustomEffect(_P_Base.永久特效.关闭, -1);
+                Player.SetCustomEffect(_P_Base.永久特效.暗影剔骨, -1);
                 Player.SendMessage('暗影点不足,暗影剔骨自动关闭!', 2);
             } else {
                 // 消耗1点暗影点

@@ -1,0 +1,340 @@
+/**
+ * 生物刷新系统 - 基于地图面积的智能刷怪
+ * 配置在 世界配置.ts 中统一管理
+ * 生物属性在 生物属性.ts 中根据TAG自动计算
+ * 
+ * 刷怪逻辑：
+ * - TAG 1-5: 首次进入10秒后刷全怪，5分钟补怪
+ * - TAG 6: 大陆BOSS，2小时检测，没有则补怪
+ * - TAG 7: 特殊BOSS，击杀2000怪触发
+ * 
+ * 锚点系统：
+ * - 锚点 = 地图等级 / 100 + 1
+ * - 锚点决定生物强度和装备属性等级
+ */
+
+import { 取地图 } from '../_地图/地图'
+import { 
+    TAG刷怪比例, 
+    大陆配置表, 
+    取生物名字, 
+    取特殊BOSS名字,
+    智能计算刷怪数量,
+    计算锚点,
+    取地图配置,
+    锚点配置
+} from '../世界配置'
+
+// ==================== 默认配置 ====================
+const 默认配置 = {
+    首次刷怪延迟: 10,        // 第一次进地图10秒后刷全怪
+    补怪检测间隔: 300,       // 每5分钟检测补怪
+    大陆BOSS检测间隔: 7200,  // 2小时检测大陆BOSS
+    特殊BOSS击杀触发: 2000,  // 击杀2000怪触发
+    补怪阈值: 0.5,           // 怪物数量低于50%时补怪
+}
+
+// ==================== 刷怪状态管理 ====================
+interface 地图刷怪状态 {
+    地图ID: string
+    地图名: string
+    首次刷怪完成: boolean
+    首次进入时间: number
+    上次补怪时间: number
+    击杀计数: number
+    大陆BOSS存活: boolean
+    特殊BOSS存活: boolean
+    目标怪物数: number       // 缓存计算后的目标数量
+    锚点信息: 锚点配置 | null
+}
+
+function 获取刷怪状态(地图ID: string): 地图刷怪状态 {
+    GameLib.R.刷怪状态 ??= {}
+    if (!GameLib.R.刷怪状态[地图ID]) {
+        GameLib.R.刷怪状态[地图ID] = {
+            地图ID,
+            地图名: '',
+            首次刷怪完成: false,
+            首次进入时间: 0,
+            上次补怪时间: 0,
+            击杀计数: 0,
+            大陆BOSS存活: false,
+            特殊BOSS存活: false,
+            目标怪物数: 0,
+            锚点信息: null
+        }
+    }
+    return GameLib.R.刷怪状态[地图ID]
+}
+
+function 设置刷怪状态(地图ID: string, 状态: Partial<地图刷怪状态>): void {
+    Object.assign(获取刷怪状态(地图ID), 状态)
+}
+
+// ==================== 核心刷怪函数 ====================
+
+/** 刷新指定TAG的怪物 - 使用地图中心点和智能范围 */
+function 刷新怪物(map: TEnvirnoment, 怪物名字: string, TAG: number, 数量: number): void {
+    if (!map || 数量 <= 0 || !怪物名字) return
+    
+    const 地图宽度 = map.GetMapWidth() || 100
+    const 地图高度 = map.GetMapHeight() || 100
+    const 中心X = Math.floor(地图宽度 / 2)
+    const 中心Y = Math.floor(地图高度 / 2)
+    const 刷怪范围 = Math.floor(Math.max(地图宽度, 地图高度) / 2)
+    
+    GameLib.MonGenEx(map, 怪物名字, 数量, 中心X, 中心Y, 刷怪范围, 0, 0, TAG, true, true, true, true)
+}
+
+/** 
+ * 首次刷全怪 - 智能计算数量
+ * 根据地图面积计算总数，按TAG比例分配
+ */
+function 首次刷全怪(map: TEnvirnoment, 地图名: string): void {
+    const 地图ID = map.MapName
+    const 状态 = 获取刷怪状态(地图ID)
+    if (状态.首次刷怪完成) return
+
+    const 总怪物数 = 智能计算刷怪数量(map)
+    状态.目标怪物数 = 总怪物数
+    状态.地图名 = 地图名
+    
+    const 地图配置 = 取地图配置(地图名)
+    if (地图配置) {
+        状态.锚点信息 = 计算锚点(地图配置.地图等级, 地图配置.固定星级)
+    }
+
+    for (let TAG = 1; TAG <= 5; TAG++) {
+        const 比例 = TAG刷怪比例[TAG as keyof typeof TAG刷怪比例]
+        const 数量 = Math.floor(总怪物数 * 比例)
+        if (数量 > 0) {
+            const 怪物名字 = 取生物名字(地图名, TAG)
+            刷新怪物(map, 怪物名字, TAG, 数量)
+        }
+    }
+
+    设置刷怪状态(地图ID, { 首次刷怪完成: true, 上次补怪时间: GameLib.TickCount })
+}
+
+/** 补怪检测 - 智能计算 */
+function 补怪(map: TEnvirnoment, 地图名: string): void {
+    const 状态 = 获取刷怪状态(map.MapName)
+    const 当前怪物数 = map.GetMonCount() || 0
+    
+    // 使用缓存的目标数量，或重新计算
+    let 目标怪物数 = 状态.目标怪物数
+    if (目标怪物数 <= 0) {
+        目标怪物数 = 智能计算刷怪数量(map)
+        状态.目标怪物数 = 目标怪物数
+    }
+
+    if (当前怪物数 < 目标怪物数 * 默认配置.补怪阈值) {
+        const 需补充总数 = 目标怪物数 - 当前怪物数
+        for (let TAG = 1; TAG <= 5; TAG++) {
+            const 比例 = TAG刷怪比例[TAG as keyof typeof TAG刷怪比例]
+            const 数量 = Math.floor(需补充总数 * 比例)
+            if (数量 > 0) {
+                const 怪物名字 = 取生物名字(地图名, TAG)
+                刷新怪物(map, 怪物名字, TAG, 数量)
+            }
+        }
+        设置刷怪状态(map.MapName, { 上次补怪时间: GameLib.TickCount })
+    }
+}
+
+
+// ==================== TAG 6 大陆BOSS刷新 ====================
+
+/** 
+ * 大陆BOSS刷新检测 - 每2小时检测
+ * 与TAG 1-5一样按比例刷新，但只在没有时补怪
+ */
+export function 大陆BOSS刷新检测(): void {
+    GameLib.R.大陆BOSS上次刷新时间 ??= 0
+    const 当前时间 = GameLib.TickCount
+    if (当前时间 - GameLib.R.大陆BOSS上次刷新时间 < 默认配置.大陆BOSS检测间隔 * 1000) return
+
+    GameLib.R.大陆BOSS上次刷新时间 = 当前时间
+    const 副本池 = 取地图()
+
+    for (const 大陆 of 大陆配置表) {
+        for (const 地图名 of 大陆.地图列表) {
+            for (const 副本 of 副本池) {
+                if (!副本?.地图ID || 副本.地图名 !== 地图名) continue
+
+                const map = GameLib.FindMap(副本.地图ID)
+                if (!map) continue
+
+                const 状态 = 获取刷怪状态(副本.地图ID)
+                
+                // 如果大陆BOSS存活，跳过
+                if (状态.大陆BOSS存活) continue
+
+                // 智能计算数量
+                let 目标数量 = 状态.目标怪物数
+                if (目标数量 <= 0) {
+                    目标数量 = 智能计算刷怪数量(map)
+                }
+                
+                // 按TAG6比例计算BOSS数量
+                const BOSS数量 = Math.max(1, Math.floor(目标数量 * TAG刷怪比例[6]))
+                
+                刷新怪物(map, 大陆.大陆BOSS名字, 6, BOSS数量)
+                状态.大陆BOSS存活 = true
+                
+                GameLib.BroadcastCountDownMessage(`{s=【大陆BOSS】;c=249}${大陆.大陆BOSS名字} x${BOSS数量} 出现在 ${map.DisplayName || 地图名}! 显示时间:<$Time:20$>…`)
+            }
+        }
+    }
+}
+
+// ==================== TAG 7 特殊BOSS刷新 ====================
+
+/** 增加击杀计数 */
+export function 增加击杀计数(地图ID: string): void {
+    获取刷怪状态(地图ID).击杀计数++
+}
+
+/** 特殊BOSS刷新检测 - 击杀2000怪后刷新 */
+export function 特殊BOSS刷新检测(): void {
+    const 副本池 = 取地图()
+
+    for (const 副本 of 副本池) {
+        if (!副本?.地图ID) continue
+
+        const 状态 = 获取刷怪状态(副本.地图ID)
+        if (状态.特殊BOSS存活) continue
+        if (状态.击杀计数 < 默认配置.特殊BOSS击杀触发) continue
+
+        const map = GameLib.FindMap(副本.地图ID)
+        if (!map) continue
+
+        const BOSS名字 = 取特殊BOSS名字(副本.地图名)
+        刷新怪物(map, BOSS名字, 7, 1)
+
+        状态.击杀计数 = 0
+        状态.特殊BOSS存活 = true
+
+        GameLib.BroadcastTopMessage(`{s=【特殊BOSS】${BOSS名字} 出现在 ${map.DisplayName || 副本.地图名}!;c=251}`)
+        GameLib.BroadcastCountDownMessage(`{s=【特殊BOSS】;c=251}${BOSS名字} 出现在 ${map.DisplayName}! 击杀2000怪物触发! 显示时间:<$Time:20$>…`)
+    }
+}
+
+/** 特殊BOSS死亡回调 */
+export function 特殊BOSS死亡(地图ID: string): void {
+    const 状态 = 获取刷怪状态(地图ID)
+    状态.特殊BOSS存活 = false
+    状态.击杀计数 = 0
+}
+
+/** 大陆BOSS死亡回调 */
+export function 大陆BOSS死亡(地图ID: string): void {
+    获取刷怪状态(地图ID).大陆BOSS存活 = false
+}
+
+// ==================== 锚点系统接口 ====================
+
+/** 获取地图锚点信息 */
+export function 获取地图锚点(地图ID: string): 锚点配置 | null {
+    const 状态 = 获取刷怪状态(地图ID)
+    return 状态.锚点信息
+}
+
+/** 根据地图ID获取装备等级基础 */
+export function 获取装备等级基础(地图ID: string): number {
+    const 锚点 = 获取地图锚点(地图ID)
+    return 锚点?.装备等级基础 || 100
+}
+
+/** 根据地图ID获取生物强度倍数 */
+export function 获取生物强度倍数(地图ID: string): number {
+    const 锚点 = 获取地图锚点(地图ID)
+    return 锚点?.生物强度倍数 || 1
+}
+
+// ==================== 定时器调用接口 ====================
+
+/** 秒钟检测首次刷怪 */
+export function 秒钟检测首次刷怪(): void {
+    const 副本池 = 取地图()
+    const 当前时间 = GameLib.TickCount
+
+    for (const 副本 of 副本池) {
+        if (!副本?.地图ID || 副本.地图ID === '') continue
+        if (!副本.地图名 || 副本.地图名 === '') continue
+
+        const map = GameLib.FindMap(副本.地图ID)
+        if (!map) continue
+
+        const 玩家数量 = map.GetHumCount() || 0
+        const 状态 = 获取刷怪状态(副本.地图ID)
+
+        if (玩家数量 > 0 && !状态.首次刷怪完成) {
+            if (状态.首次进入时间 === 0) {
+                状态.首次进入时间 = 当前时间
+                GameLib.R[副本.地图ID] = true
+            }
+            if (当前时间 - 状态.首次进入时间 >= 默认配置.首次刷怪延迟 * 1000) {
+                首次刷全怪(map, 副本.地图名)
+            }
+        }
+    }
+}
+
+/** 定时补怪检测 */
+export function 定时补怪检测(): void {
+    const 副本池 = 取地图()
+
+    for (const 副本 of 副本池) {
+        if (!副本?.地图ID) continue
+
+        const map = GameLib.FindMap(副本.地图ID)
+        if (!map) continue
+
+        const 玩家数量 = map.GetHumCount() || 0
+        const 状态 = 获取刷怪状态(副本.地图ID)
+
+        if (玩家数量 > 0 && 状态.首次刷怪完成) {
+            补怪(map, 副本.地图名)
+        }
+    }
+}
+
+/** 五分钟全面补怪 */
+export function 五分钟全面补怪(): void {
+    const 副本池 = 取地图()
+
+    for (const 副本 of 副本池) {
+        if (!副本?.地图ID) continue
+
+        const map = GameLib.FindMap(副本.地图ID)
+        if (!map || (map.GetHumCount() || 0) === 0) continue
+
+        补怪(map, 副本.地图名)
+    }
+}
+
+/** 清理无人地图怪物 */
+export function 清理无人地图怪物(): void {
+    const 副本池 = 取地图()
+
+    for (const 副本 of 副本池) {
+        if (!副本?.地图ID) continue
+
+        const map = GameLib.FindMap(副本.地图ID)
+        if (!map) continue
+
+        const 玩家数量 = map.GetHumCount() || 0
+        const 状态 = 获取刷怪状态(副本.地图ID)
+
+        if (玩家数量 === 0 && 状态.首次刷怪完成) {
+            状态.首次刷怪完成 = false
+            状态.首次进入时间 = 0
+            状态.击杀计数 = 0
+            状态.大陆BOSS存活 = false
+            状态.目标怪物数 = 0
+            GameLib.ClearMapMon(副本.地图ID)
+            GameLib.R[副本.地图ID] = false
+        }
+    }
+}

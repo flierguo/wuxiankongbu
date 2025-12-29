@@ -14,7 +14,7 @@
 */
 import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法";
 import { 大数值整数简写 } from "../[服务]/延时跳转";
-// import { _P_P_AbilityData, } from "../[玩家]/_P_Base"
+// import { _P_P_AbilityData, } from "../../_核心部分/基础常量"
 import { 基础属性第一条, 基础属性第十条, 备用四 } from "./_ITEM_Base";
 import * as 技能伤害选择 from "./技能伤害选择";
 // 常量定义

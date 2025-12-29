@@ -1,5 +1,5 @@
 import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法";
-import { 技能魔次} from "../[玩家]/_P_Base";
+import { 技能魔次} from "../../_核心部分/基础常量";
 
 // 常量定义
 const 选中 = 31;

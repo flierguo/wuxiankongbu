@@ -1,9 +1,9 @@
 
-import *  as 地图 from "./功能脚本组/[地图]/地图"
+import * as 地图 from './_核心部分/_地图/地图';
 import { 按分钟检测, 秒钟第一次进入刷怪 } from "./功能脚本组/[怪物]/_M_Robot"
 import { 打印性能报告, 清空所有缓存, 重置所有统计 } from './性能优化/index_智能优化';
 import { Decimal } from "./大数值/big_number";
-import { js_number } from "./计算方法[最终版]/核心计算方法";
+import { 智能计算 } from "./大数值/核心计算方法";
 
 
 
@@ -84,61 +84,10 @@ GameLib.onAdminUIButtonClick = (controlName: string): void => {
     }
 
     if (controlName == '测试功能输出') {
-        const 大数值 = Decimal.mul('500000', '1e100')
-        const 大数值2 = js_number(300000, 1e100, 3)
-
-        // 辅助函数：输出完整数值格式（非科学计数法）
-        function 输出完整数值(decimal: any): string {
-            if (!decimal || decimal.l === Number.NEGATIVE_INFINITY) return '0'
-            if (decimal.l === Number.POSITIVE_INFINITY) return 'Infinity'
-
-            const me = decimal.mantissaAndExponent
-            const 尾数 = me.m  // 例如 1.0, 2.5 等（范围 1-10）
-            const 指数 = me.e  // 例如 100
-
-            // 构建完整数值字符串
-            if (指数 >= 0) {
-                // 将尾数转换为字符串
-                const 尾数字符串 = 尾数.toString()
-
-                // 如果尾数是整数（如 1.0），直接补零
-                if (尾数字符串.includes('.')) {
-                    const [整数部分, 小数部分 = ''] = 尾数字符串.split('.')
-                    const 小数位数 = 小数部分.length
-                    const 需要补零数 = 指数 - 小数位数
-
-                    if (需要补零数 >= 0) {
-                        // 构建：整数部分 + 小数部分 + 补零
-                        return 整数部分 + 小数部分 + '0'.repeat(需要补零数)
-                    } else {
-                        // 指数小于小数位数，需要截断小数部分
-                        const 保留小数 = 小数部分.substring(0, 指数)
-                        return 整数部分 + (保留小数 || '')
-                    }
-                } else {
-                    // 尾数是整数，直接补零
-                    return 尾数字符串 + '0'.repeat(指数)
-                }
-            } else {
-                // 负数指数，输出小数形式（保留足够的小数位）
-                return decimal.toFixed(Math.abs(指数) + 10)
-            }
-        }
-
-        let unit = 大数值.e
-        let unit2 = 大数值2.e
-        console.log(`unit:${unit} , 数值:${输出完整数值(大数值)}`)
-        console.log(`unit2:${unit2} , 数值:${输出完整数值(大数值2)}`)
-        console.log(`大数值:${大数值.m} , 大数值2:${大数值2.m}`)
-
-        let Player = GameLib.FindPlayer('鸿福'); //查找玩家
-        if (Player != null) {
-            Player.SetAttackSpeed(10)
-            Player.RecalcAbilitys();
-            Player.ShowEffectEx2(13, -10, 20, true, 5)
-            // Player.SetCustomEffect(1 , 1)
-            console.log(`Player.R.怒斩范围:${Player.R.怒斩范围}`)
-        }
+        // const 大数值 = Decimal.mul('500000', '1e100')
+        const 大数值2 = 智能计算('300000', '1e100', 3)
+        console.log('大数值:', 大数值2)
+        console.log('副本长度:', GameLib.R.地图池.length)
     }
 
     if (controlName == '打印性能报告') {

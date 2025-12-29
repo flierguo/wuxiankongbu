@@ -1,8 +1,8 @@
 // import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法";
 import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法_优化版";
 import { 大数值整数简写,  } from "../功能脚本组/[服务]/延时跳转";
-import { _P_N_可复活次数, } from "../功能脚本组/[玩家]/_P_Base";
-import { 天赋五, 职业第一条 } from "../功能脚本组/[装备]/_ITEM_Base";
+import { _P_N_可复活次数, } from "../_核心部分/基础常量";
+import { 职业第五条, 职业第一条 } from "../功能脚本组/[装备]/_ITEM_Base";
 import { 血量显示 } from "./字符计算";
 
 /**
@@ -774,7 +774,7 @@ export function 装备属性统计(Player: TPlayObject, OnAItem: TUserItem, OffA
     // GetOutWay属性
     for (let a = 0; a <= 34; a++) {
         if (AItem = FindBodyItem(Player, a)) {
-            for (let i = 职业第一条; i <= 天赋五; i++) {
+            for (let i = 职业第一条; i <= 职业第五条; i++) {
                 switch (AItem.GetOutWay1(i)) {
                     case 710: Player.R.所有技能等级 += AItem.GetOutWay2(i); break;
                     case 865: Player.R.所有技能等级 += AItem.GetOutWay2(i); Player.R.人物技能倍攻百分比 += AItem.GetOutWay3(i); break;
@@ -1258,7 +1258,7 @@ export function 装备属性统计(Player: TPlayObject, OnAItem: TUserItem, OffA
 //     }
 //     for (let a = 0; a <= 34; a++) {
 //         if (AItem = FindBodyItem(Player, a)) {
-//             for (let i = 职业第一条; i <= 天赋五; i++) {
+//             for (let i = 职业第一条; i <= 职业第五条; i++) {
 //                 switch (AItem.GetOutWay1(i)) {
 
 //                     case 基础属性条数 + 710: Player.R.所有技能等级 = Player.R.所有技能等级 + AItem.GetOutWay2(i); break
@@ -2306,7 +2306,7 @@ function 处理天赋属性(Player: TPlayObject, OnAItem: TUserItem, OffAItem: T
 
         // 处理装备的基础属性（OutWay系统）
         try {
-            for (let i = 天赋五; i <= 职业第一条; i++) {
+            for (let i = 职业第五条; i <= 职业第一条; i++) {
                 if (AItem.GetOutWay1(i) >= 620 && AItem.GetOutWay1(i) <= 628) {
                     // 天赋处理
                     const 天赋值 = AItem.GetOutWay2(i);

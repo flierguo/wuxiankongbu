@@ -1,6 +1,6 @@
 import { 实时回血 } from "../../核心功能/字符计算"
 import { 装备属性统计 } from "../../核心功能/装备属性统计"
-import { 特效 } from "../[玩家]/_P_Base"
+import { 特效 } from "../../_核心部分/基础常量"
 import { 装备特效 } from "../[装备]/_ITEM_Base"
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {

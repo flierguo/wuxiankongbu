@@ -38,7 +38,15 @@ import { js_number_超大数值版 } from "../大数值/超大数值优化版";
  * @param n2 第二个数值（字符串）
  * @param mode 计算模式 1-8
  * @returns 计算结果字符串
- * 
+ *  * 计算模式：
+ * mode 1: 加法 (n1 + n2)
+ * mode 2: 减法 (n1 - n2)
+ * mode 3: 乘法 (n1 * n2)
+ * mode 4: 除法 - 整数结果
+ * mode 5: 除法 - 保留2位小数
+ * mode 6: 除法 - 保留5位小数
+ * mode 7: 幂运算 (n1^n2)
+ * mode 8: 等差数列求和 (从n1到n2的连续整数求和)
  * 使用示例：
  * ```typescript
  * // 自动选择最优路径

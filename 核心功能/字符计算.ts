@@ -84,7 +84,6 @@ export function 飘血数值1(num: string) {
     return `${newNum}`
   }
 }
-
 export function 飘血位数1(num: string) {
   let index1 = num.indexOf(".")
   if (index1 >= 0) {
@@ -104,8 +103,6 @@ export function 飘血位数1(num: string) {
   let item = UnitList[index]
   return `${item.图片位置}`
 }
-
-
 export function 实时回血(Player: TActor, 回血数值: string) {
   if(js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0){
     // let 飘血数值 = 数值飘血数值(回血数值).飘血数值

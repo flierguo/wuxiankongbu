@@ -2,7 +2,7 @@
 import { ItemProperty } from "../功能脚本组/[装备]/_ITEM_Drop"
 import { 攻击触发, 释放魔法触发 } from "../功能脚本组/[玩家]/释放魔法和攻击触发"
 import { monitoring } from "../功能脚本组/[功能]/_GN_Monitoring"
-import * as _P_Base from "../功能脚本组/[玩家]/_P_Base"
+import * as _P_Base from "../_核心部分/基础常量"
 
 import { 宝宝杀怪触发, 杀怪触发, 杀怪鞭尸, 特殊掉落, 经验勋章 } from "../功能脚本组/[玩家]/_P_杀怪触发"
 import { 使用物品 } from "../功能脚本组/[装备]/_ITEM_使用物品"
@@ -12,7 +12,7 @@ import { 怪物掉落物品触发 } from '../核心功能/怪物掉落物品触�
 import { 装备属性统计 } from "../核心功能/装备属性统计"
 import { 检查装备回收, 计算装备回收价值 } from "../功能脚本组/[装备]/_ITEM_zbhs"
 import { Main } from "../后台管理"
-import * as 地图 from '../功能脚本组/[地图]/地图';
+import * as 地图 from '../_核心部分/_地图/地图';
 
 import { 实时回血, 血量显示 } from "../核心功能/字符计算"
 import * as 随身仓库 from "../功能脚本组/[服务]/可视仓库"
@@ -141,8 +141,8 @@ GameLib.onGetExpEx = (Player: TPlayObject, ExpActor: TActor, Exp: number, Result
     if (ResultExp >= 1000000) { ResultExp = 1000000 }
     
     // 获取玩家所在地图等级
-    const 玩家地图名 = Player.GetMap().GetName();
-    const 玩家地图等级 = 地图.取地图固定星级(玩家地图名);
+    const 玩家地图ID = Player.GetMap().MapName;
+    const 玩家地图等级 = 地图.地图ID取固定星级(玩家地图ID);
     
     // 如果地图等级低于10，1%的几率获得额外经验值
     if (玩家地图等级 < 10) {

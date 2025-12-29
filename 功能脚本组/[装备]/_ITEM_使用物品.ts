@@ -10,9 +10,8 @@ export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUser
             Player.RandomMove(Player.GetMapName())
             return
         case 100: //回城石
-            if (Player.V.战神 == false && Player.V.骑士 == false && Player.V.火神 == false && Player.V.冰法 == false && Player.V.驯兽师 == false && Player.V.牧师 == false &&
-                Player.V.刺客 == false && Player.V.鬼舞者 == false && Player.V.神射手 == false && Player.V.猎人 == false && Player.V.武僧 == false && Player.V.罗汉 == false) { Player.MessageBox('请先选择职业!'); return }
-            if (Player.V.种族 == '') { Player.MessageBox('请先选择种族!'); Player.MapMove('边界村', 69, 119); return }
+            if (Player.V.职业 == '') { Player.MessageBox('请先选择职业!'); return }
+            // if (Player.V.种族 == '') { Player.MessageBox('请先选择种族!'); Player.MapMove('边界村', 69, 119); return }
             Player.MapMove('主城', random(10) + 105, random(10) + 120)
             break
         case 101: //灵晶盒
@@ -268,7 +267,7 @@ export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUser
             return
         case 135: //无限之殇
             Player.V.杀怪翻倍 = js_number(Player.V.杀怪翻倍, '1', 1)
-            const 总倍率 = js_number('0' , Player.V.杀怪翻倍, 8);
+            const 总倍率 = js_number('0', Player.V.杀怪翻倍, 8);
             Player.SendMessage(`{S=你成功使用无限之殇,当前已使用${Player.V.杀怪翻倍}个,杀怪增加属性提高${总倍率}倍;C=250}`, 1)
             GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=9}使用‘{S=无限之殇;C=22},当前已使用${Player.V.杀怪翻倍}个,杀怪增加属性提高{S=${总倍率}倍;C=58}!`);
             GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=9}使用‘{S=无限之殇;C=22},当前已使用${Player.V.杀怪翻倍}个,杀怪增加属性提高{S=${总倍率}倍;C=58}!`);

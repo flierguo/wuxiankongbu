@@ -1,9 +1,60 @@
-import * as _P_Base from "../功能脚本组/[玩家]/_P_Base"
+import * as _P_Base from "../_核心部分/基础常量"
 import { 实时回血 } from "../核心功能/字符计算"
 import { 大数值整数简写 } from "../功能脚本组/[服务]/延时跳转"
 import { 智能计算 } from "../大数值/核心计算方法"
+import { BOSS技能1, BOSS技能4, 怪物技能1ID, 怪物技能1几率, 怪物技能4ID, 怪物技能4几率 } from "../_核心部分/基础常量"
+
+// ==================== 怪物技能选择回调 ====================
+GameLib.onMonSelectMagicBeforeAttack = (AMon: TActor, ATarget: TActor, AMagicID: number): number => {
+    // 检查是否是玩家的宝宝，宝宝有特殊处理
+    const Player = AMon.Master as TPlayObject
+    if (Player && Player.IsPlayer()) {
+        // 宝宝技能处理（如果需要可以在这里添加）
+        return AMagicID
+    }
+    
+    // 怪物技能处理
+    if (AMon.GetSVar(BOSS技能1) !== '' || AMon.GetSVar(BOSS技能4) !== '') {
+        const 技能1ID = AMon.GetNVar(怪物技能1ID)
+        const 技能1几率 = AMon.GetNVar(怪物技能1几率)
+        const 技能4ID = AMon.GetNVar(怪物技能4ID)
+        const 技能4几率 = AMon.GetNVar(怪物技能4几率)
+        
+        // 治愈术特殊处理（对自己释放）
+        if (技能1ID === 10036) {
+            AMon.MagicAttack(AMon, 10036)
+        } else if (random(140) < 技能1几率) {
+            // 释放技能1
+            AMon.MagicAttack(ATarget, 技能1ID)
+        } else if (技能4ID === 10036) {
+            AMon.MagicAttack(AMon, 10036)
+        } else if (random(140) < 技能4几率) {
+            // 释放技能4
+            AMon.MagicAttack(ATarget, 技能4ID)
+        }
+    }
+    
+    return AMagicID
+}
 
 
+export function 查看属性(Source: TActor, Target: TActor): void {
+    let Player: TPlayObject = Source as TPlayObject
+    if (Target != null && !Target.IsPlayer()) {
+        let 生命 = 大数值整数简写(Target.GetSVar(92))
+        let 攻击小 = 大数值整数简写(Target.GetSVar(93))
+        let 攻击大 = 大数值整数简写(Target.GetSVar(94))
+        let 防御小 = 大数值整数简写(Target.GetSVar(95))
+        let 防御大 = 大数值整数简写(Target.GetSVar(96))
+        Player.SendMessage(`${Target.GetSVar(_P_Base.原始名字)}属性:`, 1)
+        Player.SendMessage(`生命:${生命}`, 1)
+        Player.SendMessage(`攻击:${攻击小}-${攻击大}`, 1)
+        Player.SendMessage(`防御:${防御小}-${防御大}`, 1)
+        实时回血(Target, Player.GetSVar(92))
+        // console.log(Target.GetCamp())
+    }
+
+}
 // ==================== 通用函数 ====================
 export function 获取玩家范围内目标(Player: TPlayObject, 范围: number): TActor[] {
     if (范围 <= 0) return [];
@@ -573,6 +624,7 @@ export function 怪物群体雷电术(Source: TActor, Target: TActor): void {
 // ==================== 技能执行注册 ====================
 // 注意：技能名称必须与_P_玩家登录.ts中的技能列表保持一致
 const MagicExecutes: { [key: string]: (Source: TActor, Target: TActor) => void } = {
+    "查看属性" : 查看属性,
     // ========== 基础技能 ==========
     "攻杀剑术": 攻杀剑术,
     "刺杀剑术": 刺杀剑术,
@@ -587,7 +639,7 @@ const MagicExecutes: { [key: string]: (Source: TActor, Target: TActor) => void }
     "万箭齐发": 万箭齐发,
     "罗汉棍法": 罗汉棍法,
     "天雷阵": 天雷阵,
-    
+
     // ========== 天枢职业 ==========
     "怒斩": 怒斩,
     "人之怒": 人之怒,

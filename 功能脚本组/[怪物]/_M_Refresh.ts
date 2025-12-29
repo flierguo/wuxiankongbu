@@ -2,14 +2,13 @@
 
 import { js_numberRandom, js_Random } from "../../全局脚本[公共单元]/utils/计算方法"
 import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法_优化版"
-
 import { 血量显示 } from "../../核心功能/字符计算"
-import { TAG, _M_BaseData, 原始名字, 怪物星数, 怪物爆率文件, 怪物称号, 怪物颜色 } from "./_M_Base"
-import * as 地图 from '../[地图]/地图';
+import { TAG, 原始名字, 怪物星数, 怪物爆率文件, 怪物称号, 怪物颜色 } from "./_M_Base"
+import * as 地图 from '../../_核心部分/_地图/地图';
 
 
 /**
- * 怪物配置接口定义
+ * 怪物配置接口
  */
 interface 怪物配置 {
     类别: string;
@@ -391,7 +390,7 @@ function 设置怪物属性(Monster: TActor, 匹配配置: 刷怪配置, 怪怪�
     Monster.SetMaxHP(100000000);
     Monster.SetHP(100000000);
     
-    const 地图固定星级 = 地图.取地图固定星级(匹配配置.地图名字);
+    const 地图固定星级 = 地图.地图ID取固定星级(匹配配置.地图名字);
     
     // console.log(`地图固定星级: ${地图固定星级}`)
     // 设置基础经验值

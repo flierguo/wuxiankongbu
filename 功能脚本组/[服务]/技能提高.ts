@@ -1,7 +1,7 @@
 
 import { 装备属性统计 } from "../../核心功能/装备属性统计"
 import { main } from "../[功能]/_GN_Number_To_Chinese"
-import { 特效 } from "../[玩家]/_P_Base"
+import { 特效 } from "../../_核心部分/基础常量"
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // const S = `\\\\\\\\\\

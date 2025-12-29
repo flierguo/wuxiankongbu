@@ -1,6 +1,6 @@
 import { js_number, js_war } from "../../全局脚本[公共单元]/utils/计算方法_优化版";
 import { 实时回血, 血量显示 } from "../../核心功能/字符计算";
-import * as 地图 from '../[地图]/地图';
+import * as 地图 from '../../_核心部分/_地图/地图';
 import { TAG, 允许鞭尸, 原始名字, 怪物星数, 怪物爆率文件, 怪物称号, 怪物超星数 } from "../[怪物]/_M_Base"
 import * as 功能 from "../../全局脚本[公共单元]/utils/_功能"
 
@@ -429,7 +429,7 @@ export function 经验勋章(Player: TPlayObject, Monster: TActor): void {
 
 export function 大陆成就(Player: TPlayObject): void {
     let 随机 = random(300)
-    if (Player.V.第一章成就 && 随机 < 1) {
+    if (Player.V.第一章成就 && 随机 < 4) {
         Player.SetGameGold(Player.GetGameGold() + (random(200) + 1))
         Player.GoldChanged()
         Player.SendMessage(`{S=【大陆成就触发】;C=253}: 你获得了{S=${random(200) + 1}元宝;C=250}`, 1)
@@ -480,7 +480,7 @@ export function 大陆成就(Player: TPlayObject): void {
 }
 
 export function 特殊掉落(Player: TPlayObject, Monster: TActor): void {
-    const 地图等级 = 地图.取地图固定星级(Player.GetMap().GetName());
+    const 地图等级 = 地图.地图ID取固定星级(Player.GetMap().MapID);
     const 随机几率 = Math.random() * 2000; // 生成0-100的随机数
     let 取尾数 = Monster.GetNVar(TAG) % 10
     // } else if (取尾数 == 5) {

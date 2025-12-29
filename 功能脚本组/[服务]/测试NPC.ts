@@ -1,5 +1,5 @@
 import { 装备属性统计 } from '../../性能优化/index_智能优化';
-import { 特效 } from "../[玩家]/_P_Base";
+import { 特效 } from "../../_核心部分/基础常量";
 
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {

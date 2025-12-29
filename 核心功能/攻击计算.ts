@@ -1,11 +1,11 @@
 
 import { 原始名字 , TAG } from "../功能脚本组/[怪物]/_M_Base";
 import { 大数值整数简写, 随机小数 } from "../功能脚本组/[服务]/延时跳转";
-import { _P_N_可复活次数, 技能ID, 特效, 永久特效 } from "../功能脚本组/[玩家]/_P_Base";
+import { _P_N_可复活次数, 技能ID, 特效, 永久特效 } from "../_核心部分/基础常量";
 
 import { 实时回血, 攻击飘血, 血量显示 } from "./字符计算";
 import { CheckBuffGroupID, 技能ID转换技能名称 } from "../功能脚本组/[功能]/_功能";
-import * as 地图 from '../功能脚本组/[地图]/地图';
+import * as 地图 from '../_核心部分/_地图/地图';
 import { 智能计算, 转大数值  , js_百分比 , js_范围随机 , js_war} from "../大数值/核心计算方法";
 
 // ==================== 受伤被动技能计算（从MagicNpc.ts整合） ====================

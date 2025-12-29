@@ -1,9 +1,4 @@
 
-declare const __filename:string
-declare const __dirname:string
-
-declare function require(filePath:string): any;
-
 declare interface TMissionLinkItem {
 
 }
@@ -1203,7 +1198,8 @@ declare class TPlayObject extends TActor {
 	SetClientMagicUseTime(Magic: TUserMagic,Value: number): void;
 	SetClientMagicOffsetUseTime(Magic: TUserMagic,Value: number): void;
 	QueryClientQuickBarItemCount(Ident: string): void;
-	V:any;	R:any;
+	V:any;
+	R:any;
         }
 declare class TNormNpc extends TActor {
 	CloseDialog(PlayObject: TPlayObject): void;
@@ -1284,7 +1280,8 @@ declare class TGuild {
 	GetCustomSaveStr(): string;
 	CustomSaveStr:string;
 	SetCustomSaveStr(Value: string): void;
-	V:any;	R:any;
+	V:any;
+	R:any;
         }
 declare class TUserCastle {
 	GetMapCastle(): TEnvirnoment;
@@ -2425,7 +2422,9 @@ declare class TM2Core {
 	CreateBlockEvent(MapName: string,X: number,Y: number,Time: number,UIEffect: number): void;
 	GetActorByHandle(ActorHandle: number): TActor;
 	readonly ActorByHandle:TActor;
-	V:any;	R:any;	onNpcClicked : (Npc : TNormNpc,PlayObject : TPlayObject,ClickLabel : string,AUnitName : string,AParams : string) =>void;
+	V:any;
+	R:any;
+	onNpcClicked : (Npc : TNormNpc,PlayObject : TPlayObject,ClickLabel : string,AUnitName : string,AParams : string) =>void;
 	onPlayerLevelUp : (PlayObject : TPlayObject,Level : number) =>void;
 	onPlayerLogin : (PlayObject : TPlayObject,OnlineAddExp : boolean) =>void;
 	onPlayerInitialization : (PlayObject : TPlayObject) =>void;

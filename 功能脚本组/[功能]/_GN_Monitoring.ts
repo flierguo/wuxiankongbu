@@ -1,6 +1,6 @@
 /*监控*/
 import { G_GoldLocked, setG_GoldLocked } from "../[服务]/充值使者";
-import { _P_P_ATTACK, _P_P_MAGIC, _P_P_RIDING, _P_P_RUNNING, _P_P_WALK, _P_P_PRISON, _P_N_JAIL, _P_N_监狱计时 } from "../[玩家]/_P_Base"
+import { _P_P_ATTACK, _P_P_MAGIC, _P_P_RIDING, _P_P_RUNNING, _P_P_WALK, _P_P_PRISON, _P_N_JAIL, _P_N_监狱计时 } from "../../_核心部分/基础常量"
 
 const Prison = '0156';//监狱 MapName
 const RMB = 100;//玩家出狱需要RMB点的数量
