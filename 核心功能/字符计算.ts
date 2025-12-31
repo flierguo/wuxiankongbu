@@ -1,6 +1,6 @@
 
 import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法"
-import { 大数值整数简写 } from "../功能脚本组/[服务]/延时跳转"
+import { 大数值整数简写 } from "../_核心部分/字符计算"
 import { 大数值单位 , 数字位数 } from "../大数值/大数值单位"
 
 

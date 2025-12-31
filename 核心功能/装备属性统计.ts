@@ -1,6 +1,6 @@
 // import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法";
 import { js_number, js_war } from "../全局脚本[公共单元]/utils/计算方法_优化版";
-import { 大数值整数简写,  } from "../功能脚本组/[服务]/延时跳转";
+import { 大数值整数简写,  } from "../_核心部分/字符计算";
 import { _P_N_可复活次数, } from "../_核心部分/基础常量";
 import { 职业第五条, 职业第一条 } from "../功能脚本组/[装备]/_ITEM_Base";
 import { 血量显示 } from "./字符计算";
@@ -2001,6 +2001,7 @@ export function FindBodyItem(Player: TPlayObject, Id: number): TUserItem {
     }
     return AItem
 }
+
 export function 清空变量(Player: TPlayObject): void {
 
     GameLib.V[Player.PlayerID] ??= {}

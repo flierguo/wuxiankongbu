@@ -1,7 +1,7 @@
 import Decimal = require("./大数值/big_number");
 import { js_number, js_numberRandom, js_numberRandom2, js_war } from "./全局脚本[公共单元]/utils/计算方法";
 import { 分钟检测无人60分清理怪物 } from "./功能脚本组/[怪物]/_M_Robot";
-import { 装备数值简写, 随机小数 } from "./功能脚本组/[服务]/延时跳转";
+
 // import { _P_N_可复活次数 } from "./功能脚本组/[玩家]/_P_Base";
 import { 数字转单位2, 数字转单位3 } from "./核心功能/字符计算";
 

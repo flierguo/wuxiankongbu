@@ -94,7 +94,9 @@ export const 仓库第一页 = 9;// NPC 当前页面
 /* Check[Index: Integer ]: Boolean Check变量 */
 export const _P_CH_按钮伸缩 = 2; // 
 
-
+export enum 基础词条 {
+    血量 = 106, 防御 = 107, 攻击 = 100, 魔法 = 101 , 道术 = 102 , 刺术 = 103 , 箭术 = 104 , 武术 = 105
+}
 
 export enum 技能魔次 {
     //基础技能魔次

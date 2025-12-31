@@ -247,9 +247,9 @@ export function 获取装备等级基础(地图ID: string): number {
 }
 
 /** 根据地图ID获取生物强度倍数 */
-export function 获取生物强度倍数(地图ID: string): number {
+export function 获取生物强度倍数(地图ID: string): string {
     const 锚点 = 获取地图锚点(地图ID)
-    return 锚点?.生物强度倍数 || 1
+    return 锚点?.生物强度倍数 || '1'
 }
 
 // ==================== 定时器调用接口 ====================

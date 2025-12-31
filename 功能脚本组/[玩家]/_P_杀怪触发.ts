@@ -3,6 +3,7 @@ import { 实时回血, 血量显示 } from "../../核心功能/字符计算";
 import * as 地图 from '../../_核心部分/_地图/地图';
 import { TAG, 允许鞭尸, 原始名字, 怪物星数, 怪物爆率文件, 怪物称号, 怪物超星数 } from "../[怪物]/_M_Base"
 import * as 功能 from "../../全局脚本[公共单元]/utils/_功能"
+import { 执行掉落 } from "../../_核心部分/_装备/爆率系统"
 
 // 怪物掉落配置接口
 interface 怪物掉落配置 {
@@ -140,6 +141,11 @@ export function 杀怪触发(Player: TPlayObject, Monster: TActor): void {
     处理怪物掉落(Player, Monster);
     经验勋章(Player, Monster);
     特殊掉落(Player, Monster);
+    
+    // 爆率系统掉落
+    const 地图名 = Player.Map.DisplayName || ''
+    const 怪物TAG = Monster.GetNVar(TAG) % 10
+    执行掉落(Player, Monster, 地图名, 怪物TAG)
 
 
 }
@@ -202,6 +208,11 @@ export function 宝宝杀怪触发(Player: TPlayObject, Slave: TActor, Monster: 
     处理怪物掉落(Player, Monster);
     经验勋章(Player, Monster);
     特殊掉落(Player, Monster);
+    
+    // 爆率系统掉落
+    const 地图名 = Player.Map.DisplayName || ''
+    const 怪物TAG = Monster.GetNVar(TAG) % 10
+    执行掉落(Player, Monster, 地图名, 怪物TAG)
 }
 export function 杀怪鞭尸(Player: TPlayObject, Monster: TActor): void {
 

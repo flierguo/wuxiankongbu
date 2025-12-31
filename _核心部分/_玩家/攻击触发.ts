@@ -1,6 +1,7 @@
 // import { js_number } from "../../全局脚本[公共单元]/utils/计算方法";
 // import { 实时回血 } from "../../大数值版本/字符计算";
 // import { 技能ID, 显示图标 } from "./_P_Base";
+import { 技能ID } from "../基础常量"
 
 export function 释放魔法触发(Player: TPlayObject, UserMagic: TUserMagic, Target: TActor): void {
 //     Randomize()
@@ -78,9 +79,14 @@ export function 攻击触发(Player: TPlayObject, UserMagic: TUserMagic, Target:
 
 //     }
 
-//     if(Player.Job == 0 && UserMagic.MagID == 0){
-//         Player.DamageDelay(Target, 1, 500, 999)
-//     }
+    if(Player.Job == 0 && UserMagic.MagID == 0){
+        if (random(100) < 10) {
+            Player.MagicAttack(Target, 技能ID.基础技能.攻杀剑术)
+        } else
+            Player.MagicAttack(Target, 技能ID.基础技能.半月弯刀)
+    }
+
+
 
 //     if (random(300) < (1 + Math.floor(Player.V.暴怒等级 / 100)) && Player.V.暴怒等级 > 0 && Player.R.暴怒状态 == false) {
 //         Player.R.暴怒状态 = true

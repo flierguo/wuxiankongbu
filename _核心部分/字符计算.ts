@@ -52,6 +52,12 @@ export function 大数值整数简写(num: string): string {
     }
 }
 
+export function 随机小数(min: number, max: number): number {
+    if (min > max) {
+        [min, max] = [max, min]; // 交换参数，确保 min <= max
+    }
+    return Math.random() * (max - min) + min;
+}
 export function 飘血数值1(num: string) {
   let index1 = num.indexOf(".")
   if (index1 >= 0) {
@@ -77,6 +83,7 @@ export function 飘血数值1(num: string) {
     return `${newNum}`
   }
 }
+
 export function 飘血位数1(num: string) {
   let index1 = num.indexOf(".")
   if (index1 >= 0) {
@@ -96,6 +103,7 @@ export function 飘血位数1(num: string) {
   let item = UnitList[index]
   return `${item.图片位置}`
 }
+
 export function 实时回血(Player: TActor, 回血数值: string) {
   if(js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0){
     // let 飘血数值 = 数值飘血数值(回血数值).飘血数值
@@ -111,6 +119,7 @@ export function 实时回血(Player: TActor, 回血数值: string) {
     血量显示(Player)
   }
 }
+
 export function 自动实时回血(Player: TActor, 回血数值: string) {
   if(js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0){
     let 回血 = 智能计算(Player.GetSVar(91), 回血数值 , 1)  
@@ -119,6 +128,7 @@ export function 自动实时回血(Player: TActor, 回血数值: string) {
     血量显示(Player)
   }
 }
+
 export function 实时扣血(DamageSource: TActor, Target: TActor, 扣血数值: string) {
   let 血量: string
  if(js_war(Target.GetSVar(91), 扣血数值) > 0){
@@ -189,6 +199,55 @@ export function 攻击飘血(Player: TActor, 最终攻击 = `0`, 时间 = 1500, 
   }
 }
 
+export function 数字转单位2(num: string) {
+  let index1 = num.indexOf(".")
+  if (index1 >= 0) {
+    num = num.substring(0, index1)
+  }
+
+  let index = UnitList.length - 1
+  let tmp = num.length - MaxShowLen
+  for (let i = 0; i < UnitList.length; i++) {
+    let item = UnitList[i]
+    if (tmp <= item.len) {
+      index = i
+      break
+    }
+  }
+  if (index == 0) {
+    return num
+  }
+  else {
+    let item = UnitList[index]
+    let newNum = num.substring(0, num.length - item.len)
+    return `${newNum}`
+  }
+}
+
+export function 数字转单位3(num: string) {
+  let index1 = num.indexOf(".")
+  if (index1 >= 0) {
+    num = num.substring(0, index1)
+  }
+
+  let index = UnitList.length - 1
+  let tmp = num.length - MaxShowLen
+  for (let i = 0; i < UnitList.length; i++) {
+    let item = UnitList[i]
+    if (tmp <= item.len) {
+      index = i
+      break
+    }
+  }
+
+  let item = UnitList[index]
+  // 保持原来“减 11 帧偏移”的逻辑
+  let 图片位置 = item.图片位置 - 11
+  if (图片位置 < 1) {
+    图片位置 = 999999
+  }
+  return `${图片位置}`
+}
 
 
 export function 血量显示(Player: TActor) {

@@ -17,11 +17,11 @@ import * as 充值使者 from "./功能脚本组/[服务]/充值使者"
 import * as 材料仓库 from "./功能脚本组/[服务]/材料仓库"
 import * as _YXFW_King from "./功能脚本组/[服务]/_YXFW_King"
 import * as _P_CanSeeStorage from "./功能脚本组/[玩家]/_P_CanSeeStorage"
-import * as _ITEM_zbhs from "./功能脚本组/[装备]/_ITEM_zbhs"
+import * as 装备回收 from "./_核心部分/_装备/装备回收"
 import * as _ITEM_使用物品 from "./功能脚本组/[装备]/_ITEM_使用物品"
 import * as _P_杀怪触发 from "./功能脚本组/[玩家]/_P_杀怪触发"
 import * as _GN_Monitoring from "./功能脚本组/[功能]/_GN_Monitoring"
-import * as _P_玩家登录 from "./功能脚本组/[玩家]/_P_玩家登录"
+import * as 登录触发 from "./_核心部分/_玩家/登录触发"
 
 import * as 充值属性 from "./功能脚本组/[服务]/充值属性"
 
@@ -63,7 +63,7 @@ UnitMap.set("充值使者", 充值使者)
 UnitMap.set("材料仓库", 材料仓库)
 UnitMap.set("_YXFW_King", _YXFW_King)
 UnitMap.set("_P_CanSeeStorage", _P_CanSeeStorage)
-UnitMap.set("_ITEM_zbhs", _ITEM_zbhs)
+UnitMap.set("装备回收", 装备回收)
 UnitMap.set("技能伤害选择", 技能伤害选择)
 UnitMap.set("_ITEM_使用物品", _ITEM_使用物品)
 UnitMap.set("_P_AbilityTo", _ITEM_使用物品)

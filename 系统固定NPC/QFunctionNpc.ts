@@ -1,6 +1,6 @@
 
 import { ItemProperty } from "../功能脚本组/[装备]/_ITEM_Drop"
-import { 攻击触发, 释放魔法触发 } from "../功能脚本组/[玩家]/释放魔法和攻击触发"
+import { 攻击触发, 释放魔法触发 } from "../_核心部分/_玩家/攻击触发"
 import { monitoring } from "../功能脚本组/[功能]/_GN_Monitoring"
 import * as _P_Base from "../_核心部分/基础常量"
 
@@ -10,7 +10,7 @@ import { 取两点距离 } from "./RobotManageNpc"
 // import { 怪物掉落物品触发 } from "../大数值版本/怪物掉落物品触发"
 import { 怪物掉落物品触发 } from '../核心功能/怪物掉落物品触发';
 import { 装备属性统计 } from "../核心功能/装备属性统计"
-import { 检查装备回收, 计算装备回收价值 } from "../功能脚本组/[装备]/_ITEM_zbhs"
+
 import { Main } from "../后台管理"
 import * as 地图 from '../_核心部分/_地图/地图';
 
@@ -238,63 +238,12 @@ GameLib.onMonDropItem = (Actor: TActor, Monster: TActor, Item: TUserItem, Map: T
 
     // 检查背包空间
     if (Player.GetItemSize() < Player.GetMaxBagSize()) {
-        try {
-            // 创建新装备
-            let newItem = Player.GiveItem(Item.DisplayName);
-            if (newItem) {
-                // 赋予装备属性
-                怪物掉落物品触发(Player, Monster, newItem);
-                
-                // 检查是否需要自动回收
-                if (Player.V.自动回收) {
-                    // 使用装备回收检查函数
-                    const 回收检查结果 = 检查装备回收(newItem, Player);
-                    
-                    if (回收检查结果.应该回收 && !回收检查结果.应该保留) {
-                        // 计算回收价值
-                        const 回收价值 = 计算装备回收价值(newItem, Player);
-                        
-                        // 执行回收
-                        if (回收价值.价值 > 0) {
-                            // 给与回收奖励
-                            if (回收价值.货币类型 === '元宝') {
-                                Player.SetGameGold(Player.GetGameGold() + 回收价值.价值);
-                                Player.GoldChanged();
-                            } else if (回收价值.货币类型 === '金币') {
-                                Player.SetGold(Player.GetGold() + 回收价值.价值);
-                                Player.GoldChanged();
-                            }
-                            
-                            // 累计回收统计
-                            Player.R.回收统计_数量 = (Player.R.回收统计_数量 || 0) + 1;
-                            Player.R.回收统计_金币 = (Player.R.回收统计_金币 || 0) + (回收价值.货币类型 === '金币' ? 回收价值.价值 : 0);
-                            Player.R.回收统计_元宝 = (Player.R.回收统计_元宝 || 0) + (回收价值.货币类型 === '元宝' ? 回收价值.价值 : 0);
-                            
-                            // 删除装备（自动回收）
-                            Player.DeleteItem(newItem);
-                            
-                            // 触发回收提示检查
-                            检查回收提示(Player);
-                        }
-                        
-                        return false; // 不在地图上生成物品
-                    }
-                }
-                
-                // 装备符合条件，保留在背包中
-                return false;
-            } else {
-                console.log(`[装备] 创建新装备失败: ${Item.DisplayName}`);
-                return true; // 允许在地图上生成物品
-            }
-        } catch (error) {
-            console.log(`[装备] 处理装备掉落出错: ${error}`);
-            return true; // 出错时允许在地图上生成物品
-        }
+       return false;
     } else {
         // 背包满了，不掉落物品
         return false;
     }
+    return true;
 }
 //根据怪物名称爆出物品触发(针对监视物品)：Owner:物品所属玩家，Monster:怪物名称,item:物品，Accept：是否允许掉落
 GameLib.onDropItemByMonName = (Owner: TPlayObject, Monster: string, Item: TUserItem): boolean => {

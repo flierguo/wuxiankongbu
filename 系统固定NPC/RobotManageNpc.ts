@@ -1,19 +1,22 @@
 /*机器人*/
+import { 获取玩家范围内目标, 获取目标范围内目标 } from "./MagicNpc"
+
 import { RobotPlugIn } from "../功能脚本组/[功能]/_GN_Monitoring"
 import {
-    _P_N_监狱计时, _P_N_可复活次数, 技能ID } from "../_核心部分/基础常量"
+    _P_N_监狱计时, _P_N_可复活次数, 技能ID
+} from "../_核心部分/基础常量"
 import * as _P_Base from "../_核心部分/基础常量"
 import * as _M_Robot from "../功能脚本组/[怪物]/_M_Robot"
 import * as 生物刷新 from "../_核心部分/_生物/生物刷新"
 import { _M_N_宝宝释放群雷, _M_N_猎人宝宝群攻 } from "../功能脚本组/[怪物]/_M_Base"
 
 import { 实时回血, 血量显示 } from "../核心功能/字符计算"
-import { 智能计算, 转大数值  , js_百分比 , js_范围随机 , js_war} from "../大数值/核心计算方法";
+import { 智能计算, 转大数值, js_百分比, js_范围随机, js_war } from "../大数值/核心计算方法";
 
 import { 人物额外属性计算 } from "../核心功能/装备属性统计"
 import * as 地图 from '../_核心部分/_地图/地图'
 import * as 刷怪 from '../功能脚本组/[怪物]/_M_Refresh'
-import { 回收装备 } from "../功能脚本组/[装备]/_ITEM_zbhs"
+
 import { 按分钟检测清理, 深度清理, 获取清理性能统计 } from '../核心功能/清理冗余数据'
 // 导入装备属性统计优化
 
@@ -36,7 +39,7 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 
     // 🚀 性能优化：自动回收改为每5秒执行一次，而非每秒
     if (Player.V.自动回收 && Player.R.性能计数器 % 5 === 0) {
-        回收装备(Npc, Player, Args)
+        // 回收装备(Npc, Player, Args)
     }
     if (Player.V.开启挂机 && Player.R.性能计数器 % 5 === 0) {
         Player.ReloadBag()
@@ -85,7 +88,7 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
     // Player.SetHP(Player.GetMaxHP())
     自动施法(Npc, Player, Args)
 
-    
+
     //测试用 
     // Player.R.伤害提示 = true;
     // Player.V.宣传回收 = 0;
@@ -231,7 +234,7 @@ export function 个人10秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): vo
     if (Player.V.材料入仓) {
         一键存入所有材料(Npc, Player, Args)
     }
-    
+
 }
 /*每30S检测一次*/
 export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -241,7 +244,7 @@ export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): vo
     生物刷新.特殊BOSS刷新检测()
     // 旧刷怪系统保留兼容
     _M_Robot.按分钟检测(Player)
-    
+
     GameLib.R.测试属性 ??= 0
     GameLib.R.测试属性 += 1
     if (GameLib.R.测试属性 >= 100) {
@@ -260,18 +263,18 @@ export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): vo
 export function 全局1分钟(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 
     地图.副本清理()
-    
+
     // ==================== 圣耀副本清理 ====================
     // 每分钟检测圣耀副本：24小时到期或无人30分钟后删除
     地图.圣耀副本清理()
-    
+
     // ==================== 新刷怪系统：无人地图清理 ====================
     生物刷新.清理无人地图怪物()
-    
+
     // ==================== 大陆BOSS刷新检测(TAG 6) ====================
     // 每2小时在当前大陆所有地图刷新
     生物刷新.大陆BOSS刷新检测()
-    
+
     // ==================== 五分钟全面补怪 ====================
     GameLib.R.五分钟补怪计数 ??= 0
     GameLib.R.五分钟补怪计数 += 1
@@ -442,21 +445,37 @@ const 装备类型 = [4, 5, 6, 10, 11, 15, 19, 20, 21, 22, 23, 24, 25, 26, 27, 2
 export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     Player.R.施法读秒 ??= 0
     Player.R.施法读秒++
-    
+
     const V = Player.V;
     const R = Player.R;
     let Magic: TUserMagic;
     let AActorList: TActorList;
 
+    // ==================== 初始化自动施法变量 ====================
+    // 天枢职业
+    R.怒斩自动施法 ??= false;
+    // 血神职业
+    R.血气献祭自动施法 ??= false;
+    R.血魔临身自动施法 ??= false;
+    // 暗影职业
+    R.暗影袭杀自动施法 ??= false;
+    R.暗影风暴自动施法 ??= false;
+    R.暗影附体自动施法 ??= false;
+    // 烈焰职业
+    R.火焰追踪自动施法 ??= false;
+    // 不动职业
+    R.人王盾自动施法 ??= false;
+    R.金刚掌自动施法 ??= false;
+
     // ==================== 六大新职业自动施法 ====================
     // 根据技能描述实现持续性技能的自动施法
     // 注意：这些技能在MagicNpc.ts中通过开启/关闭函数控制状态，这里实现持续伤害效果
-    
+
     // ========== 每秒施法 ==========
     if (R.施法读秒 % 1 === 0) {
 
         // 天枢职业 - 怒斩：对周围8码内最近的敌人施法
-        if (V.职业 === '天枢' && !Player.InSafeZone) {
+        if (V.职业 === '天枢' && !Player.InSafeZone && R.怒斩自动施法) {
             Magic = Player.FindSkill('怒斩');
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
@@ -465,9 +484,29 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 }
             }
         }
+
+        // 血神职业 - 血气献祭：对周围8码内最近的敌人施法
+        if (V.职业 === '血神' && !Player.InSafeZone && R.血气献祭自动施法) {
+            Magic = Player.FindSkill('血气献祭');
+            if (Magic) {
+                const 最近目标 = 获取周围最近目标(Player, 8);
+                if (最近目标) {
+                    Player.MagicAttack(最近目标, _P_Base.技能ID.血神.血气献祭);
+                }
+            }
+        }
+
+        // 血神职业 - 血魔临身：自动释放（有CD）
+        if (V.职业 === '血神' && !Player.InSafeZone && R.血魔临身自动施法 && !R.血魔临身) {
+            Magic = Player.FindSkill('血魔临身');
+            if (Magic) {
+                Player.MagicAttack(Player, _P_Base.技能ID.血神.血魔临身);
+            }
+        }
+
         // 血神职业 - 血气燃烧
         // 描述：开启后,每秒对周围5码范围内敌人造成150%的伤害,每级提高15%.(每秒消耗1%血量.血量低于10%时关闭)
-        if (V.职业 === '血神' && R.血气燃烧 ) {
+        if (V.职业 === '血神' && R.血气燃烧) {
             // 检查血量是否低于10%，自动关闭
             let 当前血量 = Player.GetSVar(91)
             let 最大血量 = Player.GetSVar(92)
@@ -481,13 +520,41 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 Player.SetSVar(91, 当前血量);
                 血量显示(Player);
                 // 对周围5码敌人造成伤害
-                AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 5);
-                for (let i = 0; i < AActorList.Count; i++) {
-                    const Actor = AActorList.Actor(i);
-                    if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                        Player.Damage(Actor, 1, _P_Base.技能ID.血神.血气燃烧);
-                    }
+                const 范围 = 5 + (R.血气燃烧范围 || 0);
+                const 目标列表 = 获取玩家范围内目标(Player, 范围);
+                for (const 目标 of 目标列表) {                    
+                    Player.Damage(目标, 1, _P_Base.技能ID.血神.血气燃烧);
                 }
+            }
+        }
+
+        // 暗影职业 - 暗影袭杀：对周围8码内最近的敌人施法
+        if (V.职业 === '暗影' && !Player.InSafeZone && R.暗影袭杀自动施法) {
+            Magic = Player.FindSkill('暗影袭杀');
+            if (Magic) {
+                const 最近目标 = 获取周围最近目标(Player, 8);
+                if (最近目标) {
+                    Player.MagicAttack(最近目标, _P_Base.技能ID.暗影.暗影袭杀);
+                }
+            }
+        }
+
+        // 暗影职业 - 暗影风暴：对周围8码内最近的敌人施法（有CD）
+        if (V.职业 === '暗影' && !Player.InSafeZone && R.暗影风暴自动施法) {
+            Magic = Player.FindSkill('暗影风暴');
+            if (Magic && R.暗影点 >= 5) {
+                const 最近目标 = 获取周围最近目标(Player, 8);
+                if (最近目标) {
+                    Player.MagicAttack(最近目标, _P_Base.技能ID.暗影.暗影风暴);
+                }
+            }
+        }
+
+        // 暗影职业 - 暗影附体：自动释放（有CD）
+        if (V.职业 === '暗影' && !Player.InSafeZone && R.暗影附体自动施法 && !R.暗影附体) {
+            Magic = Player.FindSkill('暗影附体');
+            if (Magic && R.暗影点 >= 10) {
+                Player.MagicAttack(Player, _P_Base.技能ID.暗影.暗影附体);
             }
         }
 
@@ -507,9 +574,20 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 for (let i = 0; i < AActorList.Count; i++) {
                     const Actor = AActorList.Actor(i);
                     if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                        Player.SetCustomEffect( 1 , _P_Base.特效.暗影剔骨);
+                        Player.SetCustomEffect(1, _P_Base.特效.暗影剔骨);
                         Player.Damage(Actor, 1, _P_Base.技能ID.暗影.暗影剔骨);
                     }
+                }
+            }
+        }
+
+        // 烈焰职业 - 火焰追踪：对周围8码内最近的敌人施法
+        if (V.职业 === '烈焰' && !Player.InSafeZone && R.火焰追踪自动施法) {
+            Magic = Player.FindSkill('火焰追踪');
+            if (Magic) {
+                const 最近目标 = 获取周围最近目标(Player, 8);
+                if (最近目标) {
+                    Player.MagicAttack(最近目标, _P_Base.技能ID.烈焰.火焰追踪);
                 }
             }
         }
@@ -522,8 +600,26 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 const Actor = AActorList.Actor(i);
                 if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
                     Actor.ShowEffectEx2(_P_Base.特效.圣光, -10, 20, true, 1);
-
                     Player.Damage(Actor, 1, _P_Base.技能ID.正义.圣光);
+                }
+            }
+        }
+
+        // 不动职业 - 人王盾：自动释放（有CD）
+        if (V.职业 === '不动' && !Player.InSafeZone && R.人王盾自动施法 && !R.人王盾护盾值) {
+            Magic = Player.FindSkill('人王盾');
+            if (Magic) {
+                Player.MagicAttack(Player, _P_Base.技能ID.不动.人王盾);
+            }
+        }
+
+        // 不动职业 - 金刚掌：对周围8码内最近的敌人施法（有CD）
+        if (V.职业 === '不动' && !Player.InSafeZone && R.金刚掌自动施法) {
+            Magic = Player.FindSkill('金刚掌');
+            if (Magic) {
+                const 最近目标 = 获取周围最近目标(Player, 8);
+                if (最近目标) {
+                    Player.MagicAttack(最近目标, _P_Base.技能ID.不动.金刚掌);
                 }
             }
         }
@@ -579,12 +675,12 @@ export function 取两点距离(x1: number, y1: number, x2: number, y2: number):
  */
 export function 获取周围最近目标(Player: TPlayObject, 范围: number): TActor | null {
     if (范围 <= 0) return null;
-    
+
     const AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 范围);
     let 最近目标: TActor | null = null;
     let 最近距离 = Infinity;
     const playerHandle = Player.GetHandle();
-    
+
     for (let i = 0; i < AActorList.Count; i++) {
         const Actor = AActorList.Actor(i);
         if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== playerHandle && !Actor.IsPlayer() && !Actor.Master) {
@@ -595,6 +691,6 @@ export function 获取周围最近目标(Player: TPlayObject, 范围: number): T
             }
         }
     }
-    
+
     return 最近目标;
 }

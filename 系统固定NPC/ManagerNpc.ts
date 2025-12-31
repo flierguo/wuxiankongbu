@@ -1,10 +1,10 @@
 // import * as XXXX from "../功能脚本组/[XX]/XXXX"
-import * as _P_NewPlayer from "../功能脚本组/[玩家]/_P_玩家登录"
+import * as _P_NewPlayer from "../_核心部分/_玩家/登录触发"
 import { Refresh as 旧刷怪属性 } from "../功能脚本组/[怪物]/_M_Refresh"
 import { Refresh as 新刷怪属性 } from "../_核心部分/_生物/生物属性"
 
 import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../_核心部分/基础常量"
-import { Main } from "../功能脚本组/[装备]/_ITEM_zbhs"
+import { 准备回收 } from "../_核心部分/_装备/装备回收"
 import { 交易市场, 测试用的 } from "../功能脚本组/[服务]/延时跳转"
 import { 杀怪鞭尸 } from "../功能脚本组/[玩家]/_P_杀怪触发"
 import * as 交易中心 from "../功能脚本组/[服务]/交易中心"
@@ -122,7 +122,7 @@ GameLib.onScriptButtonClick = (Player: TPlayObject, params: string): void => {
     switch (params) {
         case '刷新': Player.ReloadBag(); break
         case '材料仓库': Player.DelayCallMethod('材料仓库.Main', 10, true); break
-        case '装备回收': Main(GameLib.QFunctionNpc, Player); break
+        case '装备回收': 准备回收(GameLib.QFunctionNpc, Player); break
         case '随身仓库': Player.DelayCallMethod('可视仓库.Main', 10, true); break
         case '综合服务': Player.DelayCallMethod('_YXFW_Anniukg.Main', 10, true); break
         // case '天赋': 天赋(GameLib.QFunctionNpc, Player); break

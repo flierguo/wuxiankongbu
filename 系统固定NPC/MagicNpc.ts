@@ -1,7 +1,7 @@
 import * as _P_Base from "../_核心部分/基础常量"
-import { 实时回血 } from "../核心功能/字符计算"
-import { 大数值整数简写 } from "../功能脚本组/[服务]/延时跳转"
-import { 智能计算 } from "../大数值/核心计算方法"
+import { 实时回血 , 大数值整数简写} from "../_核心部分/字符计算"
+// import { 大数值整数简写 } from "../功能脚本组/[服务]/延时跳转"
+import { 智能计算, 小于 } from "../大数值/核心计算方法"
 import { BOSS技能1, BOSS技能4, 怪物技能1ID, 怪物技能1几率, 怪物技能4ID, 怪物技能4几率 } from "../_核心部分/基础常量"
 
 // ==================== 怪物技能选择回调 ====================
@@ -207,8 +207,18 @@ export function 神之怒(_Source: TActor, _Target: TActor): void {
 // 血气献祭: 主动,消耗1%的生命,对目标造成500%的伤害,每级提高50%(血量低于10%时不发动)
 export function 血气献祭(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
-    if (Player.HP < Player.MaxHP * 0.1) { Player.SendMessage('血量低于10%,血气献祭无法发动!'); return; }
-    Player.HP = Math.max(1, Player.HP - Math.floor(Player.MaxHP * 0.01));
+    const 当前血量 = Player.GetSVar(91);
+    const 最大血量 = Player.GetSVar(92);
+    // 大数值比较：当前血量 < 最大血量 * 10%
+    const 血量阈值 = 智能计算(最大血量, '10', 4); // 最大血量 / 10 = 10%
+    if (小于(当前血量, 血量阈值)) { 
+        Player.SendMessage('血量低于10%,血气献祭无法发动!'); 
+        return; 
+    }
+    // 消耗1%血量
+    const 消耗血量 = 智能计算(最大血量, '100', 4); // 最大血量 / 100 = 1%
+    const 新血量 = 智能计算(当前血量, 消耗血量, 2); // 当前血量 - 消耗血量
+    Player.SetSVar(91, 新血量);
     Target.ShowEffectEx2(_P_Base.特效.血气献祭, -10, 20, true, 1);
     Player.Damage(Target, 1, _P_Base.技能ID.血神.血气献祭);
 }
@@ -218,13 +228,16 @@ export function 血气燃烧(Source: TActor, _Target: TActor): void {
     const Player = Source as TPlayObject;
     if (!Player.R.血气燃烧) {
         Player.R.血气燃烧 = true;
-        Player.SetCustomEffect(_P_Base.永久特效.血气燃烧, _P_Base.特效.血气燃烧);
+        Player.SetCustomEffect(1, _P_Base.特效.血气燃烧);
         Player.SendMessage('血气燃烧开启', 2);
     } else {
         Player.R.血气燃烧 = false;
         Player.SetCustomEffect(_P_Base.永久特效.血气燃烧, -1);
         Player.SendMessage('血气燃烧关闭', 2);
     }
+    console.log(
+        Player.R.血气燃烧
+    )
 }
 
 // 血气吸纳: 被动,被攻击1%几率恢复5%血量,每20级几率提高1%,(最高到40) (被动技能)
@@ -622,7 +635,7 @@ export function 怪物群体雷电术(Source: TActor, Target: TActor): void {
 
 
 // ==================== 技能执行注册 ====================
-// 注意：技能名称必须与_P_玩家登录.ts中的技能列表保持一致
+// 注意：技能名称必须与登录触发.ts中的技能列表保持一致
 const MagicExecutes: { [key: string]: (Source: TActor, Target: TActor) => void } = {
     "查看属性" : 查看属性,
     // ========== 基础技能 ==========
