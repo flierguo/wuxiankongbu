@@ -1,14 +1,14 @@
 
 import { ItemProperty } from "../功能脚本组/[装备]/_ITEM_Drop"
 import { 攻击触发, 释放魔法触发 } from "../_核心部分/_玩家/攻击触发"
+import { 装备掉落 } from "../_核心部分/_装备/装备掉落"
 import { monitoring } from "../功能脚本组/[功能]/_GN_Monitoring"
 import * as _P_Base from "../_核心部分/基础常量"
 
 import { 宝宝杀怪触发, 杀怪触发, 杀怪鞭尸, 特殊掉落, 经验勋章 } from "../功能脚本组/[玩家]/_P_杀怪触发"
 import { 使用物品 } from "../功能脚本组/[装备]/_ITEM_使用物品"
 import { 取两点距离 } from "./RobotManageNpc"
-// import { 怪物掉落物品触发 } from "../大数值版本/怪物掉落物品触发"
-import { 怪物掉落物品触发 } from '../核心功能/怪物掉落物品触发';
+
 import { 装备属性统计 } from "../核心功能/装备属性统计"
 
 import { Main } from "../后台管理"
@@ -49,7 +49,7 @@ GameLib.onPlayerDie = (Player: TPlayObject, Killer: TActor): void => {
     // GameLib.BroadcastSay(`{S=玩家:;C=251}{S=${Player.GetName()};C=250}{S=在;C=251}{S=${Player.GetMap().GetName()}.${Player.GetMapX()}.${Player.GetMapY()};C=254}{S=被;C=251}{S=${Killer.GetName()};C=249}{S=杀死了.;C=251}`, 249, 12);
     Player.SetNoDropItem(false) //不爆出背包物品,设置为False则允许爆出
     Player.SetNoDropUseItem(false)  //不爆出穿戴物品,设置为False则允许爆出
-    
+
     if (Player.V.猎人) {
         Player.R.猎人宝宝释放群攻 = false
     }
@@ -58,7 +58,7 @@ GameLib.onPlayerDie = (Player: TPlayObject, Killer: TActor): void => {
     }
 
     Player.ReloadBag()
-    if (Player.SlaveCount > 0) { Player.KillSlave('') ; Player.GetSlave(0).MakeGhost() } 
+    if (Player.SlaveCount > 0) { Player.KillSlave(''); Player.GetSlave(0).MakeGhost() }
     // console.log(`宝宝数量=${Player.SlaveCount}`)
     // const 圣墟地图 = 地图.ID取地图名(Player.Map.MapName)
     // if(圣墟地图 == '圣墟'){
@@ -139,11 +139,11 @@ GameLib.onGetExpEx = (Player: TPlayObject, ExpActor: TActor, Exp: number, Result
     const 随机15经验 = [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100];
     // if (Exp >= 1000000000) { Exp = 1; console.log('怪物名字=' + ExpActor + '玩家名字=' + Player.GetName()) }
     if (ResultExp >= 1000000) { ResultExp = 1000000 }
-    
+
     // 获取玩家所在地图等级
     const 玩家地图ID = Player.GetMap().MapName;
     const 玩家地图等级 = 地图.地图ID取固定星级(玩家地图ID);
-    
+
     // 如果地图等级低于10，1%的几率获得额外经验值
     if (玩家地图等级 < 10) {
         const 随机几率 = Math.random() * 50; // 生成0-100的随机数
@@ -154,23 +154,23 @@ GameLib.onGetExpEx = (Player: TPlayObject, ExpActor: TActor, Exp: number, Result
             // console.log(`怪物名字=${ExpActor} 玩家名字=${Player.GetName()} 随机倍数=${随机倍数} 最终经验值=${Exp}`);
         }
     }
-    
-    if(Player.GetLevel() <= 300){
+
+    if (Player.GetLevel() <= 300) {
         Exp = Exp * 50
     }
-    if(Player.GetLevel() <= 500 && Player.GetLevel() > 300){
+    if (Player.GetLevel() <= 500 && Player.GetLevel() > 300) {
         Exp = Exp * 10
     }
-    if(Player.GetLevel() <= 1000 && Player.GetLevel() > 500){
+    if (Player.GetLevel() <= 1000 && Player.GetLevel() > 500) {
         Exp = Exp / 5
     }
 
 
-    if (Exp >= 20000000) { 
-        Exp = 20000000; 
+    if (Exp >= 20000000) {
+        Exp = 20000000;
         // console.log('怪物名字=' + ExpActor + '玩家名字=' + Player.GetName() + '经验值=' + Exp)
-     }
-     if( Player.Level >= 1000){
+    }
+    if (Player.Level >= 1000) {
         Exp = 0;
         ResultExp = 0;
     }
@@ -237,18 +237,18 @@ GameLib.onMonDropItem = (Actor: TActor, Monster: TActor, Item: TUserItem, Map: T
     let Player: TPlayObject = Actor as TPlayObject;
 
     // 检查背包空间
-    if (Player.GetItemSize() < Player.GetMaxBagSize()) {
-       return false;
+    if (Player.GetMaxBagSize() > Player.GetItemSize()) {
+        装备掉落(Player, Monster, Item)
+        return false
     } else {
-        // 背包满了，不掉落物品
-        return false;
+        // 怪物掉落物品触发(Player, null, Monster, Item)
+        return false
     }
-    return true;
 }
 //根据怪物名称爆出物品触发(针对监视物品)：Owner:物品所属玩家，Monster:怪物名称,item:物品，Accept：是否允许掉落
 GameLib.onDropItemByMonName = (Owner: TPlayObject, Monster: string, Item: TUserItem): boolean => {
-            // 默认允许掉落
-            return true;
+    // 默认允许掉落
+    return true;
 }
 
 //挖矿时挖出物品触发: Player挖矿人 UserItem挖出的物品 Envir当前挖矿地图 Accept是否允许将该物品给玩家，默认为是
@@ -287,7 +287,7 @@ GameLib.onTakeOnItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TIt
     try {
         // 安全获取装备名称
         const itemName = UserItem.GetName();
-        
+
         if (itemName == '玉帝之玺') {
             Player.TakeOnItem(UserItem, TItemWhere.wJewelry1)
         } else if (itemName == '老君灵宝') {
@@ -306,7 +306,7 @@ GameLib.onTakeOnItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TIt
                 TItemWhere.wJewelry1, TItemWhere.wJewelry2, TItemWhere.wJewelry3,
                 TItemWhere.wJewelry4, TItemWhere.wJewelry5, TItemWhere.wJewelry6
             ];
-            
+
             for (let slot of jewelrySlots) {
                 if (!Player.GetArmItem(slot)) {
                     Player.TakeOnItem(UserItem, slot);
@@ -567,20 +567,20 @@ function 检查回收提示(Player: TPlayObject): void {
         if (!Player.R.回收提示时间戳) {
             Player.R.回收提示时间戳 = GameLib.TickCount;
         }
-        
+
         // 检查是否已经过了5秒 (5000毫秒)
         const 当前时间 = GameLib.TickCount;
         const 时间差 = 当前时间 - Player.R.回收提示时间戳;
-        
+
         if (时间差 >= 5000) {
             // 检查是否有回收统计数据
             const 回收数量 = Player.R.回收统计_数量 || 0;
             const 回收金币 = Player.R.回收统计_金币 || 0;
             const 回收元宝 = Player.R.回收统计_元宝 || 0;
-            
+
             if (回收数量 > 0) {
                 let 消息 = `自动回收了{S=${回收数量};C=154}件装备`;
-                
+
                 if (回收金币 > 0 && 回收元宝 > 0) {
                     消息 += `，获得{S=${回收金币};C=253}金币，{S=${回收元宝};C=251}元宝`;
                 } else if (回收金币 > 0) {
@@ -588,20 +588,20 @@ function 检查回收提示(Player: TPlayObject): void {
                 } else if (回收元宝 > 0) {
                     消息 += `，获得{S=${回收元宝};C=251}元宝`;
                 }
-                
+
                 消息 += `!`;
-                
+
                 // 发送消息（只有在没有回收屏蔽的情况下）
                 if (!Player.V.回收屏蔽) {
                     Player.SendMessage(消息, 1);
                 }
-                
+
                 // 重置统计数据
                 Player.R.回收统计_数量 = 0;
                 Player.R.回收统计_金币 = 0;
                 Player.R.回收统计_元宝 = 0;
             }
-            
+
             // 更新时间戳
             Player.R.回收提示时间戳 = 当前时间;
         }

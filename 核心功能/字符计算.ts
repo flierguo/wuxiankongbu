@@ -56,8 +56,6 @@ export function tranNumber2(num: string): any {
 }
 
 
-
-
 const MaxShowLen = 4 //最大显示长度超过就转显示单位
 export function 飘血数值1(num: string) {
   let index1 = num.indexOf(".")
@@ -335,7 +333,6 @@ export function 整数相除(num1: string, num2: string) {
   }
   return quotient.replace(/^0+/, '');
 }
-
 export function 整数相乘(num1: string, num2: string) {
   if (num1?.includes(`.`)) { num1 = num1.split('.')[0]; }
   if (num2?.includes(`.`)) { num2 = num2.split('.')[0]; }
@@ -372,7 +369,6 @@ export function 整数相乘(num1: string, num2: string) {
   var result = product.reverse().join('').replace(/^0+/, '');
   return sign === -1 ? '-' + result : result;
 }
-
 export function 整数百分比(num1: string, num2: string) {
   return 整数相除(整数相乘(num1, num2), `100`)
 }

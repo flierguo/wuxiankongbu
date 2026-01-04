@@ -1,10 +1,10 @@
 // import * as XXXX from "../功能脚本组/[XX]/XXXX"
-import * as _P_NewPlayer from "../_核心部分/_玩家/登录触发"
+import * as 登录触发 from "../_核心部分/_玩家/登录触发"
 import { Refresh as 旧刷怪属性 } from "../功能脚本组/[怪物]/_M_Refresh"
 import { Refresh as 新刷怪属性 } from "../_核心部分/_生物/生物属性"
 
 import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../_核心部分/基础常量"
-import { 准备回收 } from "../_核心部分/_装备/装备回收"
+import { Main } from "../_核心部分/_装备/装备回收"
 import { 交易市场, 测试用的 } from "../功能脚本组/[服务]/延时跳转"
 import { 杀怪鞭尸 } from "../功能脚本组/[玩家]/_P_杀怪触发"
 import * as 交易中心 from "../功能脚本组/[服务]/交易中心"
@@ -122,7 +122,7 @@ GameLib.onScriptButtonClick = (Player: TPlayObject, params: string): void => {
     switch (params) {
         case '刷新': Player.ReloadBag(); break
         case '材料仓库': Player.DelayCallMethod('材料仓库.Main', 10, true); break
-        case '装备回收': 准备回收(GameLib.QFunctionNpc, Player); break
+        case '装备回收': Main(GameLib.QFunctionNpc, Player); break
         case '随身仓库': Player.DelayCallMethod('可视仓库.Main', 10, true); break
         case '综合服务': Player.DelayCallMethod('_YXFW_Anniukg.Main', 10, true); break
         // case '天赋': 天赋(GameLib.QFunctionNpc, Player); break
@@ -185,7 +185,7 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
     Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
     Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
     Player.SetAlwaysShowHP(true)
-    _P_NewPlayer.自定义变量(Player)
+    登录触发.自定义变量(Player)
     装备属性统计(Player, undefined, undefined, undefined)
     血量显示(Player)
     实时回血(Player, Player.GetSVar(92))
@@ -196,9 +196,9 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
     }
 
     if (Player.GetMaxBagSize() < 136) {//判断是否是新玩家
-        _P_NewPlayer.GiveNewPlayer(Player);
+        登录触发.GiveNewPlayer(Player);
     } else {
-        _P_NewPlayer.PlayerRegister(Player);
+        登录触发.PlayerRegister(Player);
         GameLib.BroadcastSay(format('%s玩家[%s]在[%s]上线了！', ['(*)', Player.Name, Player.Map.Name]), 249, 255)
     }
 

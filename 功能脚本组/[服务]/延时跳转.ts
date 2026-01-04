@@ -87,7 +87,7 @@ export function 玩家复活(Npc: TNormNpc, Player: TPlayObject): void {
     // activation(Player);/*重新计算玩家身上的装备*/
     Player.RecalcAbilitys;/*重新计算能力值*/
 }
-export function 从新登录(Npc: TNormNpc, Player: TPlayObject): void {
+export function 重新登录(Npc: TNormNpc, Player: TPlayObject): void {
     Player.Kick()
 }
 

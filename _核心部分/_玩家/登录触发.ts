@@ -27,7 +27,7 @@ export function PlayerRegister(Player: TPlayObject): void {
 
 
 
-	
+
 	if (Player.GetJewelrys(4) != null && Player.GetJewelrys(4).GetName() == '甘道夫之戒') {
 		if (Player.V.隐身开关 == false) {
 			Player.AddStatusBuff(6, TBuffStatusType.stObserverForMon, 999999999, 0, 0)
@@ -44,13 +44,13 @@ export function PlayerRegister(Player: TPlayObject): void {
 	// }
 
 	// console.log(`生命倍数:${Player.R.生命倍数} , 防御倍数:${Player.R.防御倍数} , 攻击倍数:${Player.R.攻击倍数} , 魔法倍数:${Player.R.魔法倍数} , 道术倍数:${Player.R.道术倍数} , 刺术倍数:${Player.R.刺术倍数} , 射术倍数:${Player.R.射术倍数} , 武术倍数:${Player.R.武术倍数}`)
-	
+
 	if (Player.Name == `鸿福` && Player.Account == `775800`) {
 		Player.SetPermission(10)
 
-	// 	// Player.IsAdminMode = true
-	// 	// Player.SuperManMode = false
-	// 	// Player.ObserverMode = true
+		// 	// Player.IsAdminMode = true
+		// 	// Player.SuperManMode = false
+		// 	// Player.ObserverMode = true
 	}
 	Player.SetMaxBagSize(206);
 	delete GameLib.V[Player.PlayerID]
@@ -129,7 +129,9 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.伤害倍数 ??= 1
 	Player.R.暴击几率 ??= 0
 
-	Player.R.地图倍率 ??= 1
+	Player.R.圣耀地图爆率加成 ??= 1
+
+	//=========================================技能部分=================================================
 	// 批量初始化：技能属性（等级、倍攻、范围）
 	// 六大职业技能列表
 	const 技能列表 = [
@@ -137,18 +139,18 @@ export function 自定义变量(Player: TPlayObject): void {
 		'血气献祭', '血气燃烧', '血气吸纳', '血气迸发', '血魔临身',
 		'暗影猎取', '暗影袭杀', '暗影剔骨', '暗影风暴', '暗影附体',
 		'火焰追踪', '火镰狂舞', '烈焰护甲', '爆裂火冢', '烈焰突袭',
-		'圣光', '行刑', '洗礼', '审判', '神罚', 
+		'圣光', '行刑', '洗礼', '审判', '神罚',
 		'如山', '泰山', '人王盾', '铁布衫', '金刚掌',
 		'攻杀剑术', '刺杀剑术', '半月弯刀', '雷电术', '暴风雪', '灵魂火符', '飓风破', '暴击术', '霜月', '精准箭术', '万箭齐发', '罗汉棍法', '天雷阵'
 	] as const;
-	
+
 	for (const 技能名 of 技能列表) {
 		// 初始化技能等级（Player.V.技能名等级）
 		vAny[`${技能名}等级`] ??= 1;
-		
+
 		// 初始化技能魔次（Player.R.技能名魔次）- 单技能魔次加成
 		rAny[`${技能名}魔次`] ??= '0';
-		
+
 		// 初始化技能范围（Player.V.技能名范围）
 		vAny[`${技能名}范围`] ??= 0;
 
@@ -156,11 +158,19 @@ export function 自定义变量(Player: TPlayObject): void {
 		rAny[`${技能名}施法`] ??= false;
 
 		// 初始化冷却时间
-		rAny[`${技能名}冷却`] ??= 1;
+		rAny[`${技能名}CD`] ??= 1;
 	}
+	//开启状态
+	Player.R.血气燃烧 ??= false
+	Player.R.血魔临身 ??= false
+	Player.R.暗影剔骨 ??= false
+	Player.R.暗影附体 ??= false
+	Player.R.烈焰护甲 ??= false
+	Player.R.圣光 ??= false
+	Player.R.如山 ??= false
 
-	Player.R.暴击倍率 ??= '0'
-	
+	Player.R.暗影值 ??= 0
+
 	// 职业魔次加成（各职业专属魔次）
 	Player.R.天枢魔次 ??= '0';    // 天枢职业所有技能魔次加成
 	Player.R.血神魔次 ??= '0';    // 血神职业所有技能魔次加成
@@ -168,13 +178,19 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.烈焰魔次 ??= '0';    // 烈焰职业所有技能魔次加成
 	Player.R.正义魔次 ??= '0';    // 正义职业所有技能魔次加成
 	Player.R.不动魔次 ??= '0';    // 不动职业所有技能魔次加成
-	
+
 	// 全体魔次加成（对所有技能生效）
 	Player.R.全体魔次 ??= '0';    // 所有技能的魔次加成
 
+	//=========================================技能部分=================================================
+
+	Player.R.暴击倍率 ??= '0'
+
+
+
 	Player.V.暴怒 ??= false
 	Player.V.血神 ??= false
-	Player.V.暗影 ??= false 
+	Player.V.暗影 ??= false
 	Player.V.烈焰 ??= false
 	Player.V.正义 ??= false
 	Player.V.不动 ??= false
@@ -182,75 +198,21 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.种族阶数 ??= 0
 
 
-	Player.R.暗影值 ??= 0	
 
 
 	Player.R.极品率 ??= 0
-	Player.V.永久极品率 ??= 0
-
-	Player.V.真实充值 ??= 0
-	Player.V.累计充值 ??= 0
-	Player.V.幸运值 ??= 0
+	Player.R.回收倍率 ??= 0
 
 
-	Player.V.普通 ??= false
-	Player.V.精良 ??= false
-	Player.V.优秀 ??= false
-	Player.V.稀有 ??= false
-	Player.V.史诗 ??= false
-	Player.V.传说 ??= false
-	Player.V.神话 ??= false
-	Player.V.远古 ??= false
-	Player.V.不朽 ??= false
-
-	Player.V.劣质 ??= false
-	Player.V.超强 ??= false
-	Player.V.杰出 ??= false
-	Player.V.传说 ??= false
-	Player.V.神话 ??= false
-	Player.V.传承 ??= false
-	Player.V.史诗 ??= false
-	Player.V.绝世 ??= false
-	Player.V.造化 ??= false
-	Player.V.混沌 ??= false
-	Player.V.底材 ??= false
+	
 
 
 	Player.R.本职装备几率 ??= 0
 
-	Player.V.本职业属性词条 ??= false
-	Player.V.本职业属性词条数值 ??= '0'
-
-	Player.V.防御词条 ??= false
-	Player.V.血量词条 ??= false
-	Player.V.攻击词条 ??= false
-	Player.V.魔法词条 ??= false
-	Player.V.道术词条 ??= false
-	Player.V.刺术词条 ??= false
-	Player.V.射术词条 ??= false
-	Player.V.武术词条 ??= false
-	Player.V.属性词条 ??= false
-	Player.V.倍攻词条 ??= false
-	Player.V.生肖词条 ??= false
-	Player.V.种族词条 ??= false
-	Player.V.天赋词条 ??= false
-	Player.V.装备星星词条 ??= false
-	Player.V.技能伤害词条 ??= false
 
 
-	Player.V.防御词条数值 ??= '0'
-	Player.V.血量词条数值 ??= '0'
-	Player.V.攻击词条数值 ??= '0'
-	Player.V.魔法词条数值 ??= '0'
-	Player.V.道术词条数值 ??= '0'
-	Player.V.刺术词条数值 ??= '0'
-	Player.V.射术词条数值 ??= '0'
-	Player.V.武术词条数值 ??= '0'
-	Player.V.属性词条数值 ??= '0'
 
-	Player.V.天赋词条数值 ??= 0
-	Player.V.装备星星词条数值 ??= '0'
-	Player.V.技能伤害词条数值 ??= '0'
+
 
 
 	Player.V.宣传爆率 ??= 0

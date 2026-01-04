@@ -10,6 +10,18 @@ import * as MissionsNpc from "./系统固定NPC/MissionsNpc"
 
 import * as QFunctionNpc from "./系统固定NPC/QFunctionNpc"
 import * as RobotManageNpc from "./系统固定NPC/RobotManageNpc"
+
+//=======================自制=======================================
+import * as 登录触发 from "./_核心部分/_玩家/登录触发"
+import * as 延时触发 from "./_核心部分/_玩家/延时触发"
+import * as 装备掉落 from "./_核心部分/_装备/装备掉落"
+import * as 装备回收 from "./_核心部分/_装备/装备回收"
+
+
+import * as 传送阵法 from "./_核心部分/_地图/传送阵法"
+//=======================自制=======================================
+
+
 // import * as TimeManageNpc from "./系统固定NPC/TimeManageNpc"
 // import * as XXXX from "./XXXX"
 import * as _GN_Close from "./功能脚本组/[功能]/_GN_Close"
@@ -17,11 +29,11 @@ import * as 充值使者 from "./功能脚本组/[服务]/充值使者"
 import * as 材料仓库 from "./功能脚本组/[服务]/材料仓库"
 import * as _YXFW_King from "./功能脚本组/[服务]/_YXFW_King"
 import * as _P_CanSeeStorage from "./功能脚本组/[玩家]/_P_CanSeeStorage"
-import * as 装备回收 from "./_核心部分/_装备/装备回收"
+
 import * as _ITEM_使用物品 from "./功能脚本组/[装备]/_ITEM_使用物品"
 import * as _P_杀怪触发 from "./功能脚本组/[玩家]/_P_杀怪触发"
 import * as _GN_Monitoring from "./功能脚本组/[功能]/_GN_Monitoring"
-import * as 登录触发 from "./_核心部分/_玩家/登录触发"
+
 
 import * as 充值属性 from "./功能脚本组/[服务]/充值属性"
 
@@ -34,7 +46,7 @@ import * as 升级幸运 from "./功能脚本组/[服务]/升级幸运"
 
 import * as 测试NPC from "./功能脚本组/[服务]/测试NPC"
 import * as 生命水池 from "./功能脚本组/[服务]/生命水池"
-import * as 传送阵法 from "./_核心部分/_地图/传送阵法"
+
 
 import * as 大陆传送 from "./功能脚本组/[服务]/大陆传送"
 import * as 勋章合成 from "./功能脚本组/[服务]/勋章合成"
@@ -83,6 +95,8 @@ UnitMap.set("测试NPC", 测试NPC)
 UnitMap.set("大陆传送", 大陆传送)
 
 UnitMap.set("血防加持", 血防加持)
+
+UnitMap.set("延时触发", 延时触发)
 
 
 

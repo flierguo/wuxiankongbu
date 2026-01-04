@@ -2,47 +2,47 @@ import * as 地图 from './地图';
 
 const 地图声明 = 地图.地图配置
 
-export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    // if (Player.V.任务1 == false) { Player.MessageBox('请先完成新手任务\\点击屏幕上方新手任务即可查看!'); return }
-    let S = ``
-    switch (Npc.Tag) {
-        case 1:
-            S = `\\\\\\\\\\\\
-            {I=317;F=ASD.DATA;X=47;Y=80} {I=317;F=ASD.DATA;X=47;Y=120} {I=317;F=ASD.DATA;X=47;Y=160} {I=317;F=ASD.DATA;X=47;Y=200} {I=317;F=ASD.DATA;X=47;Y=240}
-            <&{S=浣熊市;FS=15;C=103;CH=145;X=130;Y=80}/@副本传送(沙漠绿洲)>
-            <&{S=蜂巢入口;FS=15;C=103;CH=145;X=130;Y=120}/@副本传送(凄凉之地)>
-            <&{S=病毒研究室;FS=15;C=103;CH=145;X=130;Y=160}/@副本传送(狂风峭壁)>
-            <&{S=生化实验室;FS=15;C=103;CH=145;X=130;Y=200}/@副本传送(崎岖索道)>
-            <&{S=激光走廊;FS=15;C=103;CH=145;X=130;Y=240}/@副本传送(激光走廊)>
-                
-        
-                    
-            {S=地图挑战等级 = 地图固定星级 * 挑战倍数;X=50;Y=390}
-        
-            <{S=绑定回城石;X=50;Y=330}/@绑定回城石(1)>
-            `
-            break;
-        default:
-            // if (Player.GetLevel() >= 200) { Player.MessageBox('200级以上的玩家无法再进入!'); return }
-            S = `\\\\\\\\\\\\
-            {I=317;F=ASD.DATA;X=47;Y=80} {I=317;F=ASD.DATA;X=47;Y=120} {I=317;F=ASD.DATA;X=47;Y=160} {I=317;F=ASD.DATA;X=47;Y=200} {I=317;F=ASD.DATA;X=47;Y=240}{I=317;F=ASD.DATA;X=47;Y=280}
-            <&{S=浣熊市;FS=15;C=103;CH=145;X=130;Y=80}/@副本传送(浣熊市)>
-            <&{S=蜂巢入口;FS=15;C=103;CH=145;X=130;Y=120}/@副本传送(蜂巢入口)>
-            <&{S=病毒研究室;FS=15;C=103;CH=145;X=130;Y=160}/@副本传送(病毒研究室)>
-            <&{S=生化实验室;FS=15;C=103;CH=145;X=130;Y=200}/@副本传送(生化实验室)>
-            <&{S=激光走廊;FS=15;C=103;CH=145;X=130;Y=240}/@副本传送(激光走廊)>
-            <&{S=红后控制室;FS=15;C=103;CH=145;X=130;Y=280}/@副本传送(红后控制室)>
+// 传送阵地图配置表 - 根据 Npc.Tag 配置不同地图列表
+const 传送阵配置: Record<number, { 地图列表: string[], 显示倍数设置?: boolean, 绑定回城石?: number }> = {
+        // 默认配置 (Tag=0 或其他未定义的Tag)
+    0: {
+        地图列表: ['浣熊市', '蜂巢入口', '病毒研究室', '生化实验室', '激光走廊', '红后控制室'],
+        显示倍数设置: true
+    },
+    1: {
+        地图列表: ['沙漠绿洲', '凄凉之地', '狂风峭壁', '崎岖索道', '激光走廊'],
+        显示倍数设置: false,
+        绑定回城石: 1
+    },
+    // 可继续添加更多Tag配置...
+    // 2: { 地图列表: ['地图A', '地图B', '地图C'], 显示倍数设置: true },
+}
 
-    {S=当前倍数: ${Player.V.挑战倍数} 倍;X=50;Y=360}          <{S=倍数设置;X=220;Y=360}/@@InPutString11(输入准备挑战的倍数。}>
+export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
+    const 配置 = 传送阵配置[Npc.Tag] || 传送阵配置[0]
+    const 地图列表 = 配置.地图列表
+    const Y坐标 = [80, 120, 160, 200, 240, 280]
 
-    
-    {S=地图挑战等级 = 地图固定星级 * 挑战倍数;X=50;Y=390}
+    // 生成图标和按钮
+    let 图标 = 地图列表.map((_, i) => `{I=317;F=ASD.DATA;X=47;Y=${Y坐标[i]}}`).join(' ')
+    let 按钮 = 地图列表.map((名, i) => 
+        `<&{S=${名};FS=15;C=103;CH=145;X=130;Y=${Y坐标[i]}}/@副本传送(${名})>`
+    ).join('\n            ')
 
+    let S = `\\\\\\\\\\\\
+            ${图标}
+            ${按钮}
+    {S=地图挑战等级 = 地图固定星级 * 挑战倍数;X=50;Y=390}`
 
-    `
-            break;
+    // 根据配置显示倍数设置
+    if (配置.显示倍数设置) {
+        S += `\n    {S=当前倍数: ${Player.V.挑战倍数} 倍;X=50;Y=360}          <{S=倍数设置;X=220;Y=360}/@@InPutString11(输入准备挑战的倍数。}>`
     }
-    // Player.V.挑战倍数 = 10
+
+    // 根据配置显示绑定回城石
+    if (配置.绑定回城石) {
+        S += `\n            <{S=绑定回城石;X=50;Y=330}/@绑定回城石(${配置.绑定回城石})>`
+    }
 
     Npc.SayEx(Player, '传送', S)
 }
@@ -178,15 +178,6 @@ export function 固定传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 
 }
 
-export function 创建副本(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const 地图名 = Args.Str[0];
-
-    地图.创建单个副本(地图名, Player)
-
-    // 创建副本的逻辑
-    // Player.MessageBox(`正在创建${地图名}星副本...`);
-    // 这里添加实际的创建副本逻辑
-}
 
 // ==================== 圣耀副本传送 ====================
 /**
@@ -195,9 +186,9 @@ export function 创建副本(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 export function 创建圣耀副本(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 地图名 = Args.Str[0];
 
-    // 检查玩家是否设置了地图倍率
-    if (!Player.R.地图倍率 || Player.R.地图倍率 < 1) {
-        Player.R.地图倍率 = 1
+    // 检查玩家是否设置了圣耀地图爆率加成
+    if (!Player.R.圣耀地图爆率加成 || Player.R.圣耀地图爆率加成 < 1) {
+        Player.R.圣耀地图爆率加成 = 1
     }
 
     地图.创建圣耀副本(地图名, Player)
@@ -215,7 +206,7 @@ export function 设置圣耀倍率(Npc: TNormNpc, Player: TPlayObject, Args: TAr
         return
     }
 
-    Player.R.地图倍率 = 倍率
+    Player.R.圣耀地图爆率加成 = 倍率
     Player.MessageBox(`{S=【圣耀副本】;C=250}圣耀倍率已设置为 {S=${倍率};C=253} 倍`)
 }
 

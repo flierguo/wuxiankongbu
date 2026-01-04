@@ -1,4 +1,4 @@
-import { 智能计算 , js_war } from "../大数值/核心计算方法"
+import { 智能计算 , js_war, 转大数值 } from "../大数值/核心计算方法"
 import { 整数百分 } from "../核心功能/字符计算"
 import { 大数值单位 } from "../大数值/大数值单位"
 import { 增加击杀计数, 特殊BOSS死亡, 大陆BOSS死亡 } from "./_生物/生物刷新"
@@ -9,6 +9,11 @@ const UnitList = 大数值单位
 const MaxShowLen = 4 //最大显示长度超过就转显示单位
 
 export function 大数值整数简写(num: string): string {
+    // 支持科学计数法格式（如 1E100, 1e100）
+    if (num.includes('e') || num.includes('E')) {
+        num = 转大数值(num)
+    }
+    
     let index1 = num.indexOf(".")
     if (index1 >= 0) {
         num = num.substring(0, index1)
@@ -59,11 +64,15 @@ export function 随机小数(min: number, max: number): number {
     return Math.random() * (max - min) + min;
 }
 export function 飘血数值1(num: string) {
+  // 支持科学计数法格式（如 1E100, 1e100）
+  if (num.includes('e') || num.includes('E')) {
+    num = 转大数值(num)
+  }
+  
   let index1 = num.indexOf(".")
   if (index1 >= 0) {
     num = num.substring(0, index1)
   }
-
 
   let index = UnitList.length - 1
   let tmp = num.length - MaxShowLen
@@ -83,8 +92,12 @@ export function 飘血数值1(num: string) {
     return `${newNum}`
   }
 }
-
 export function 飘血位数1(num: string) {
+  // 支持科学计数法格式（如 1E100, 1e100）
+  if (num.includes('e') || num.includes('E')) {
+    num = 转大数值(num)
+  }
+  
   let index1 = num.indexOf(".")
   if (index1 >= 0) {
     num = num.substring(0, index1)
@@ -105,6 +118,11 @@ export function 飘血位数1(num: string) {
 }
 
 export function 实时回血(Player: TActor, 回血数值: string) {
+  // 支持科学计数法格式（如 1E100, 1e100）
+  if (回血数值.includes('e') || 回血数值.includes('E')) {
+    回血数值 = 转大数值(回血数值)
+  }
+  
   if(js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0){
     // let 飘血数值 = 数值飘血数值(回血数值).飘血数值
     // let 飘血位数 = 数值飘血数值(回血数值).飘血位数
@@ -121,6 +139,11 @@ export function 实时回血(Player: TActor, 回血数值: string) {
 }
 
 export function 自动实时回血(Player: TActor, 回血数值: string) {
+  // 支持科学计数法格式（如 1E100, 1e100）
+  if (回血数值.includes('e') || 回血数值.includes('E')) {
+    回血数值 = 转大数值(回血数值)
+  }
+  
   if(js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0){
     let 回血 = 智能计算(Player.GetSVar(91), 回血数值 , 1)  
     回血 = js_war(回血, Player.GetSVar(92)) > 0 ? Player.GetSVar(92) : 回血
@@ -130,6 +153,11 @@ export function 自动实时回血(Player: TActor, 回血数值: string) {
 }
 
 export function 实时扣血(DamageSource: TActor, Target: TActor, 扣血数值: string) {
+  // 支持科学计数法格式（如 1E100, 1e100）
+  if (扣血数值.includes('e') || 扣血数值.includes('E')) {
+    扣血数值 = 转大数值(扣血数值)
+  }
+  
   let 血量: string
  if(js_war(Target.GetSVar(91), 扣血数值) > 0){
     血量 = 智能计算(Target.GetSVar(91), 扣血数值, 2)
@@ -186,6 +214,11 @@ export function 实时扣血(DamageSource: TActor, Target: TActor, 扣血数值:
 }
 
 export function 攻击飘血(Player: TActor, 最终攻击 = `0`, 时间 = 1500, 前缀特效 = 0) {
+  // 支持科学计数法格式（如 1E100, 1e100）
+  if (最终攻击.includes('e') || 最终攻击.includes('E')) {
+    最终攻击 = 转大数值(最终攻击)
+  }
+  
   let 飘血数值11 = 飘血数值1(最终攻击)
   let 飘血位数11 = 飘血位数1(最终攻击)
   // console.log(飘血数值11 + ' ' + 飘血位数11)
@@ -200,6 +233,11 @@ export function 攻击飘血(Player: TActor, 最终攻击 = `0`, 时间 = 1500, 
 }
 
 export function 数字转单位2(num: string) {
+  // 支持科学计数法格式（如 1E100, 1e100）
+  if (num.includes('e') || num.includes('E')) {
+    num = 转大数值(num)
+  }
+  
   let index1 = num.indexOf(".")
   if (index1 >= 0) {
     num = num.substring(0, index1)
@@ -249,7 +287,6 @@ export function 数字转单位3(num: string) {
   return `${图片位置}`
 }
 
-
 export function 血量显示(Player: TActor) {
     let 返回名称 = ``
     // 确保血量值有效
@@ -262,6 +299,14 @@ export function 血量显示(Player: TActor) {
     }
     if (!最大血量 || 最大血量 === '' || 最大血量 === 'undefined' || 最大血量 === 'NaN' || 最大血量 === '0') {
       最大血量 = '100000'
+    }
+    
+    // 支持科学计数法格式（如 1E100, 1e100）
+    if (当前血量.includes('e') || 当前血量.includes('E')) {
+      当前血量 = 转大数值(当前血量)
+    }
+    if (最大血量.includes('e') || 最大血量.includes('E')) {
+      最大血量 = 转大数值(最大血量)
     }
     
     let 百分比值 = 智能计算( 智能计算(当前血量, 最大血量, 5), `100`, 3)
@@ -351,4 +396,4 @@ export function 血量显示(Player: TActor) {
       }
     }
     Player.RecalcAbilitys() 
-  }
+}

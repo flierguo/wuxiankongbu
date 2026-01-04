@@ -5,7 +5,7 @@ import { 打印性能报告, 清空所有缓存, 重置所有统计 } from './�
 import { Decimal } from "./大数值/big_number";
 import { 智能计算 } from "./大数值/核心计算方法";
 
-
+import * as _P_Base from "./_核心部分/基础常量"
 
 export function 执行性能测试(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     try {
@@ -88,6 +88,12 @@ GameLib.onAdminUIButtonClick = (controlName: string): void => {
         const 大数值2 = 智能计算('300000', '1e100', 3)
         console.log('大数值:', 大数值2)
         console.log('副本长度:', GameLib.R.地图池.length)
+       let Player = GameLib.FindPlayer('鸿福'); //查找玩家
+        if (Player != null) {
+
+        Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
+            console.log(`Player.R.怒斩范围:${Player.R.怒斩范围}`)
+        }      
     }
 
     if (controlName == '打印性能报告') {

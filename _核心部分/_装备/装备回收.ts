@@ -1,745 +1,669 @@
+/**
+ * 装备回收系统
+ * 包含前端UI和后台回收逻辑
+ * 
+ * 调用方式：
+ * 1. 怪物掉落装备后 -> 筛选检查并回收 -> 符合条件入包
+ * 2. 点击回收页面的开始回收 -> 检测背包内装备进行回收
+ * 
+ * 回收价格 = 基础属性翻倍倍率 * Player.R.最终回收倍率
+ */
 
-// import BigNumber from "../[功能]/bignumber"
-import { 智能计算 } from "../../大数值/核心计算方法"
-import { 大数值整数简写 } from "../字符计算"
+import { 智能计算, 大于等于 } from '../../大数值/核心计算方法'
+import { 基础词条, 装备颜色, 技能魔次, 装备需求等级 } from '../基础常量'
+import { 大数值整数简写 } from '../字符计算'
 
-export function 准备回收(Npc: TNormNpc, Player: TPlayObject): void {  //装备回收
+// ==================== 类型定义 ====================
+interface 装备属性记录 {
+    职业属性_职业: number[]
+    职业属性_属性: string[]
+}
+
+interface 回收结果 {
+    应该回收: boolean
+    回收价值: string
+    货币类型: '金币' | '元宝'
+    保留原因?: string
+}
+
+interface 批量回收结果 {
+    回收数量: number
+    总金币: string
+    总元宝: string
+}
+
+// 技能魔次名称映射
+const 技能魔次名称映射: Record<number, string> = {
+    [技能魔次.攻杀剑术]: '攻杀剑术',
+    [技能魔次.半月弯刀]: '半月弯刀',
+    [技能魔次.雷电术]: '雷电术',
+    [技能魔次.暴风雪]: '暴风雪',
+    [技能魔次.灵魂火符]: '灵魂火符',
+    [技能魔次.飓风破]: '飓风破',
+    [技能魔次.暴击术]: '暴击术',
+    [技能魔次.霜月]: '霜月',
+    [技能魔次.精准箭术]: '精准箭术',
+    [技能魔次.万箭齐发]: '万箭齐发',
+    [技能魔次.罗汉棍法]: '罗汉棍法',
+    [技能魔次.天雷阵]: '天雷阵',
+    [技能魔次.天枢]: '天枢技能',
+    [技能魔次.血神]: '血神技能',
+    [技能魔次.暗影]: '暗影技能',
+    [技能魔次.烈焰]: '烈焰技能',
+    [技能魔次.正义]: '正义技能',
+    [技能魔次.不动]: '不动技能',
+    [技能魔次.全体]: '全体魔次',
+    [技能魔次.怒斩]: '怒斩',
+    [技能魔次.人之怒]: '人之怒',
+    [技能魔次.地之怒]: '地之怒',
+    [技能魔次.天之怒]: '天之怒',
+    [技能魔次.神之怒]: '神之怒',
+    [技能魔次.血气献祭]: '血气献祭',
+    [技能魔次.血气燃烧]: '血气燃烧',
+    [技能魔次.暗影袭杀]: '暗影袭杀',
+    [技能魔次.暗影剔骨]: '暗影剔骨',
+    [技能魔次.暗影风暴]: '暗影风暴',
+    [技能魔次.暗影附体]: '暗影附体',
+    [技能魔次.火焰追踪]: '火焰追踪',
+    [技能魔次.烈焰护甲]: '烈焰护甲',
+    [技能魔次.爆裂火冢]: '爆裂火冢',
+    [技能魔次.烈焰突袭]: '烈焰突袭',
+    [技能魔次.圣光]: '圣光',
+    [技能魔次.行刑]: '行刑',
+    [技能魔次.洗礼]: '洗礼',
+    [技能魔次.如山]: '如山',
+    [技能魔次.金刚掌]: '金刚掌',
+}
+
+// ==================== 常量定义 ====================
+const 有效装备类型 = [5, 6, 10, 11, 15, 16, 19, 20, 21, 22, 23, 24, 26, 27, 28, 68]
+
+// ==================== 初始化玩家变量 ====================
+export function 初始化回收变量(Player: TPlayObject): void {
+    // 自动回收开关
+    Player.V.自动回收 ??= false
     Player.V.自动拾取 ??= false
-    const 血量数值 = 大数值整数简写(Player.V.血量数值)
-    const 防御数值 = 大数值整数简写(Player.V.防御数值)
-    const 攻击数值 = 大数值整数简写(Player.V.攻击数值)
-    const 伤害数值 = 大数值整数简写(Player.V.伤害数值)
-    const 等级数值 = 大数值整数简写(Player.V.等级数值)
-    const 次数数值 = 大数值整数简写(Player.V.次数数值)
-    const 宝宝数值 = 大数值整数简写(Player.V.宝宝数值)
-    Player.V.材料1 ??= 0
-    Player.V.材料2 ??= 0
-    Player.V.材料3 ??= 0
-    Player.V.材料4 ??= 0
-    Player.V.材料5 ??= 0
-    Player.V.材料6 ??= 0
-    Player.V.材料7 ??= 0
-    Player.V.材料8 ??= 0
-    Player.V.材料9 ??= 0
-    Player.V.材料自动存仓库 ??= false
-
-
-    const S = `\\\\
-                              {S=当前回收比例${Player.R.回收加成 * 100}%;C=253;y=20}\\
-               {S=基础装备回收;C=224}         <技能石回收/@_ITEM_zbhs.技能石回收>         <护身符回收/@_ITEM_zbhs.护身符回收>\\
-            {S=基础属性保留(大于);C=9}\\
-    <{I=$血量$;F=装备图标.DATA;X=70;Y=80}/@_ITEM_zbhs.勾选(血量勾选)>  血量:${血量数值}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=80}/@_ITEM_zbhs.加(血量数值)>    <{M=214,214,215;F=Prguse.WZL;X=320;Y=80}/@_ITEM_zbhs.减(血量数值)>                 <{S=设置数值;X=360;Y=78}/@@_ITEM_zbhs.InPutString1(请输入你的数值!!,血量数值)>\\
-    <{I=$防御$;F=装备图标.DATA;X=70;Y=105}/@_ITEM_zbhs.勾选(防御勾选)>  防御:${防御数值}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=105}/@_ITEM_zbhs.加(防御数值)>  <{M=214,214,215;F=Prguse.WZL;X=320;Y=105}/@_ITEM_zbhs.减(防御数值)>                 <{S=设置数值;X=360;Y=103}/@@_ITEM_zbhs.InPutString1(请输入你的数值!!,防御数值)>\\
-    <{I=$攻击$;F=装备图标.DATA;X=70;Y=131}/@_ITEM_zbhs.勾选(攻击勾选)>  攻击:${攻击数值}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=131}/@_ITEM_zbhs.加(攻击数值)>  <{M=214,214,215;F=Prguse.WZL;X=320;Y=131}/@_ITEM_zbhs.减(攻击数值)>                 <{S=设置数值;X=360;Y=129}/@@_ITEM_zbhs.InPutString1(请输入你的数值!!,攻击数值)>\\\\
-            {S=词条属性保留(大于);C=243}\\\\
-    <{I=$伤害$;F=装备图标.DATA;X=70;Y=200}/@_ITEM_zbhs.勾选(伤害勾选)>  {S=技能伤害:${伤害数值};Y=199}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=200}/@_ITEM_zbhs.加(伤害数值)>    <{M=214,214,215;F=Prguse.WZL;X=320;Y=200}/@_ITEM_zbhs.减(伤害数值)>                 <{S=设置数值;X=360;Y=198}/@@_ITEM_zbhs.InPutString1(请输入你的数值!!,伤害数值)>\\\\
-    <{I=$等级$;F=装备图标.DATA;X=70;Y=225}/@_ITEM_zbhs.勾选(等级勾选)>  {S=技能等级:${等级数值};Y=224}                  <{S=设置数值;X=360;Y=223}/@@_ITEM_zbhs.InPutString1(请输入你的数值!!,等级数值)>\\\\
-    <{I=$次数$;F=装备图标.DATA;X=70;Y=250}/@_ITEM_zbhs.勾选(次数勾选)>  {S=技能次数:${次数数值};Y=249}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=250}/@_ITEM_zbhs.加(次数数值)>    <{M=214,214,215;F=Prguse.WZL;X=320;Y=250}/@_ITEM_zbhs.减(次数数值)>                  <{S=设置数值;X=360;Y=248}/@@_ITEM_zbhs.InPutString1(请输入你的数值!!,次数数值)>\\\\
-    <{I=$速度$;F=装备图标.DATA;X=70;Y=275}/@_ITEM_zbhs.勾选(宝宝勾选)>  {S=宝宝速度:${宝宝数值};Y=274}                  <{S=设置数值;X=360;Y=273}/@@_ITEM_zbhs.InPutString1(请输入你的数值!!,宝宝数值)>\\\\
-    <{I=$自动拾取$;F=装备图标.DATA;X=70;Y=300}/@_ITEM_zbhs.勾选(材料自动存仓库)>  {S=材料自动存仓库;C=224;Y=300}      <{s=材料仓库;x=200;y=300}/@_ITEM_zbhs.材料仓库>
-    <{I=$回收$;F=装备图标.DATA;X=70;Y=320}/@_ITEM_zbhs.勾选(自动回收)>  {S=自动回收;C=224;Y=320}      <{I=$本职$;F=装备图标.DATA;X=200;Y=320}/@_ITEM_zbhs.勾选(本职勾选)>  {S=只保留本职业;C=254;Y=320}       <{S=全部回收;C=251;X=360;Y=320}/@_ITEM_zbhs.全部回收>
-`
-    let M = '';
-    M = S;
-    Player.V.血量勾选 ? M = ReplaceStr(M, '$血量$', '1') : M = ReplaceStr(M, '$血量$', '0')
-    Player.V.防御勾选 ? M = ReplaceStr(M, '$防御$', '1') : M = ReplaceStr(M, '$防御$', '0')
-    Player.V.攻击勾选 ? M = ReplaceStr(M, '$攻击$', '1') : M = ReplaceStr(M, '$攻击$', '0')
-    Player.V.伤害勾选 ? M = ReplaceStr(M, '$伤害$', '1') : M = ReplaceStr(M, '$伤害$', '0')
-    Player.V.等级勾选 ? M = ReplaceStr(M, '$等级$', '1') : M = ReplaceStr(M, '$等级$', '0')
-    Player.V.次数勾选 ? M = ReplaceStr(M, '$次数$', '1') : M = ReplaceStr(M, '$次数$', '0')
-    Player.V.宝宝勾选 ? M = ReplaceStr(M, '$速度$', '1') : M = ReplaceStr(M, '$速度$', '0')
-    Player.V.自动回收 ? M = ReplaceStr(M, '$回收$', '1') : M = ReplaceStr(M, '$回收$', '0')
-    Player.V.本职勾选 ? M = ReplaceStr(M, '$本职$', '1') : M = ReplaceStr(M, '$本职$', '0')
-    Player.V.材料自动存仓库 ? M = ReplaceStr(M, '$自动拾取$', '1') : M = ReplaceStr(M, '$自动拾取$', '0')
-    Npc.SayEx(Player, 'npc中大窗口新', M)
+    
+    // 品质回收勾选
+    Player.V.回收普通 ??= false
+    Player.V.回收优秀 ??= false
+    Player.V.回收稀有 ??= false
+    Player.V.回收史诗 ??= false
+    Player.V.回收传说 ??= false
+    Player.V.回收神话 ??= false
+    Player.V.回收神器 ??= false
+    
+    // 词条保留设置
+    Player.V.本职勾选 ??= false
+    Player.V.攻击勾选 ??= false
+    Player.V.攻击数值 ??= '0'
+    Player.V.血量勾选 ??= false
+    Player.V.血量数值 ??= '0'
+    Player.V.防御勾选 ??= false
+    Player.V.防御数值 ??= '0'
+    Player.V.技能勾选 ??= false
+    Player.V.技能数值 ??= '0'
+    
+    // 技能魔次选择
+    Player.V.已选择技能魔次 ??= [] as number[]
+    
+    // 回收倍率
+    Player.R.最终回收倍率 ??= 100
+    
+    // 回收屏蔽
+    Player.V.回收屏蔽 ??= false
 }
 
+// ==================== 核心回收逻辑 ====================
 
-export function 材料仓库(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //装备回收
-
-    const S = `\\\\\\\\
-                {S=材料存取;C=254}   {S=  不占背包和仓库位置;C=249}\\
-                <一键存入材料/@_ITEM_zbhs.存入>    {S=材料自动存仓库;C=254} <{I=$材料$;F=装备图标.DATA;X=430;Y=80}/@_ITEM_zbhs.存材料>\\\\
-    {S=【书页】;Hint=用于学习技能;C=243} {S=已存入;C=250} $X21$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,书页,材料1)>\\
-    {S=【血石碎片】;Hint=用于合成升级血石;C=243} {S=已存入;C=250} $X22$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,血石碎片,材料2)>\\
-    {S=【勋章碎片】;Hint=用于合成升级勋章;C=243} {S=已存入;C=250} $X23$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,勋章碎片,材料3)>\\
-    {S=【盾牌碎片】;Hint=用于合成升级盾牌;C=243} {S=已存入;C=250} $X24$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,盾牌碎片,材料4)>\\
-    {S=【护符碎片】;Hint=用于合成升级护符;C=243} {S=已存入;C=250} $X25$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,护符碎片,材料5)>\\
-    {S=【符文碎片】;Hint=用于合成升级符文;C=243} {S=已存入;C=250} $X26$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,符文碎片,材料6)>\\
-    {S=【种族雕像】;Hint=用于强化种族;C=243} {S=已存入;C=250} $X27$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,种族雕像,材料7)>\\
-    {S=【进阶神石】;Hint=用于进阶地图阶段;C=243} {S=已存入;C=250} $X28$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,进阶神石,材料8)>\\
-    {S=【超级斗笠碎片】;Hint=所有合成升级斗笠;C=243} {S=已存入;C=250} $X29$ {S=个;C=250}   <{S=取出;x=260}/@@_ITEM_zbhs.InPutInteger(输入要取出的数量,超级斗笠碎片,材料9)>\\
-
-`
-    let Mes = '';
-    Mes = S;
-    Mes = ReplaceStr(Mes, '$X21$', Player.V.材料1);
-    Mes = ReplaceStr(Mes, '$X22$', Player.V.材料2);
-    Mes = ReplaceStr(Mes, '$X23$', Player.V.材料3);
-    Mes = ReplaceStr(Mes, '$X24$', Player.V.材料4);
-    Mes = ReplaceStr(Mes, '$X25$', Player.V.材料5);
-    Mes = ReplaceStr(Mes, '$X26$', Player.V.材料6);
-    Mes = ReplaceStr(Mes, '$X27$', Player.V.材料7);
-    Mes = ReplaceStr(Mes, '$X28$', Player.V.材料8);
-    Mes = ReplaceStr(Mes, '$X29$', Player.V.材料9);
-    Mes = ReplaceStr(Mes, '$元宝$', Player.V.元宝数量);
-    Player.V.材料自动存仓库 ? Mes = ReplaceStr(Mes, '$材料$', '31') : Mes = ReplaceStr(Mes, '$材料$', '30')
-    Npc.SayEx(Player, 'NPC小窗口', Mes);
+/**
+ * 获取装备基础翻倍倍率（装备价值）
+ * 从装备的 装备需求等级 索引的 OutWay3 位置读取
+ */
+function 获取装备翻倍倍率(UserItem: TUserItem): number {
+    return UserItem.GetOutWay3(装备需求等级) || 1
 }
 
+/**
+ * 检查装备是否为神器
+ */
+function 是否神器(UserItem: TUserItem): boolean {
+    return UserItem.DisplayName?.includes('[神器]') || false
+}
 
-export function 存入(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let count: number
-    let AItem: TUserItem
-    for (let I = Player.ItemSize - 1; I >= 0; I--) {
-        AItem = Player.GetBagItem(I)
-        if (AItem != null && AItem.GetState().GetBind() == false) {
-            switch (AItem.GetName()) {
-                case '书页':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料1 = Player.V.材料1 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '血石碎片':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料2 = Player.V.材料2 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '勋章碎片':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料3 = Player.V.材料3 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '盾牌碎片':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料4 = Player.V.材料4 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '护符碎片':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料5 = Player.V.材料5 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '符文碎片':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料6 = Player.V.材料6 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '种族雕像':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料7 = Player.V.材料7 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '进阶神石':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料8 = Player.V.材料8 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-                case '超级斗笠碎片':
-                    if (AItem.GetDura() > 1) count = AItem.GetDura(); else count = 1;
-                    if (Npc.TakeItem(Player, AItem))
-                        Player.V.材料9 = Player.V.材料9 + count
-                    材料仓库(Npc, Player, Args)
-                    break
-            }
-        }
+/**
+ * 解析神器倍数
+ */
+function 解析神器倍数(displayName: string): number {
+    const match = displayName.match(/\[神器\](\d+)倍/)
+    return match ? parseInt(match[1]) : 0
+}
+
+/**
+ * 获取装备品质
+ * 根据装备颜色 btItemExtColor 判断
+ */
+function 获取装备品质(UserItem: TUserItem): string {
+    const 颜色 = UserItem.Color
+    switch (颜色) {
+        case 装备颜色.神器颜色: return '神器'
+        case 装备颜色.神话颜色: return '神话'
+        case 装备颜色.传说颜色: return '传说'
+        case 装备颜色.史诗颜色: return '史诗'
+        case 装备颜色.稀有颜色: return '稀有'
+        case 装备颜色.优秀颜色: return '优秀'
+        case 装备颜色.普通颜色: return '普通'
+        default: return '普通'
     }
 }
 
+/**
+ * 检查品质是否应该回收
+ */
+function 检查品质回收(Player: TPlayObject, 品质: string): boolean {
+    switch (品质) {
+        case '普通': return Player.V.回收普通
+        case '优秀': return Player.V.回收优秀
+        case '稀有': return Player.V.回收稀有
+        case '史诗': return Player.V.回收史诗
+        case '传说': return Player.V.回收传说
+        case '神话': return Player.V.回收神话
+        case '神器': return Player.V.回收神器
+        default: return false
+    }
+}
 
-export function InPutInteger(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void { //材料仓库
-    let 材料名字 = Args.Str[0]
-    let 材料变量 = Args.Str[1]
-    let 材料数量 = Args.Int[2]
-    // console.log(Args.Str[0])
-    // console.log(Args.Str[1])
-    // console.log(Args.Int[2])
-    if (材料数量 < 1 || 材料数量 > 999999999) { return }
-    if (Player.MaxBagSize - Player.ItemSize >= 10) {
-        if (Player.V[材料变量] > 材料数量) {
-            Player.V[材料变量] = Player.V[材料变量] - 材料数量
-            Npc.Give(Player, 材料名字, 材料数量, false);
-            材料仓库(Npc, Player, Args)
-        } else {
-            Player.MessageBox(`${材料名字}不足${材料数量},取出失败!`)
+/**
+ * 解析装备属性用于词条检查
+ */
+function 解析装备属性(UserItem: TUserItem): 装备属性记录 | null {
+    const desc = UserItem.GetCustomDesc()
+    if (!desc) return null
+    
+    try {
+        return JSON.parse(desc) as 装备属性记录
+    } catch {
+        return null
+    }
+}
+
+/**
+ * 检查词条保留条件
+ * @returns true = 应该保留, false = 可以回收
+ */
+function 检查词条保留(Player: TPlayObject, UserItem: TUserItem): boolean {
+    const 装备属性 = 解析装备属性(UserItem)
+    if (!装备属性) return false
+    
+    // 本职业检查
+    if (Player.V.本职勾选) {
+        const 玩家职业 = Player.GetJob()
+        const 装备职业 = UserItem.GetJob?.() ?? 98
+        if (装备职业 !== 98 && 装备职业 !== 99 && 装备职业 !== 玩家职业) {
+            return false // 非本职业装备，不保留
         }
+    }
+    
+    // 遍历装备属性检查保留条件
+    for (let i = 0; i < 装备属性.职业属性_职业.length; i++) {
+        const 属性ID = 装备属性.职业属性_职业[i]
+        const 属性值 = 装备属性.职业属性_属性[i]
+        
+        // 攻击类属性检查 (100-115)
+        if (属性ID >= 100 && 属性ID <= 115) {
+            if (Player.V.攻击勾选) {
+                const 阈值 = Player.V.攻击数值 || '0'
+                if (大于等于(属性值, 阈值)) {
+                    return true // 达到保留标准
+                }
+            }
+        }
+        
+        // 血量检查
+        if (属性ID === 基础词条.血量 || 属性ID === 基础词条.血量2) {
+            if (Player.V.血量勾选) {
+                const 阈值 = Player.V.血量数值 || '0'
+                if (大于等于(属性值, 阈值)) {
+                    return true
+                }
+            }
+        }
+        
+        // 防御检查
+        if (属性ID === 基础词条.防御 || 属性ID === 基础词条.防御2) {
+            if (Player.V.防御勾选) {
+                const 阈值 = Player.V.防御数值 || '0'
+                if (大于等于(属性值, 阈值)) {
+                    return true
+                }
+            }
+        }
+        
+        // 技能魔次检查 (10001-10040)
+        if (属性ID >= 10001 && 属性ID <= 10040) {
+            if (Player.V.技能勾选) {
+                const 阈值 = Player.V.技能数值 || '0'
+                const 已选技能 = Player.V.已选择技能魔次 as number[] || []
+                
+                // 如果选择了特定技能，只检查已选技能
+                if (已选技能.length > 0) {
+                    if (已选技能.includes(属性ID) && 大于等于(属性值, 阈值)) {
+                        return true
+                    }
+                } else {
+                    // 没有选择特定技能，检查所有技能魔次
+                    if (大于等于(属性值, 阈值)) {
+                        return true
+                    }
+                }
+            }
+        }
+    }
+    
+    return false // 没有达到任何保留条件
+}
+
+/**
+ * 计算装备回收价值
+ * 回收价格 = 基础属性翻倍倍率 * Player.R.最终回收倍率
+ */
+function 计算回收价值(Player: TPlayObject, UserItem: TUserItem): { 价值: string, 货币类型: '金币' | '元宝' } {
+    const 翻倍倍率 = 获取装备翻倍倍率(UserItem)
+    const 最终倍率 = Player.R.最终回收倍率 || 1
+    
+    if (是否神器(UserItem)) {
+        // 神器回收获得元宝
+        const 神器倍数 = 解析神器倍数(UserItem.DisplayName || '')
+        const 元宝价值 = 智能计算(String(神器倍数), String(最终倍率), 3)
+        return { 价值: 元宝价值, 货币类型: '元宝' }
     } else {
-        Player.SendMessage('背包请多留点空位!!!');
+        // 普通装备回收获得金币
+        const 金币价值 = 智能计算(String(翻倍倍率), String(最终倍率), 3)
+        return { 价值: 金币价值, 货币类型: '金币' }
     }
-
 }
 
-
-
-export function 存材料(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //装备勾选
-    Player.V.材料自动存仓库 ? Player.V.材料自动存仓库 = false : Player.V.材料自动存仓库 = true
-    材料仓库(Npc, Player, Args)
+/**
+ * 核心回收检查函数
+ * 用于掉落时筛选和手动回收
+ * @returns 回收结果
+ */
+export function 检查装备回收(Player: TPlayObject, UserItem: TUserItem): 回收结果 {
+    // 初始化变量
+    初始化回收变量(Player)
+    
+    // 检查装备类型
+    if (!有效装备类型.includes(UserItem.StdMode)) {
+        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '装备类型不符' }
+    }
+    
+    // 检查是否绑定
+    if (UserItem.GetState()?.GetBind()) {
+        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '绑定装备' }
+    }
+    
+    // 获取品质
+    const 品质 = 获取装备品质(UserItem)
+    
+    // 检查品质是否在回收列表
+    if (!检查品质回收(Player, 品质)) {
+        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '品质不在回收列表' }
+    }
+    
+    // 检查词条保留
+    if (检查词条保留(Player, UserItem)) {
+        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '词条达到保留标准' }
+    }
+    
+    // 计算回收价值
+    const { 价值, 货币类型 } = 计算回收价值(Player, UserItem)
+    
+    return { 应该回收: true, 回收价值: 价值, 货币类型 }
 }
 
-export function 技能石回收(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //装备回收
-
-    if (Player.V.回收职业选择 == '') {
-        Player.V.回收职业选择 = Player.V.职业
+/**
+ * 执行单件装备回收
+ */
+export function 执行装备回收(Player: TPlayObject, UserItem: TUserItem): boolean {
+    const 结果 = 检查装备回收(Player, UserItem)
+    
+    if (!结果.应该回收) return false
+    
+    // 发放奖励
+    if (结果.货币类型 === '元宝') {
+        const 当前元宝 = Player.GetGamePoint() || 0
+        Player.SetGamePoint(当前元宝 + Number(结果.回收价值))
+    } else {
+        const 当前金币 = Player.GetGold() || 0
+        Player.SetGold(当前金币 + Number(结果.回收价值))
+        Player.GoldChanged()
     }
-    let 技能1 = '', 技能2 = '', 技能3 = '', 技能4 = '', 技能5 = '', 技能6 = ''
-    switch (Player.V.回收职业选择) {
-        case '圣骑士':
-            技能1 = `<{I=$半月弯刀$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,半月弯刀)> {S=半月弯刀;C=145;Y=130}`
-            技能2 = `<{I=$攻杀剑术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,攻杀剑术)> {S=攻杀剑术;C=145;Y=130}`
-            技能3 = `<{I=$神圣之盾$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,神圣之盾)> {S=神圣之盾;C=145;Y=130}`
-            技能4 = `<{I=$鲜血圣印$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,鲜血圣印)> {S=鲜血圣印;C=145;Y=130}`
-            技能5 = `<{I=$复仇圣印$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石5技能,复仇圣印)> {S=复仇圣印;C=145;Y=130}`
-            break
-        case '十字军':
-            技能1 = `<{I=$刺杀剑术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,刺杀剑术)> {S=刺杀剑术;C=145;Y=130}`
-            技能2 = `<{I=$攻杀剑术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,攻杀剑术)> {S=攻杀剑术;C=145;Y=130}`
-            技能3 = `<{I=$夺命十字$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,夺命十字)> {S=夺命十字;C=145;Y=130}`
-            技能4 = `<{I=$十步一杀$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,十步一杀)> {S=十步一杀;C=145;Y=130}`
-            break
-        case '毁灭者':
-            技能1 = `<{I=$半月弯刀$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,半月弯刀)> {S=半月弯刀;C=145;Y=130}`
-            技能2 = `<{I=$攻杀剑术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,攻杀剑术)> {S=攻杀剑术;C=145;Y=130}`
-            技能3 = `<{I=$毁灭之球$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,毁灭之球)> {S=毁灭之球;C=145;Y=130}`
-            技能4 = `<{I=$彻地钉$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,彻地钉)> {S=彻地钉;C=145;Y=130}`
-            技能5 = `<{I=$倚天辟地$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石5技能,倚天辟地)> {S=倚天辟地;C=145;Y=130}`
-            break
-        case '鬼剑士':
-            技能1 = `<{I=$攻杀剑术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,攻杀剑术)> {S=攻杀剑术;C=145;Y=130}`
-            技能2 = `<{I=$刺杀剑术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,刺杀剑术)> {S=刺杀剑术;C=145;Y=130}`
-            技能3 = `<{I=$烈火剑法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,烈火剑法)> {S=烈火剑法;C=145;Y=130}`
-            技能4 = `<{I=$逐日剑法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,逐日剑法)> {S=逐日剑法;C=145;Y=130}`
-            技能5 = `<{I=$开天斩$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石5技能,开天斩)> {S=开天斩;C=145;Y=130}`
-            break
-        case '幻影之刃':
-            技能1 = `<{I=$霜月$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,霜月)> {S=霜月;C=145;Y=130}`
-            技能2 = `<{I=$幻剑$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,幻剑)> {S=幻剑;C=145;Y=130}`
-            break
-        case '终结者':
-            技能1 = `<{I=$霜月$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,霜月)> {S=霜月;C=145;Y=130}`
-            技能2 = `<{I=$炎龙波$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,炎龙波)> {S=炎龙波;C=145;Y=130}`
-            技能3 = `<{I=$火镰狂舞$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,烈火剑法)> {S=火镰狂舞;C=145;Y=130}`
-            break
-        case '暗之使徒':
-            技能1 = `<{I=$霜月$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,霜月)> {S=霜月;C=145;Y=130}`
-            技能2 = `<{I=$灵魂陷阱$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,灵魂陷阱)> {S=灵魂陷阱;C=145;Y=130}`
-            break
-        case '阴影之王':
-            技能1 = `<{I=$霜月$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,霜月)> {S=霜月;C=145;Y=130}`
-            技能2 = `<{I=$黑暗气息$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,黑暗气息)> {S=黑暗气息;C=145;Y=130}`
-            技能3 = `<{I=$影袭$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,影袭)> {S=影袭;C=145;Y=130}`
-            技能4 = `<{I=$淬毒匕首$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,淬毒匕首)> {S=淬毒匕首;C=145;Y=130}`
-            break
-        case '金刚罗汉':
-            技能1 = `<{I=$罗汉棍法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,罗汉棍法)> {S=罗汉棍法;C=145;Y=130}`
-            技能2 = `<{I=$推山掌$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,推山掌)> {S=推山掌;C=145;Y=130}`
-            技能3 = `<{I=$金刚掌$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,金刚掌)> {S=金刚掌;C=145;Y=130}`
-            break
-        case '神圣使者':
-            技能1 = `<{I=$罗汉棍法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,罗汉棍法)> {S=罗汉棍法;C=145;Y=130}`
-            技能2 = `<{I=$推山掌$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,推山掌)> {S=推山掌;C=145;Y=130}`
-            技能3 = `<{I=$降魔棍法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,降魔棍法)> {S=降魔棍法;C=145;Y=130}`
-            技能4 = `<{I=$达摩棍法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,达摩棍法)> {S=达摩棍法;C=145;Y=130}`
-            技能5 = `<{I=$降龙伏虎$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石5技能,降龙伏虎)> {S=降龙伏虎;C=145;Y=130}`
-            break
-        case '审判者':
-            技能1 = `<{I=$罗汉棍法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,罗汉棍法)> {S=罗汉棍法;C=145;Y=130}`
-            技能2 = `<{I=$推山掌$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,推山掌)> {S=推山掌;C=145;Y=130}`
-            技能3 = `<{I=$天雷阵$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,天雷阵)> {S=天雷阵;C=145;Y=130}`
-            break
-        case '血修罗':
-            技能1 = `<{I=$罗汉棍法$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,罗汉棍法)> {S=罗汉棍法;C=145;Y=130}`
-            技能2 = `<{I=$推山掌$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,推山掌)> {S=推山掌;C=145;Y=130}`
-            技能3 = `<{I=$血缀天涯$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,血缀天涯)> {S=血缀天涯;C=145;Y=130}`
-            break
-        case '契约师':
-            技能1 = `<{I=$火球术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,火球术)> {S=火球术;C=145;Y=130}`
-            技能2 = `<{I=$灵魂契约$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,灵魂契约)> {S=灵魂契约;C=145;Y=130}`
-            技能3 = `<{I=$雷电术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,雷电术)> {S=雷电术;C=145;Y=130}`
-            技能4 = `<{I=$灵魂重生$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,灵魂重生)> {S=灵魂重生;C=145;Y=130}`
-            break
-        case '元素师':
-            技能1 = `<{I=$火球术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,火球术)> {S=火球术;C=145;Y=130}`
-            技能2 = `<{I=$火墙$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,火墙)> {S=火墙;C=145;Y=130}`
-            技能3 = `<{I=$燃烧$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,燃烧)> {S=燃烧;C=145;Y=130}`
-            技能4 = `<{I=$流星火雨$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,流星火雨)> {S=流星火雨;C=145;Y=130}`
-            技能5 = `<{I=$龙卷风$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石5技能,龙卷风)> {S=龙卷风;C=145;Y=130}`
-            break
-        case '秘术师':
-            技能1 = `<{I=$火球术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,火球术)> {S=火球术;C=145;Y=130}`
-            技能2 = `<{I=$寒冰掌$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,寒冰掌)> {S=寒冰掌;C=145;Y=130}`
-            技能3 = `<{I=$寒冰护甲$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,寒冰护甲)> {S=寒冰护甲;C=145;Y=130}`
-            技能4 = `<{I=$能量振波$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,能量振波)> {S=能量振波;C=145;Y=130}`
-            break
-        case '死灵法师':
-            技能1 = `<{I=$火球术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,火球术)> {S=火球术;C=145;Y=130}`
-            技能2 = `<{I=$统御骷髅$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,统御骷髅)> {S=统御骷髅;C=145;Y=130}`
-            技能3 = `<{I=$骨矛$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,骨矛)> {S=骨矛;C=145;Y=130}`
-            技能4 = `<{I=$死亡军团$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,死亡军团)> {S=死亡军团;C=145;Y=130}`
-            break
-        case '驭兽者':
-            技能1 = `<{I=$灵魂火符$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,灵魂火符)> {S=灵魂火符;C=145;Y=130}`
-            技能2 = `<{I=$召唤神兽$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,召唤神兽)> {S=召唤神兽;C=145;Y=130}`
-            break
-        case '噬魂者':
-            技能1 = `<{I=$灵魂火符$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,灵魂火符)> {S=灵魂火符;C=145;Y=130}`
-            技能2 = `<{I=$噬血术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,噬血术)> {S=噬血术;C=145;Y=130}`
-            技能3 = `<{I=$嗜血蝙蝠$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,嗜血蝙蝠)> {S=嗜血蝙蝠;C=145;Y=130}`
-            技能4 = `<{I=$噬魂沼泽$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,噬魂沼泽)> {S=噬魂沼泽;C=145;Y=130}`
-            break
-        case '巫毒萨满':
-            技能1 = `<{I=$灵魂火符$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,灵魂火符)> {S=灵魂火符;C=145;Y=130}`
-            技能2 = `<{I=$蛊毒$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,蛊毒)> {S=蛊毒;C=145;Y=130}`
-            技能3 = `<{I=$蛊虫$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,蛊虫)> {S=蛊虫;C=145;Y=130}`
-            技能4 = `<{I=$召唤毒龙$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,召唤毒龙)> {S=召唤毒龙;C=145;Y=130}`
-            break
-        case '牧师':
-            技能1 = `<{I=$灵魂火符$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,灵魂火符)> {S=灵魂火符;C=145;Y=130}`
-            技能2 = `<{I=$神圣光辉$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,神圣光辉)> {S=神圣光辉;C=145;Y=130}`
-            break
-        case '神射手':
-            技能1 = `<{I=$精准箭术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,精准箭术)> {S=精准箭术;C=145;Y=130}`
-            技能2 = `<{I=$火焰箭$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,火焰箭)> {S=火焰箭;C=145;Y=130}`
-            技能3 = `<{I=$寒冰箭$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,寒冰箭)> {S=寒冰箭;C=145;Y=130}`
-            技能4 = `<{I=$魔法箭$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,魔法箭)> {S=魔法箭;C=145;Y=130}`
-            break
-        case '丛林猎手':
-            技能1 = `<{I=$精准箭术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,精准箭术)> {S=精准箭术;C=145;Y=130}`
-            技能2 = `<{I=$召唤狂狼$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,召唤狂狼)> {S=召唤狂狼;C=145;Y=130}`
-            技能3 = `<{I=$召唤虎王$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,召唤虎王)> {S=召唤虎王;C=145;Y=130}`
-            break
-        case '风行者':
-            技能1 = `<{I=$精准箭术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,精准箭术)> {S=精准箭术;C=145;Y=130}`
-            技能2 = `<{I=$恶魔降临$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,恶魔降临)> {S=恶魔降临;C=145;Y=130}`
-            技能3 = `<{I=$狂风之力$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,狂风之力)> {S=狂风之力;C=145;Y=130}`
-            技能4 = `<{I=$疾风连闪$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,疾风连闪)> {S=疾风连闪;C=145;Y=130}`
-            break
-        case '镜像游侠':
-            技能1 = `<{I=$精准箭术$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石1技能,精准箭术)> {S=精准箭术;C=145;Y=130}`
-            技能2 = `<{I=$万箭齐发$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石2技能,万箭齐发)> {S=万箭齐发;C=145;Y=130}`
-            技能3 = `<{I=$雷光之眼$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石3技能,雷光之眼)> {S=雷光之眼;C=145;Y=130}`
-            技能4 = `<{I=$排山倒海$;F=装备图标.DATA;Y=130}/@_ITEM_zbhs.技能石选择勾选(技能石4技能,排山倒海)> {S=排山倒海;C=145;Y=130}`
-            break
-    }
-
-    const S = `\\\\
-                              {S=当前回收比例${Player.R.回收加成 * 100}%;C=253;y=20}\\
-               <基础装备回收/@_ITEM_zbhs.准备回收>         {S=技能石回收;C=224}         <护身符回收/@_ITEM_zbhs.护身符回收>\\\\
-       {S=职业:;C=31}<${Player.V.回收职业选择 == '' ? '选择职业' : Player.V.回收职业选择}/@_ITEM_zbhs.选择职业>\\\\
-       技能:\\
-       ${技能1}  ${技能2}  ${技能3}  ${技能4}  ${技能5}\\\\\\
-       按阶数保留全部: <{I=$保留全部技能石$;F=装备图标.DATA}/@_ITEM_zbhs.技能石勾选(保留全部技能石)>\\\\
-       技能石阶数保留: {S=${Player.V.技能石阶数保留}阶以上:;C=31}  <等级加/@_ITEM_zbhs.等级加减(加)>  <等级减/@_ITEM_zbhs.等级加减(减)>\\\\
-       技能石自动回收: <{I=$自动回收技能石$;F=装备图标.DATA}/@_ITEM_zbhs.技能石勾选(自动回收技能石)>\\\\
-       <按保留回收技能石/@_ITEM_zbhs.按保留回收技能石>             <回收背包{s=全部;c=249}技能石/@_ITEM_zbhs.回收背包全部技能石>
-    `
-    let M = '';
-    M = S;
-    Player.V.技能石1技能勾选 ? M = ReplaceStr(M, `$${Player.V.技能石1技能}$`, '1') : M = ReplaceStr(M, `$${Player.V.技能石1技能}$`, '0')
-    Player.V.技能石2技能勾选 ? M = ReplaceStr(M, `$${Player.V.技能石2技能}$`, '1') : M = ReplaceStr(M, `$${Player.V.技能石2技能}$`, '0')
-    Player.V.技能石3技能勾选 ? M = ReplaceStr(M, `$${Player.V.技能石3技能}$`, '1') : M = ReplaceStr(M, `$${Player.V.技能石3技能}$`, '0')
-    Player.V.技能石4技能勾选 ? M = ReplaceStr(M, `$${Player.V.技能石4技能}$`, '1') : M = ReplaceStr(M, `$${Player.V.技能石4技能}$`, '0')
-    Player.V.技能石5技能勾选 ? M = ReplaceStr(M, `$${Player.V.技能石5技能}$`, '1') : M = ReplaceStr(M, `$${Player.V.技能石5技能}$`, '0')
-    Player.V.保留全部技能石 ? M = ReplaceStr(M, '$保留全部技能石$', '1') : M = ReplaceStr(M, '$保留全部技能石$', '0')
-    Player.V.自动回收技能石 ? M = ReplaceStr(M, '$自动回收技能石$', '1') : M = ReplaceStr(M, '$自动回收技能石$', '0')
-    Player.V.自动回收 ? M = ReplaceStr(M, '$回收$', '1') : M = ReplaceStr(M, '$回收$', '0')
-    Player.V.本职勾选 ? M = ReplaceStr(M, '$本职$', '1') : M = ReplaceStr(M, '$本职$', '0')
-    Npc.SayEx(Player, 'npc中大窗口新', M)
+    
+    // 删除装备
+    Player.DeleteItem(UserItem)
+    
+    return true
 }
 
-export function 护身符回收(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //装备回收
-
-    const 护身符血量数值 = 大数值整数简写(Player.V.护身符血量数值)
-    const 护身符防御数值 = 大数值整数简写(Player.V.护身符防御数值)
-    const 护身符攻击数值 = 大数值整数简写(Player.V.护身符攻击数值)
-    const 护身符伤害数值 = 大数值整数简写(Player.V.护身符伤害数值)
-    const 护身符等级数值 = 大数值整数简写(Player.V.护身符等级数值)
-    const 护身符次数数值 = 大数值整数简写(Player.V.护身符次数数值)
-    const 护身符宝宝数值 = 大数值整数简写(Player.V.护身符宝宝数值)
-    Player.V.自动至尊勾选 ??= false
-
-
-    const S = `\\\\
-                              {S=当前回收比例${Player.R.回收加成 * 100}%;C=253;y=20}
-                              {S=至尊护身符回收礼券在第二幕NPC进行;C=95;x=150}\\
-               <基础装备回收/@_ITEM_zbhs.准备回收>         <技能石回收/@_ITEM_zbhs.技能石回收>         {S=护身符回收;C=224}\\
-            {S=护身符属性保留(大于);C=9}\\
-    <{I=$护身符血量$;F=装备图标.DATA;X=70;Y=80}/@_ITEM_zbhs.护身符勾选(护身符血量勾选)>  护身符血量:${护身符血量数值}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=80}/@_ITEM_zbhs.护身符加(护身符血量数值)>    <{M=214,214,215;F=Prguse.WZL;X=320;Y=80}/@_ITEM_zbhs.护身符减(护身符血量数值)>                 <{S=设置数值;X=360;Y=78}/@@_ITEM_zbhs.InPutString10(请输入你的数值!!,护身符血量数值)>\\
-    <{I=$护身符防御$;F=装备图标.DATA;X=70;Y=105}/@_ITEM_zbhs.护身符勾选(护身符防御勾选)>  护身符防御:${护身符防御数值}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=105}/@_ITEM_zbhs.护身符加(护身符防御数值)>  <{M=214,214,215;F=Prguse.WZL;X=320;Y=105}/@_ITEM_zbhs.护身符减(护身符防御数值)>                 <{S=设置数值;X=360;Y=103}/@@_ITEM_zbhs.InPutString10(请输入你的数值!!,护身符防御数值)>\\
-    <{I=$护身符攻击$;F=装备图标.DATA;X=70;Y=131}/@_ITEM_zbhs.护身符勾选(护身符攻击勾选)>  护身符攻击:${护身符攻击数值}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=131}/@_ITEM_zbhs.护身符加(护身符攻击数值)>  <{M=214,214,215;F=Prguse.WZL;X=320;Y=131}/@_ITEM_zbhs.护身符减(护身符攻击数值)>                 <{S=设置数值;X=360;Y=129}/@@_ITEM_zbhs.InPutString10(请输入你的数值!!,护身符攻击数值)>\\
-            {S=护身符词条属性保留(大于);C=243}\\
-    <{I=$护身符伤害$;F=装备图标.DATA;X=70;Y=175}/@_ITEM_zbhs.护身符勾选(护身符伤害勾选)>  {S=护身符技能伤害:${护身符伤害数值};Y=174}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=175}/@_ITEM_zbhs.护身符加(护身符伤害数值)>    <{M=214,214,215;F=Prguse.WZL;X=320;Y=175}/@_ITEM_zbhs.护身符减(护身符伤害数值)>                 <{S=设置数值;X=360;Y=173}/@@_ITEM_zbhs.InPutString10(请输入你的数值!!,护身符伤害数值)>\\\\
-    <{I=$护身符等级$;F=装备图标.DATA;X=70;Y=200}/@_ITEM_zbhs.护身符勾选(护身符等级勾选)>  {S=护身符技能等级:${护身符等级数值};Y=199}                  <{S=设置数值;X=360;Y=197}/@@_ITEM_zbhs.InPutString10(请输入你的数值!!,护身符等级数值)>\\\\
-    <{I=$护身符次数$;F=装备图标.DATA;X=70;Y=225}/@_ITEM_zbhs.护身符勾选(护身符次数勾选)>  {S=护身符技能次数:${护身符次数数值};Y=224}  <{M=212,212,213;F=Prguse.WZL;X=300;Y=224}/@_ITEM_zbhs.护身符加(护身符次数数值)>    <{M=214,214,215;F=Prguse.WZL;X=320;Y=224}/@_ITEM_zbhs.护身符减(护身符次数数值)>                  <{S=设置数值;X=360;Y=223}/@@_ITEM_zbhs.InPutString10(请输入你的数值!!,护身符次数数值)>\\\\
-    <{I=$护身符速度$;F=装备图标.DATA;X=70;Y=250}/@_ITEM_zbhs.护身符勾选(护身符宝宝勾选)>  {S=护身符宝宝速度:${护身符宝宝数值};Y=249}                  <{S=设置数值;X=360;Y=248}/@@_ITEM_zbhs.InPutString10(请输入你的数值!!,护身符宝宝数值)>\\\\
-    <{I=$护身符颜色保留$;F=装备图标.DATA;X=70;Y=275}/@_ITEM_zbhs.护身符勾选(护身符颜色保留)>  {S=颜色保留:${Player.V.颜色保留数值 + Player.V.颜色保留内容}以上;C=${Player.V.颜色保留显示};Y=274}  <{M=212,212,213;F=Prguse.WZL;X=220;Y=277}/@_ITEM_zbhs.护身符颜色加减(加)>    <{M=214,214,215;F=Prguse.WZL;X=240;Y=277}/@_ITEM_zbhs.护身符颜色加减(减)>   <{I=$至尊护身符保留$;F=装备图标.DATA;X=300;Y=275}/@_ITEM_zbhs.护身符勾选(至尊护身符保留)>  {S=至尊护身符保留;C=224;X=330;Y=275}\\\\
-    <{I=$护身符回收$;F=装备图标.DATA;X=70;Y=300}/@_ITEM_zbhs.护身符勾选(护身符自动回收)>  {S=自动回收;C=31;Y=300}      <{I=$护身符本职勾选$;F=装备图标.DATA;X=300;Y=300}/@_ITEM_zbhs.护身符勾选(护身符本职勾选)>  {S=自动回收至尊;C=242;x=200;Y=300}      <{I=$自动至尊勾选$;F=装备图标.DATA;X=170;Y=300}/@_ITEM_zbhs.护身符勾选(自动至尊勾选)>  {S=只保留本职业;C=254;X=330;Y=300}\\
-            <{S=按保留回收护身符;Y=330}/@_ITEM_zbhs.按保留回收护身符>                      <{S=回收背包;Y=330}{S=全部;c=249;Y=330}{S=护身符;Y=330}/@_ITEM_zbhs.回收背包全部护身符>
-`
-    let M = '';
-    M = S;
-    Player.V.护身符血量勾选 ? M = ReplaceStr(M, '$护身符血量$', '1') : M = ReplaceStr(M, '$护身符血量$', '0')
-    Player.V.护身符防御勾选 ? M = ReplaceStr(M, '$护身符防御$', '1') : M = ReplaceStr(M, '$护身符防御$', '0')
-    Player.V.护身符攻击勾选 ? M = ReplaceStr(M, '$护身符攻击$', '1') : M = ReplaceStr(M, '$护身符攻击$', '0')
-    Player.V.护身符伤害勾选 ? M = ReplaceStr(M, '$护身符伤害$', '1') : M = ReplaceStr(M, '$护身符伤害$', '0')
-    Player.V.护身符等级勾选 ? M = ReplaceStr(M, '$护身符等级$', '1') : M = ReplaceStr(M, '$护身符等级$', '0')
-    Player.V.护身符次数勾选 ? M = ReplaceStr(M, '$护身符次数$', '1') : M = ReplaceStr(M, '$护身符次数$', '0')
-    Player.V.护身符宝宝勾选 ? M = ReplaceStr(M, '$护身符速度$', '1') : M = ReplaceStr(M, '$护身符速度$', '0')
-    Player.V.护身符自动回收 ? M = ReplaceStr(M, '$护身符回收$', '1') : M = ReplaceStr(M, '$护身符回收$', '0')
-    Player.V.护身符本职勾选 ? M = ReplaceStr(M, '$护身符本职$', '1') : M = ReplaceStr(M, '$护身符本职$', '0')
-    Player.V.护身符颜色保留 ? M = ReplaceStr(M, '$护身符颜色保留$', '1') : M = ReplaceStr(M, '$护身符颜色保留$', '0')
-    Player.V.至尊护身符保留 ? M = ReplaceStr(M, '$至尊护身符保留$', '1') : M = ReplaceStr(M, '$至尊护身符保留$', '0')
-    Player.V.护身符本职勾选 ? M = ReplaceStr(M, '$护身符本职勾选$', '1') : M = ReplaceStr(M, '$护身符本职勾选$', '0')
-    Player.V.自动至尊勾选 ? M = ReplaceStr(M, '$自动至尊勾选$', '1') : M = ReplaceStr(M, '$自动至尊勾选$', '0')
-    Npc.SayEx(Player, 'npc中大窗口新', M)
-}
-
-export function 护身符颜色加减(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 加减 = Args.Str[0]
-    if (加减 == '加') {
-        Player.V.颜色保留数值 = Player.V.颜色保留数值 + 1
-        if (Player.V.颜色保留数值 > 7) {
-            Player.V.颜色保留数值 = 7
-        }
-    }
-    if (加减 == '减') {
-        Player.V.颜色保留数值 = Player.V.颜色保留数值 - 1
-        if (Player.V.颜色保留数值 < 0) {
-            Player.V.颜色保留数值 = 0
-        }
-    }
-    switch (Player.V.颜色保留数值) {
-        case 0: Player.V.颜色保留内容 = '白色'; Player.V.颜色保留显示 = 255; break
-        case 1: Player.V.颜色保留内容 = '浅蓝'; Player.V.颜色保留显示 = 254; break
-        case 2: Player.V.颜色保留内容 = '绿色'; Player.V.颜色保留显示 = 224; break
-        case 3: Player.V.颜色保留内容 = '浅红'; Player.V.颜色保留显示 = 191; break
-        case 4: Player.V.颜色保留内容 = '橙色'; Player.V.颜色保留显示 = 243; break
-        case 5: Player.V.颜色保留内容 = '紫色'; Player.V.颜色保留显示 = 241; break
-        case 6: Player.V.颜色保留内容 = '大红'; Player.V.颜色保留显示 = 249; break
-        case 7: Player.V.颜色保留内容 = '粉色'; Player.V.颜色保留显示 = 253; break
-    }
-
-    护身符回收(Npc, Player, Args)
-}
-
-
-export function 按保留回收护身符(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let item: TUserItem;
-    let 倍数 = 0
-    let 数量 = 0
-    let 金币数量 = 0
-    let 生命 = '', 攻击 = '', 防御 = '', 魔法 = '', 道术 = '', 射术 = '', 刺术 = '', 武术 = '', 基础伤害 = '', 宠物速度 = '', 攻击次数 = '', 技能等级 = ''
-    for (let I = Player.GetItemSize() - 1; I >= 0; I--) {
-        生命 = '', 攻击 = '', 防御 = '', 魔法 = '', 道术 = '', 射术 = '', 刺术 = '', 武术 = '', 基础伤害 = '', 宠物速度 = '', 攻击次数 = '', 技能等级 = ''
-        item = Player.GetBagItem(I);
-        if (Player.V.至尊护身符保留 && item.Name.includes('至尊护身符')) { continue }
-        if (item.Name.includes('护身符') && item.GetState().GetBind() == false) {
-            if (Player.V.护身符颜色保留 && Player.V.颜色保留显示 == item.Color) { continue }
-
-
-            for (let i = 1; i <= 40; i++) {
-                if (item.GetOutWay1(i) >= 21 && item.GetOutWay1(i) <= 153) {
-                    技能等级 = String(item.GetOutWay2(i))
-                    if (Player.V.护身符等级勾选 && Number(String(技能等级)) > Number(String(Player.V.护身符等级数值))) {
-                        break
-                    }
-                }
-                if (item.GetOutWay1(i) >= 320 && item.GetOutWay1(i) <= 330) {
-                    宠物速度 = String(item.GetOutWay2(i))
-                    if (Player.V.护身符宝宝勾选 && Number(宠物速度) > Number(Player.V.护身符宝宝数值)) {
-                        break
-                    }
-                }
-            }
-
-            if (item.GetCustomDesc() != ``) {
-                let 装备字符串 = JSON.parse(item.GetCustomDesc())
-                if (装备字符串.职业属性_职业) {
-                    let 装备属性条数 = 装备字符串.职业属性_职业.length
-                    for (let e = 0; e <= 装备属性条数 - 1; e++) {
-                        switch (Number(装备字符串.职业属性_职业[e])) {
-                            case 0: 生命 = 装备字符串.职业属性_属性[e]; break;
-                            case 1: 防御 = 装备字符串.职业属性_属性[e]; break;
-                            case 2: 攻击 = 装备字符串.职业属性_属性[e]; break;
-                            case 3: 魔法 = 装备字符串.职业属性_属性[e]; break;
-                            case 4: 道术 = 装备字符串.职业属性_属性[e]; break;
-                            case 5: 刺术 = 装备字符串.职业属性_属性[e]; break;
-                            case 6: 射术 = 装备字符串.职业属性_属性[e]; break;
-                            case 7: 武术 = 装备字符串.职业属性_属性[e]; break;
-                            case 160: case 161: case 162: case 163: case 164: case 165: case 166: case 167: case 168: case 169:
-                            case 170: case 171: case 172: case 173: case 174: case 175: case 176: case 177: case 178: case 179:
-                            case 180: case 181: case 182: case 183: case 184: case 185: case 186: case 187: case 188: case 189:
-                            case 190: case 191: case 192: case 193: case 194: case 195: case 196: case 197: case 198: case 199:
-                            case 200: case 201: case 202: case 203: case 204: case 205: case 206: case 207: case 208: case 209:
-                            case 210: case 211: case 212: case 213: case 214: case 215: case 216: case 217: case 218: case 219:
-                            case 220: case 221: case 222: case 223: case 224: case 225:
-                                基础伤害 = 装备字符串.职业属性_属性[e]; break
-                            case 240: case 241: case 242: case 243: case 244: case 245: case 246: case 247: case 248: case 249:
-                            case 250: case 251: case 252: case 253: case 254: case 255: case 256: case 257: case 258: case 259:
-                            case 260: case 261: case 262: case 263: case 264: case 265: case 266: case 267: case 268: case 269:
-                            case 270: case 271: case 272: case 273: case 274: case 275: case 276: case 277: case 278: case 279:
-                            case 280: case 281: case 282: case 283: case 284: case 285: case 286: case 287: case 288: case 289:
-                            case 290: case 291: case 292: case 293: case 294: case 295: case 296: case 297: case 298: case 299:
-                            case 300: case 301: case 302: case 303: case 304: case 305:
-                                攻击次数 = 装备字符串.职业属性_属性[e]; break
-                            default: break;
-                        }
-                    }
-                }
-            }
-            if (Player.V.护身符血量勾选 && Number(生命) > Number(Player.V.护身符血量数值)) { continue }
-            if (Player.V.护身符防御勾选 && Number(防御) > Number(Player.V.护身符防御数值)) { continue }
-            if (Player.V.护身符攻击勾选 && Number(攻击) > Number(Player.V.护身符攻击数值)) { continue }
-            if (Player.V.护身符攻击勾选 && Number(魔法) > Number(Player.V.护身符魔法数值)) { continue }
-            if (Player.V.护身符攻击勾选 && Number(道术) > Number(Player.V.护身符道术数值)) { continue }
-            if (Player.V.护身符攻击勾选 && Number(刺术) > Number(Player.V.护身符刺术数值)) { continue }
-            if (Player.V.护身符攻击勾选 && Number(射术) > Number(Player.V.护身符射术数值)) { continue }
-            if (Player.V.护身符攻击勾选 && Number(武术) > Number(Player.V.护身符武术数值)) { continue }
-            if (Player.V.护身符伤害勾选 && Number(基础伤害) > Number(Player.V.护身符伤害数值)) { continue }
-            if (Player.V.护身符次数勾选 && Number(攻击次数) > Number(Player.V.护身符次数数值)) { continue }
-
-            金币数量 += 10
-            Player.DeleteItem(item)
-        }
-    }
-    if (金币数量 > 0) {
-        Player.SetGold(Player.GetGold() + 金币数量 + 金币数量 * Player.R.回收加成)
-    }
-    Player.GoldChanged()
-}
-
-
-export function 回收背包全部护身符(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let item: TUserItem;
-    let 倍数 = 0
-    let 数量 = 0
-    let 金币数量 = 0
-    for (let I = Player.GetItemSize() - 1; I >= 0; I--) {
-        item = Player.GetBagItem(I);
-        if (item.Name.includes('护身符') && item.GetState().GetBind() == false) {
-            数量++
-            金币数量 += 10
-            Player.DeleteItem(item)
-        }
-    }
-    if (金币数量 > 0) {
-        Player.SetGold(Player.GetGold() + 金币数量 + 金币数量 * Player.R.回收加成)
-    }
-    Player.GoldChanged()
-}
-
-
-export function 按保留回收技能石(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let item: TUserItem;
-    let 倍数 = 0
-    let 数量 = 0
-    let 金币数量 = 0
-    for (let I = Player.GetItemSize() - 1; I >= 0; I--) {
-        item = Player.GetBagItem(I);
-        if (item.StdMode == 68 && item.GetState().GetBind() == false) {
-            if ((Player.V.技能石1技能勾选 && item.Name.includes(Player.V.技能石1技能)) || (Player.V.技能石2技能勾选 && item.Name.includes(Player.V.技能石2技能)) || (Player.V.技能石3技能勾选 && item.Name.includes(Player.V.技能石3技能)) ||
-                (Player.V.技能石4技能勾选 && item.Name.includes(Player.V.技能石4技能)) || (Player.V.技能石5技能勾选 && item.Name.includes(Player.V.技能石5技能))) {
-                continue
-            }
-            if (Player.V.保留全部技能石 && item.GetOutWay2(2) > Player.V.技能石阶数保留) {
-                continue
-            }
-
-            数量++
-            金币数量 += 10
-            Player.DeleteItem(item)
-        }
-    }
-    if (金币数量 > 0) {
-        Player.SetGold(Player.GetGold() + 金币数量 + 金币数量 * Player.R.回收加成)
-    }
-    Player.GoldChanged()
-}
-
-export function 回收背包全部技能石(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let item: TUserItem;
-    let 倍数 = 0
-    let 数量 = 0
-    let 金币数量 = 0
-    for (let I = Player.GetItemSize() - 1; I >= 0; I--) {
-        item = Player.GetBagItem(I);
-        if (item.StdMode == 68 && item.GetState().GetBind() == false) {
-            数量++
-            金币数量 += 10
-            Player.DeleteItem(item)
-        }
-    }
-    if (金币数量 > 0) {
-        Player.SetGold(Player.GetGold() + 金币数量 + 金币数量 * Player.R.回收加成)
-    }
-    Player.GoldChanged()
-}
-export function 选择职业(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const S = `\\\\\\\\
-        <圣骑士/@_ITEM_zbhs.职业选择(圣骑士)>       <十字军/@_ITEM_zbhs.职业选择(十字军)>       <毁灭者/@_ITEM_zbhs.职业选择(毁灭者)>       <鬼剑士/@_ITEM_zbhs.职业选择(鬼剑士)>\\\\
-        <幻影之刃/@_ITEM_zbhs.职业选择(幻影之刃)>     <终结者/@_ITEM_zbhs.职业选择(终结者)>       <暗之使徒/@_ITEM_zbhs.职业选择(暗之使徒)>     <阴影之王/@_ITEM_zbhs.职业选择(阴影之王)>\\\\
-        <金刚罗汉/@_ITEM_zbhs.职业选择(金刚罗汉)>     <神圣使者/@_ITEM_zbhs.职业选择(神圣使者)>     <审判者/@_ITEM_zbhs.职业选择(审判者)>       <血修罗/@_ITEM_zbhs.职业选择(血修罗)>\\\\
-        <契约师/@_ITEM_zbhs.职业选择(契约师)>       <元素师/@_ITEM_zbhs.职业选择(元素师)>       <秘术师/@_ITEM_zbhs.职业选择(秘术师)>       <死灵法师/@_ITEM_zbhs.职业选择(死灵法师)> \\\\
-        <噬魂者/@_ITEM_zbhs.职业选择(噬魂者)>       <驭兽者/@_ITEM_zbhs.职业选择(驭兽者)>       <巫毒萨满/@_ITEM_zbhs.职业选择(巫毒萨满)>     <牧师/@_ITEM_zbhs.职业选择(牧师)> \\\\
-        <神射手/@_ITEM_zbhs.职业选择(神射手)>       <丛林猎手/@_ITEM_zbhs.职业选择(丛林猎手)>     <风行者/@_ITEM_zbhs.职业选择(风行者)>       <镜像游侠/@_ITEM_zbhs.职业选择(镜像游侠)>  \\ 
-    `
-    Npc.SayEx(Player, 'NPC小窗口', S)
-}
-export function 职业选择(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Player.V.技能石1技能勾选 = false
-    Player.V.技能石2技能勾选 = false
-    Player.V.技能石3技能勾选 = false
-    Player.V.技能石4技能勾选 = false
-    Player.V.技能石5技能勾选 = false
-    Player.V.技能石1技能 = ''
-    Player.V.技能石2技能 = ''
-    Player.V.技能石3技能 = ''
-    Player.V.技能石4技能 = ''
-    Player.V.技能石5技能 = ''
-    let 职业 = Args.Str[0]
-    Player.V.回收职业选择 = 职业
-    技能石回收(Npc, Player, Args)
-}
-
-export function 技能石勾选(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 种类 = Args.Str[0]
-    // if (种类 == '本职勾选' && Player.V.充值积分 < 1000) { Player.MessageBox('你的充值不足 1000 无法开启'); return }
-    Player.V[种类] ? Player.V[种类] = false : Player.V[种类] = true
-    技能石回收(Npc, Player, Args)
-}
-
-export function 技能石选择勾选(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 变量 = Args.Str[0]
-    let 技能 = Args.Str[1]
-    Player.V[变量] = 技能
-    Player.V[变量 + '勾选'] ? Player.V[变量 + '勾选'] = false : Player.V[变量 + '勾选'] = true
-    技能石回收(Npc, Player, Args)
-}
-
-export function 等级加减(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 加减 = Args.Str[0]
-    if (加减 == '加') {
-        if (Player.V.技能石阶数保留 >= 5) {
-            Player.V.技能石阶数保留 = 5
+/**
+ * 批量回收背包装备
+ */
+export function 批量回收背包(Player: TPlayObject): 批量回收结果 {
+    初始化回收变量(Player)
+    
+    let 回收数量 = 0
+    let 总金币 = '0'
+    let 总元宝 = '0'
+    
+    // 倒序遍历避免索引问题
+    for (let i = Player.GetItemSize() - 1; i >= 0; i--) {
+        const item = Player.GetBagItem(i)
+        if (!item) continue
+        
+        const 结果 = 检查装备回收(Player, item)
+        if (!结果.应该回收) continue
+        
+        // 累计价值
+        if (结果.货币类型 === '元宝') {
+            总元宝 = 智能计算(总元宝, 结果.回收价值, 1)
         } else {
-            Player.V.技能石阶数保留 = Player.V.技能石阶数保留 + 1
+            总金币 = 智能计算(总金币, 结果.回收价值, 1)
         }
-    } else if (加减 == '减') {
-        if (Player.V.技能石阶数保留 <= 0) {
-            Player.V.技能石阶数保留 = 0
-        } else {
-            Player.V.技能石阶数保留 = Player.V.技能石阶数保留 - 1
-        }
+        
+        Player.DeleteItem(item)
+        回收数量++
     }
-    技能石回收(Npc, Player, Args)
-}
-
-export function 护身符勾选(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 种类 = Args.Str[0]
-    let 说明 = ``
-    switch (Player.Job) {
-        case 0: 说明 = `你是战士类职业,回收的护身符属性只会保留攻击属性!`; break
-        case 1: 说明 = `你是法师类职业,回收的护身符属性只会保留魔法属性!`; break
-        case 2: 说明 = `你是道士类职业,回收的护身符属性只会保留道术属性!`; break
-        case 3: 说明 = `你是刺客类职业,回收的护身符属性只会保留刺术属性!`; break
-        case 4: 说明 = `你是射手雷职业,回收的护身符属性只会保留射术属性!`; break
-        case 5: 说明 = `你是武僧类职业,回收的护身符属性只会保留武术属性!`; break
+    
+    // 发放奖励
+    if (总金币 !== '0') {
+        Player.SetGold(Player.GetGold() + Number(总金币))
+        Player.GoldChanged()
     }
-    if (种类 == `自动至尊勾选` && Player.V.充值积分 < 100000) { Player.MessageBox(`充值积分低于10万无法选择!`);return}
-    Player.V[种类] ? Player.V[种类] = false : Player.V[种类] = true
-
-
-
-
-
-    if (种类 == `护身符本职勾选` && Player.V.护身符本职勾选) {
-        Player.MessageBox(`勾选了本职业回收\\\\${说明}`)
+    if (总元宝 !== '0') {
+        Player.SetGamePoint(Player.GetGamePoint() + Number(总元宝))
     }
-    护身符回收(Npc, Player, Args)
+    
+    return { 回收数量, 总金币, 总元宝 }
 }
 
-export function 护身符加(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 种类 = Args.Str[0]
-    Player.V[种类] = 智能计算((Player.V[种类]),'10000', 3)    
-    护身符回收(Npc, Player, Args)
-}
-export function 护身符减(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 种类 = Args.Str[0]
-    Player.V[种类] = 智能计算((Player.V[种类]),'10000', 4)  
-    护身符回收(Npc, Player, Args)
-}
-
-export function InPutString10(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 数值 = Args.Str[1]
-    let 词条 = Args.Str[0]
-    Player.V[词条] = 数值
-    护身符回收(Npc, Player, Args)
+/**
+ * 掉落时自动回收检查
+ * 用于怪物掉落物品触发时调用
+ * @returns true = 已回收(不入包), false = 保留(入包)
+ */
+export function 掉落自动回收(Player: TPlayObject, UserItem: TUserItem): boolean {
+    初始化回收变量(Player)
+    
+    // 未开启自动回收
+    if (!Player.V.自动回收) return false
+    
+    return 执行装备回收(Player, UserItem)
 }
 
 
+// ==================== 前端UI部分 ====================
 
+/**
+ * 装备回收主界面
+ */
+export function Main(Npc: TNormNpc, Player: TPlayObject): void {
+    初始化回收变量(Player)
+    
+    const 最终倍率 = Player.R.最终回收倍率 || 1
+    const 攻击显示 = 简化数值显示(Player.V.攻击数值)
+    const 血量显示 = 简化数值显示(Player.V.血量数值)
+    const 防御显示 = 简化数值显示(Player.V.防御数值)
+    const 技能显示 = 简化数值显示(Player.V.技能数值)
+    const 攻击位数 = Player.V.攻击数值?.length || 0
+    const 血量位数 = Player.V.血量数值?.length || 0
+    const 防御位数 = Player.V.防御数值?.length || 0
+    const 技能位数 = Player.V.技能数值?.length || 0
+    
+    const S = `\\
+        {S=装备回收系统;C=251;X=240;Y=10}
+        {S=当前回收倍率:;C=154;X=50;Y=10}{S=${最终倍率}%;C=253;OX=5;Y=10}
+        
+        {S=品质回收设置;C=251;X=50;Y=50}
+        <{I=$回收普通$;F=装备图标.DATA;X=50;Y=80}/@装备回收.勾选(回收普通)> {S=普通;C=255;OX=3;Y=80}
+        <{I=$回收优秀$;F=装备图标.DATA;X=120;Y=80}/@装备回收.勾选(回收优秀)> {S=优秀;C=250;OX=3;Y=80}
+        <{I=$回收稀有$;F=装备图标.DATA;X=190;Y=80}/@装备回收.勾选(回收稀有)> {S=稀有;C=154;OX=3;Y=80}
+        <{I=$回收史诗$;F=装备图标.DATA;X=260;Y=80}/@装备回收.勾选(回收史诗)> {S=史诗;C=254;OX=3;Y=80}
+        <{I=$回收传说$;F=装备图标.DATA;X=50;Y=110}/@装备回收.勾选(回收传说)> {S=传说;C=251;OX=3;Y=110}
+        <{I=$回收神话$;F=装备图标.DATA;X=120;Y=110}/@装备回收.勾选(回收神话)> {S=神话;C=244;OX=3;Y=110}
+        <{I=$回收神器$;F=装备图标.DATA;X=190;Y=110}/@装备回收.勾选(回收神器)> {S=神器;C=249;OX=3;Y=110;HINT=神器回收获得元宝}
+
+
+        {S=词条保留设置;C=251;X=50;Y=150}{S=勾选后,高于设定数值的装备将被保留;C=154;X=150;Y=150}        
+        
+        <{I=$本职勾选$;F=装备图标.DATA;X=50;Y=175}/@装备回收.勾选(本职勾选)> {S=只保留本职业装备;C=9;OX=3;Y=175}        
+        <{I=$攻击勾选$;F=装备图标.DATA;X=50;Y=210}/@装备回收.勾选(攻击勾选)> {S=攻击     ≥ ${攻击显示};OX=3;Y=210}{S=${攻击位数}位;X=230;Y=210}
+        <{S=设置;X=280;Y=210}/@@装备回收.InPutString01(高于输入的数值将不回收#92输入格式:数值*位数 或者 数值,攻击数值)@装备回收.设置数值(攻击数值)>
+        
+        <{I=$血量勾选$;F=装备图标.DATA;X=50;Y=245}/@装备回收.勾选(血量勾选)> {S=血量     ≥ ${血量显示};OX=3;Y=245}{S=${血量位数}位;X=230;Y=245}
+        <{S=设置;X=280;Y=245}/@@装备回收.InPutString01(高于输入的数值将不回收#92输入格式:数值*位数 或者 数值,血量数值)@装备回收.设置数值(血量数值)>
+        
+        <{I=$防御勾选$;F=装备图标.DATA;X=50;Y=280}/@装备回收.勾选(防御勾选)> {S=防御     ≥ ${防御显示};OX=3;Y=280}{S=${防御位数}位;X=230;Y=280}
+        <{S=设置;X=280;Y=280}/@@装备回收.InPutString01(高于输入的数值将不回收#92输入格式:数值*位数 或者 数值,防御数值)@装备回收.设置数值(防御数值)>\
+        
+        <{I=$技能勾选$;F=装备图标.DATA;X=50;Y=315}/@装备回收.勾选(技能勾选)> {S=技能魔次 ≥ ${技能显示};OX=3;Y=315}{S=${技能位数}位;X=230;Y=315}
+        <{S=设置;X=280;Y=315}/@@装备回收.InPutString01(高于输入的数值将不回收#92输入格式:数值*位数 或者 数值,技能数值)@装备回收.设置数值(技能数值)>
+        <{S=技能选择;C=251;X=350;Y=315;HINT=选择需要保留的技能魔次}/@装备回收.技能魔次选择界面>
+        
+        
+        {S=自动功能;C=154;X=400;Y=50}
+        <{I=$自动回收$;F=装备图标.DATA;X=390;Y=85}/@装备回收.勾选(自动回收)> {S=自动回收;C=9;OX=3;Y=85}
+        <{I=$自动拾取$;F=装备图标.DATA;X=390;Y=120}/@装备回收.勾选(自动拾取)> {S=自动拾取;C=9;OX=3;Y=120}
+        <{I=$回收屏蔽$;F=装备图标.DATA;X=390;Y=155}/@装备回收.勾选(回收屏蔽)> {S=屏蔽提示;C=9;OX=3;Y=155;HINT=可屏蔽回收信息提示}
+        
+
+        <{S=开始回收;C=253;X=420;Y=320}/@装备回收.开始回收>\\
+        <{S=一键全部回收;C=249;X=410;Y=360;HINT=回收背包内所有符合条件的装备}/@装备回收.一键全部回收>
+    `
+    
+    const M = 生成UI字符串(Player, S)
+    Npc.SayEx(Player, 'NPC中大窗口', M)
+}
+
+// ==================== UI辅助函数 ====================
+
+function 生成UI字符串(Player: TPlayObject, 模板: string): string {
+    const 映射: Record<string, string> = {
+        '回收普通': Player.V.回收普通 ? '31' : '30',
+        '回收优秀': Player.V.回收优秀 ? '31' : '30',
+        '回收稀有': Player.V.回收稀有 ? '31' : '30',
+        '回收史诗': Player.V.回收史诗 ? '31' : '30',
+        '回收传说': Player.V.回收传说 ? '31' : '30',
+        '回收神话': Player.V.回收神话 ? '31' : '30',
+        '回收神器': Player.V.回收神器 ? '31' : '30',
+        '自动回收': Player.V.自动回收 ? '31' : '30',
+        '自动拾取': Player.V.自动拾取 ? '31' : '30',
+        '回收屏蔽': Player.V.回收屏蔽 ? '31' : '30',
+        '本职勾选': Player.V.本职勾选 ? '31' : '30',
+        '攻击勾选': Player.V.攻击勾选 ? '31' : '30',
+        '血量勾选': Player.V.血量勾选 ? '31' : '30',
+        '防御勾选': Player.V.防御勾选 ? '31' : '30',
+        '技能勾选': Player.V.技能勾选 ? '31' : '30',
+    }
+    
+    let 结果 = 模板
+    for (const [键, 值] of Object.entries(映射)) {
+        结果 = ReplaceStr(结果, `$${键}$`, 值)
+    }
+    return 结果
+}
+
+
+function 简化数值显示(数值: string): string {
+    if (!数值 || 数值 === '0') return '0'
+    return 大数值整数简写(数值)
+}
+
+// ==================== UI交互函数 ====================
 
 export function 勾选(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 种类 = Args.Str[0]
-    let 说明 = ``
-    // if (种类 == '本职勾选' && Player.V.充值积分 < 1000) { Player.MessageBox('你的充值不足 1000 无法开启'); return }
-    Player.V[种类] ? Player.V[种类] = false : Player.V[种类] = true
-    switch (Player.Job) {
-        case 0: 说明 = `你是战士类职业,回收的装备属性只会保留攻击属性!`; break
-        case 1: 说明 = `你是法师类职业,回收的装备属性只会保留魔法属性!`; break
-        case 2: 说明 = `你是道士类职业,回收的装备属性只会保留道术属性!`; break
-        case 3: 说明 = `你是刺客类职业,回收的装备属性只会保留刺术属性!`; break
-        case 4: 说明 = `你是射手雷职业,回收的装备属性只会保留射术属性!`; break
-        case 5: 说明 = `你是武僧类职业,回收的装备属性只会保留武术属性!`; break
+    const 类型 = Args.Str[0]
+    Player.V[类型] = !Player.V[类型]
+    Main(Npc, Player)
+}
+
+
+
+export function InPutString01(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 类型 = Args.Str[0]
+    let 数值 = Args.Str[1] || ''
+    
+    // 如果有输入值，处理并保存
+    if (数值 !== '') {
+        // 支持 数字*位数 格式，如 5*10 表示 50000000000
+        if (数值.includes('*')) {
+            const parts = 数值.split('*')
+            if (parts.length === 2) {
+                const 基数 = parts[0]
+                const 位数 = parseInt(parts[1])
+                if (!isNaN(位数) && 位数 >= 0) {
+                    数值 = 基数 + '0'.repeat(位数)
+                }
+            }
+        }
+        
+        Player.V[类型] = 数值
+        Player.SendMessage(`${类型.replace('数值', '')}保留阈值已设置为: ${简化数值显示(数值)}`, 1)
     }
-    if (种类 == `本职勾选` && Player.V.本职勾选) {
-        Player.MessageBox(`勾选了本职业回收\\\\不是你所在职业的武器和衣服将被回收\\\\${说明}`)
+    
+    Main(Npc, Player)
+}
+
+export function 开始回收(Npc: TNormNpc, Player: TPlayObject): void {
+    const 结果 = 批量回收背包(Player)
+    
+    if (结果.回收数量 === 0) {
+        Player.SendMessage('没有找到符合回收条件的装备', 1)
+        return
     }
-    准备回收(Npc, Player)
+    
+    let 消息 = `回收了{S=${结果.回收数量};C=154}件装备`
+    if (结果.总金币 !== '0') {
+        消息 += `，获得{S=${简化数值显示(结果.总金币)};C=253}金币`
+    }
+    if (结果.总元宝 !== '0') {
+        消息 += `，获得{S=${结果.总元宝};C=251}元宝`
+    }
+    
+    if (!Player.V.回收屏蔽) {
+        Player.SendMessage(消息, 1)
+    }
+    
+    Main(Npc, Player)
 }
 
-export function 加(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 种类 = Args.Str[0]
-    // Player.V[种类] = new BigNumber(Player.V[种类]).multipliedBy('10000').toFixed(0)
-    Player.V[种类] = 智能计算((Player.V[种类]) , '10000', 3)
-    准备回收(Npc, Player)
-}
-export function 减(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 种类 = Args.Str[0]
-    Player.V[种类] = 智能计算((Player.V[种类]) , '10000', 4)
-    准备回收(Npc, Player)
+export function 一键全部回收(Npc: TNormNpc, Player: TPlayObject): void {
+    // 临时开启所有品质回收
+    const 原设置 = {
+        回收普通: Player.V.回收普通,
+        回收优秀: Player.V.回收优秀,
+        回收稀有: Player.V.回收稀有,
+        回收史诗: Player.V.回收史诗,
+        回收传说: Player.V.回收传说,
+        回收神话: Player.V.回收神话,
+        回收神器: Player.V.回收神器,
+    }
+    
+    // 全部开启
+    Player.V.回收普通 = true
+    Player.V.回收优秀 = true
+    Player.V.回收稀有 = true
+    Player.V.回收史诗 = true
+    Player.V.回收传说 = true
+    Player.V.回收神话 = true
+    Player.V.回收神器 = true
+    
+    const 结果 = 批量回收背包(Player)
+    
+    // 恢复原设置
+    Object.assign(Player.V, 原设置)
+    
+    if (结果.回收数量 === 0) {
+        Player.SendMessage('没有找到可回收的装备', 1)
+        return
+    }
+    
+    let 消息 = `一键回收了{S=${结果.回收数量};C=154}件装备`
+    if (结果.总金币 !== '0') {
+        消息 += `，获得{S=${简化数值显示(结果.总金币)};C=253}金币`
+    }
+    if (结果.总元宝 !== '0') {
+        消息 += `，获得{S=${结果.总元宝};C=251}元宝`
+    }
+    
+    if (!Player.V.回收屏蔽) {
+        Player.SendMessage(消息, 1)
+    }
+    
+    Main(Npc, Player)
 }
 
-export function InPutString1(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 数值 = Args.Str[1]
-    let 词条 = Args.Str[0]
-    Player.V[词条] = 数值
-    准备回收(Npc, Player)
-}
+// ==================== 技能魔次选择界面 ====================
 
-const 装备类型 = [4, 5, 6, 10, 11, 15, 19, 20, 21, 22, 23, 24, 26, 27, 28, 68]
-export function 全部回收(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let item: TUserItem;
-    let 倍数 = 0
-    let 数量 = 0
-    let 金币数量 = 0
-    for (let I = Player.GetItemSize() - 1; I >= 0; I--) {
-        item = Player.GetBagItem(I);
-        if (装备类型.includes(item.StdMode) && item.GetState().GetBind() == false && item.StdMode != 68 && !item.Name.includes('护身符')) {
-            数量++
-            金币数量 += 10
-            Player.DeleteItem(item)
+/**
+ * 技能魔次选择界面
+ */
+export function 技能魔次选择界面(Npc: TNormNpc, Player: TPlayObject): void {
+    初始化回收变量(Player)
+    
+    const 已选技能 = Player.V.已选择技能魔次 as number[] || []
+    const 所有技能ID = Object.values(技能魔次).filter(id => typeof id === 'number') as number[]
+    
+    let str = `{S=技能魔次词条保留;X=180;Y=-10;C=251}\n`
+    str += `{S=勾选后只保留包含已选技能魔次的装备;X=120;Y=15;C=154}\n`
+    
+    // 构建技能选择界面，每行4个技能
+    for (let i = 0; i < 所有技能ID.length; i += 4) {
+        const y = 50 + Math.floor(i / 4) * 30
+        
+        for (let j = 0; j < 4 && i + j < 所有技能ID.length; j++) {
+            const 技能ID = 所有技能ID[i + j]
+            const 技能名称 = 技能魔次名称映射[技能ID] || '未知'
+            const x = 20 + j * 120
+            const 图标 = 已选技能.includes(技能ID) ? '31' : '30'
+            
+            str += `<{I=${图标};F=装备图标.DATA;X=${x};Y=${y}}/@装备回收.勾选技能魔次(${技能ID})>{S=${技能名称};X=${x + 25};Y=${y}}\n`
         }
     }
-    if (金币数量 > 0) {
-        Player.SetGold(Player.GetGold() + 金币数量 + 金币数量 * Player.R.回收加成)
+    
+    // 底部按钮
+    const 底部Y = 40 + Math.ceil(所有技能ID.length / 4) * 30 + 20
+    str += `<{S=清空选择;X=100;Y=${底部Y};C=254}/@装备回收.清空技能选择>`
+    str += `<{S=返回;X=300;Y=${底部Y};C=253}/@装备回收.Main>`
+    
+    Npc.SayEx(Player, 'NPC大窗口', str)
+}
+
+/**
+ * 勾选技能魔次
+ */
+export function 勾选技能魔次(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    初始化回收变量(Player)
+    
+    const 技能ID = Args.Int[0]
+    const 已选技能 = Player.V.已选择技能魔次 as number[] || []
+    
+    if (已选技能.includes(技能ID)) {
+        // 移除已选择的技能
+        Player.V.已选择技能魔次 = 已选技能.filter(id => id !== 技能ID)
+    } else {
+        // 添加新选择的技能
+        已选技能.push(技能ID)
+        Player.V.已选择技能魔次 = 已选技能
     }
-    Player.GoldChanged()
+    
+    技能魔次选择界面(Npc, Player)
+}
+
+/**
+ * 清空技能选择
+ */
+export function 清空技能选择(Npc: TNormNpc, Player: TPlayObject): void {
+    Player.V.已选择技能魔次 = []
+    Player.SendMessage('已清空技能魔次选择', 1)
+    技能魔次选择界面(Npc, Player)
 }

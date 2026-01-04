@@ -341,8 +341,8 @@ export function 创建圣耀副本(地图名: string, Player: TPlayObject): numb
         return -1
     }
 
-    // 读取玩家地图倍率
-    let 圣耀倍率 = Player.R.地图倍率 || 1
+    // 读取玩家圣耀地图爆率加成
+    let 圣耀倍率 = Player.R.圣耀地图爆率加成 || 1
     if (圣耀倍率 < 1) 圣耀倍率 = 1
 
     // 检查玩家等级

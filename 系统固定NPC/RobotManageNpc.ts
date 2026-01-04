@@ -10,7 +10,7 @@ import * as _M_Robot from "../功能脚本组/[怪物]/_M_Robot"
 import * as 生物刷新 from "../_核心部分/_生物/生物刷新"
 import { _M_N_宝宝释放群雷, _M_N_猎人宝宝群攻 } from "../功能脚本组/[怪物]/_M_Base"
 
-import { 实时回血, 血量显示 } from "../核心功能/字符计算"
+import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
 import { 智能计算, 转大数值, js_百分比, js_范围随机, js_war } from "../大数值/核心计算方法";
 
 import { 人物额外属性计算 } from "../核心功能/装备属性统计"
@@ -200,15 +200,16 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // 地图.分钟检测副本玩家数量()
     // _M_Robot.按分钟检测(Player)
-    // Player = GameLib.FindPlayer('鸿福'); //查找玩家
-    // if (Player != null) {
-    //     Player.SetAttackSpeed(10)
-    //     Player.RecalcAbilitys();
-    //     Player.UpdateName();
-    //     GameLib.SetClientSpeed(10000)
-    //     GameLib.SendChangeClientSpeed()
-    //     console.log(`GetAttackSpeed() ${Player.GetAttackSpeed()}`)
-    // }
+    Player = GameLib.FindPlayer('鸿福'); //查找玩家
+    if (Player != null) {
+        Player.SetSVar(92 , 转大数值('1e100')) 
+        // Player.SetSVar(91 , '1e100') 
+        实时回血(Player, '1e50')
+        血量显示(Player);
+        Player.UpdateName();
+        GameLib.SetClientSpeed(10000)
+        GameLib.SendChangeClientSpeed()
+    }
 
     //    // GameLib.MonGenEx( Player.Map , '多钩猫', 30, 120, 120, 30, 0, 0, 1, true, true, true, true)
 
@@ -501,6 +502,19 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             Magic = Player.FindSkill('血魔临身');
             if (Magic) {
                 Player.MagicAttack(Player, _P_Base.技能ID.血神.血魔临身);
+            }
+        }
+
+        // 血神职业 - 血魔临身：每秒回血效果
+        // 描述：开启后,每秒回血1%,持续时间30S(每5级回复提高1%,每10级增加1S,最高180S)
+        if (V.职业 === '血神' && R.血魔临身) {
+            const 回血百分比 = R.血魔临身回血百分比 || 1;
+            const 最大血量 = Player.GetSVar(92);
+            const 当前血量 = Player.GetSVar(91);
+            // 只有血量未满时才回血
+            if (js_war(当前血量, 最大血量) < 0) {
+                const 回血量 = 智能计算(最大血量, String(回血百分比 / 100), 3);
+                实时回血(Player, 回血量);
             }
         }
 
