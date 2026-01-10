@@ -1,5 +1,5 @@
-import * as 功能 from '../[功能]/_功能'
-import * as 交易市场 from "../[服务]/延时跳转"
+import * as 功能 from '../../功能脚本组/[功能]/_功能'
+import * as 交易市场 from "../../功能脚本组/[服务]/延时跳转"
 
 
 
@@ -104,9 +104,9 @@ function 显示交易中心(Player: TPlayObject, 页码: number, 显示类型: n
     let 商品列表: TDataSet = 读数据库(Player, 显示类型)
 
     //if (商品列表 == undefined) {
-     //   功能.系统.信息框(Player, "交易中心维护中")
-      //  return
-   // }
+    //   功能.系统.信息框(Player, "交易中心维护中")
+    //  return
+    // }
 
     商品列表.Open()
     let str = ""

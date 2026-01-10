@@ -9,13 +9,13 @@ import { 宝宝杀怪触发, 杀怪触发, 杀怪鞭尸, 特殊掉落, 经验勋
 import { 使用物品 } from "../功能脚本组/[装备]/_ITEM_使用物品"
 import { 取两点距离 } from "./RobotManageNpc"
 
-import { 装备属性统计 } from "../核心功能/装备属性统计"
+import { 装备属性统计 } from "../_核心部分/_装备/属性统计"
 
 import { Main } from "../后台管理"
 import * as 地图 from '../_核心部分/_地图/地图';
 
 import { 实时回血, 血量显示 } from "../核心功能/字符计算"
-import * as 随身仓库 from "../功能脚本组/[服务]/可视仓库"
+import * as 随身仓库 from "../_核心部分/_服务/可视仓库"
 
 //人物杀怪
 GameLib.onKillMonster = (Player: TPlayObject, Monster: TActor): void => {
@@ -68,13 +68,13 @@ GameLib.onPlayerDie = (Player: TPlayObject, Killer: TActor): void => {
     // }
 
     // 显示复活选择弹窗
-    const S = `\\
-    {S=你已经死亡，请选择复活方式:;C=249}\\
+    const S = `\\\\
+    {S=你已经死亡，请选择复活方式:;C=249;X=120;Y=60}\\
     \\
-    <{S=回城复活;HINT=免费回到安全区复活;C=250;X=40;Y=50}/@延时跳转.玩家复活>\\
-    <{S=原地复活;HINT=消耗5000元宝原地满血复活;C=251;X=150;Y=50}/@延时跳转.原地复活>\\
+    <{S=回城复活;HINT=免费回到安全区复活;C=250;X=60;Y=120}/@延时触发.免费复活>\\
+    <{S=原地复活;HINT=消耗2000元宝原地满血复活;C=251;X=260;Y=120}/@延时触发.收费复活>\\
 `
-    Player.SayEx('复活窗口', S)
+    Player.SayEx('人物死亡', S)
 }
 //人物复活触发
 GameLib.onPlayerReAlive = (Player: TPlayObject): void => { }
@@ -82,7 +82,7 @@ GameLib.onPlayerReAlive = (Player: TPlayObject): void => { }
 GameLib.onPlayerLevelUp = (Player: TPlayObject, Level: number): void => {
     实时回血(Player, Player.GetSVar(92))
     血量显示(Player)
-    装备属性统计(Player, undefined, undefined, undefined);/*重新计算玩家身上的装备*/
+    装备属性统计(Player);/*重新计算玩家身上的装备*/
 
 }
 //BB升级触发 Master:BB属于谁(可能是人形怪) Slave:当前升级的BB NewLevel:将要升到的级数 Accept:是否允许升级,默认为True,如果设置为False则BB不可升级
@@ -278,7 +278,7 @@ GameLib.onTakeOffItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TI
 }
 //脱下装备且属性属性变化后触发
 GameLib.onAfterTakeOffItem = (Player: TPlayObject, TakeOffItem: TUserItem, ItemWhere: number) => {
-    装备属性统计(Player, undefined, TakeOffItem, ItemWhere)
+    装备属性统计(Player)
     Player.UpdateItem(TakeOffItem);
 }
 //穿装备触发,Accept是否允许穿戴,默认为True
@@ -323,7 +323,7 @@ GameLib.onTakeOnItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TIt
 }
 //穿戴装备且属性变化后触发，与OnTakeOnItem不同是 OnTakeOnItem 触发执行的时候装备附加的属性没有加到人身上。OnAfterTakeOnItem是属性已经附加到人物身上了。
 GameLib.onAfterTakeOnItem = (Player: TPlayObject, TakeOnUserItem: TUserItem, TakeOffItem: TUserItem, ItemWhere: number) => {
-    装备属性统计(Player, TakeOnUserItem, TakeOffItem, ItemWhere)
+    装备属性统计(Player)
 }
 
 //使用物品时触发: StdMode=31,Accept:执行之后是否删除物品,默认为True,如果设置为False,则执行函数的同时不删除物品
@@ -559,54 +559,3 @@ export function 宝宝锁定攻击触发(Player: TPlayObject, Slave: TActor, Mon
 
 
 }
-
-// 检查回收提示（5秒间隔）
-function 检查回收提示(Player: TPlayObject): void {
-    try {
-        // 初始化回收提示时间戳
-        if (!Player.R.回收提示时间戳) {
-            Player.R.回收提示时间戳 = GameLib.TickCount;
-        }
-
-        // 检查是否已经过了5秒 (5000毫秒)
-        const 当前时间 = GameLib.TickCount;
-        const 时间差 = 当前时间 - Player.R.回收提示时间戳;
-
-        if (时间差 >= 5000) {
-            // 检查是否有回收统计数据
-            const 回收数量 = Player.R.回收统计_数量 || 0;
-            const 回收金币 = Player.R.回收统计_金币 || 0;
-            const 回收元宝 = Player.R.回收统计_元宝 || 0;
-
-            if (回收数量 > 0) {
-                let 消息 = `自动回收了{S=${回收数量};C=154}件装备`;
-
-                if (回收金币 > 0 && 回收元宝 > 0) {
-                    消息 += `，获得{S=${回收金币};C=253}金币，{S=${回收元宝};C=251}元宝`;
-                } else if (回收金币 > 0) {
-                    消息 += `，获得{S=${回收金币};C=253}金币`;
-                } else if (回收元宝 > 0) {
-                    消息 += `，获得{S=${回收元宝};C=251}元宝`;
-                }
-
-                消息 += `!`;
-
-                // 发送消息（只有在没有回收屏蔽的情况下）
-                if (!Player.V.回收屏蔽) {
-                    Player.SendMessage(消息, 1);
-                }
-
-                // 重置统计数据
-                Player.R.回收统计_数量 = 0;
-                Player.R.回收统计_金币 = 0;
-                Player.R.回收统计_元宝 = 0;
-            }
-
-            // 更新时间戳
-            Player.R.回收提示时间戳 = 当前时间;
-        }
-    } catch (error) {
-        console.log(`[回收提示] 检查回收提示出错: ${error}`);
-    }
-}
-

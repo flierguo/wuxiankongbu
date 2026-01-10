@@ -1,4 +1,4 @@
-import { 装备属性统计 } from '../../性能优化/index_智能优化';
+import { 装备属性统计 } from "../../_核心部分/_装备/属性统计";
 import { 特效 } from "../../_核心部分/基础常量";
 
 /*充值使者*/
@@ -141,7 +141,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足1次");
             }
             次数兑换(Npc, Player, Args);
-            装备属性统计(Player,undefined,undefined,undefined)
+            装备属性统计(Player)
             break;
         case 2:
             if (Player.V.宣传次数 >= 1) {
@@ -153,7 +153,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足1次");
             }
             次数兑换(Npc, Player, Args);
-            // 装备属性统计(Player,undefined,undefined,undefined)
+            // 装备属性统计(Player)
             break;
         case 3:
             if (Player.V.宣传次数 >= 10) {
@@ -165,7 +165,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足10次");
             }
             次数兑换(Npc, Player, Args);
-            // 装备属性统计(Player,undefined,undefined,undefined)
+            // 装备属性统计(Player)
             break;
         case 4:
             if (Player.V.宣传次数 >= 20 && Player.V.鞭尸兑换次数 < 50) {
@@ -177,7 +177,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足20次或已达到50次");
             }
             次数兑换(Npc, Player, Args);
-            装备属性统计(Player, undefined, undefined, undefined)
+            装备属性统计(Player)
             break;
         case 5:
             if (Player.V.宣传次数 >= 5 && Player.V.回收兑换次数 < 500) {
@@ -189,7 +189,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足5次或已达到500次");
             }
             次数兑换(Npc, Player, Args);
-            装备属性统计(Player, undefined, undefined, undefined)
+            装备属性统计(Player)
             break;
         case 6:
             if (Player.V.宣传次数 >= 10 && Player.V.爆率兑换次数 < 300) {
@@ -201,7 +201,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足10次或已达到300次");
             }
             次数兑换(Npc, Player, Args);
-            装备属性统计(Player, undefined, undefined, undefined)
+            装备属性统计(Player)
             break;
         case 7:
             if (Player.V.宣传次数 >= 15 && Player.V.极品兑换次数 < 200) {
@@ -213,7 +213,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足15次或已达到200次");
             }
             次数兑换(Npc, Player, Args);
-            装备属性统计(Player, undefined, undefined, undefined)
+            装备属性统计(Player)
             break;
         case 8:
             if (Player.V.宣传次数 >= 10 && GameLib.V.每日宣传兑换次数[Player.GetName()] <= 140) {
@@ -226,7 +226,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
                 Player.MessageBox("您的宣传次数不足10次或今日已达到150次");
             }
             次数兑换(Npc, Player, Args);
-            装备属性统计(Player, undefined, undefined, undefined)
+            装备属性统计(Player)
             break;
     }
 }
@@ -438,7 +438,7 @@ export function InPutString22(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): 
         }
         a.MessageBox('转职完毕,请从新登录游戏!')
         a.RecalcAbilitys()
-        装备属性统计(a, undefined, undefined, undefined);
+        装备属性统计(a);
         a.Kick()
     } else { Player.MessageBox('玩家名字不正确') }
 }

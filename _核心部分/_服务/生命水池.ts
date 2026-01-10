@@ -1,7 +1,7 @@
 import { 实时回血 } from "../../核心功能/字符计算"
-import { 装备属性统计 } from "../../核心功能/装备属性统计"
-import { 特效 } from "../../_核心部分/基础常量"
-import { 装备特效 } from "../[装备]/_ITEM_Base"
+import { 装备属性统计 } from "../_装备/属性统计"
+import { 特效 } from "../基础常量"
+
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     实时回血(Player, Player.GetSVar(92))
@@ -9,7 +9,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
         {S=勇士,你已经达到了最佳状态值了,请问还需要其他服务吗?;C=250}\\\\
         {S=[改变性别];C=242}  <男/@性别男>    <女/@性别女>      {S=[清洗红名];C=249}  <{S=我要清洗;HINT=需要10点礼卷}/@清洗红名>\\\\
         {s=[行会管理];c=253}  <[比奇皇宫]/@比奇皇宫>    {S=[货币兑换];C=243}  <{S=货币兑换;HINT=目前为${GameLib.V.判断新区 == false ? 2 : 1}倍兑换}/@货币兑换>\\\\
-        {S=[任务转职];C=254}  <{S=付费转职;HINT=需要消耗5000元宝}/@转职>      [摧毁物品]  <销毁物品/@@Question(摧毁的装备将无法恢复请谨慎使用!,@销毁物品,1)>\\\\
+        {S=[人物转职];C=254}  <{S=付费转职;HINT=转移至职业选择NPC进行}/@转职>      [摧毁物品]  <销毁物品/@@Question(摧毁的装备将无法恢复请谨慎使用!,@销毁物品,1)>\\\\
 
     `
     Npc.SayEx(Player, '综合功能带框', S)
@@ -195,7 +195,7 @@ export function 货币兑换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     const 礼卷兑换比例 = 120
     const 反向兑换比例 = 100
 
-    
+
     const S = `\\\\
         {S=当前服务器: ${服务器类型};C=253;X=25;Y=38}\\{S=货币兑换中心;C=254;X=185;Y=38}        {S=今日已兑换礼卷: ${今日兑换礼卷}/1000000;C=249;X=290;Y=38}\\
 
@@ -307,32 +307,17 @@ export function 反向兑换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 }
 
 export function 转职(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //格式：玩家名字-职业  转职
+
+    Player.SendMessage('请去职业选择NPC!'); return
     if (Player.GetGameGold() < 5000) { Player.SendMessage('元宝不足5000,无法转职!'); return }
     Player.SetGameGold(Player.GetGameGold() - 5000)
     Player.GoldChanged()
 
-    Player.V.战神 = false
-    Player.V.骑士 = false
-    Player.V.火神 = false
-    Player.V.冰法 = false
-    Player.V.驯兽师 = false
-    Player.V.牧师 = false
-    Player.V.神射手 = false
-    Player.V.猎人 = false
-    Player.V.刺客 = false
-    Player.V.鬼舞者 = false
-    Player.V.武僧 = false
-    Player.V.罗汉 = false
-    Player.V.轮回次数 = 0
-    Player.V.战神觉醒 = false
-    Player.V.战神强化等级 = 0
-    Player.V.战神学习基础 = false
-    Player.V.战神学习高级 = false
-    Player.V.罗汉宝宝进化 = false
+    Player.V.职业 = []
     Player.ClearSkill()
     Player.RecalcAbilitys()
     Player.MapMove('边界村', 69, 119)
-    装备属性统计(Player, undefined, undefined, undefined);
+    装备属性统计(Player);
     // a.Kick()
 
 }

@@ -3,7 +3,7 @@ import { 原始名字, 怪物星数, 怪物超星数, 怪物颜色 } from "../[�
 import { 分钟检测无人60分清理怪物, 按分钟检测, 秒钟第一次进入刷怪 } from "../[怪物]/_M_Robot";
 import { 种族第二, 种族第三, 种族第一, 基础属性分割, 备用三 } from "../[装备]/_ITEM_Base";
 
-import { 装备属性统计 } from '../../性能优化/index_智能优化';
+import { 装备属性统计 } from "../../_核心部分/_装备/属性统计"; 
 import { 实时回血, 实时扣血, 数字转单位2, 数字转单位3, 血量显示 } from "../../_核心部分/字符计算";
 import { js_number } from "../../全局脚本[公共单元]/utils/计算方法";
 import { 转大数值  , 智能计算} from "../../大数值/核心计算方法";
@@ -52,7 +52,7 @@ export function 免费复活(Npc: TNormNpc, Player: TPlayObject): void {
     Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
     Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
     // 血量显示(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
 
     Player.ReAlive()
     Player.GoHome()
@@ -67,7 +67,7 @@ export function 收费复活(Npc: TNormNpc, Player: TPlayObject): void {
     Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
     Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
     // 血量显示(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
     Player.ReAlive()
     // Player.GoHome()
     // activation(Player);/*重新计算玩家身上的装备*/
@@ -83,7 +83,7 @@ export function 玩家复活(Npc: TNormNpc, Player: TPlayObject): void {
     Player.GoHome()
 
     // 血量显示(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
     // activation(Player);/*重新计算玩家身上的装备*/
     Player.RecalcAbilitys;/*重新计算能力值*/
 }
@@ -112,7 +112,7 @@ export function 测试用的(Npc: TNormNpc, Player: TPlayObject): void {
         // let item:TUserItem
 
 
-        装备属性统计(Player, undefined, undefined, undefined)
+        装备属性统计(Player)
 
         const S = `\\\\\\\\
     人物爆率:${Player.R.爆率加成}    人物极品倍率:${Player.R.极品率} \\

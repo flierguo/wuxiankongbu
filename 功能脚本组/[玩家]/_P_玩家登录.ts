@@ -1,6 +1,6 @@
 /*玩家 注册 登陆 单元*/
 
-import { 装备属性统计 } from '../../核心功能/装备属性统计';
+import { 装备属性统计 } from "../../_核心部分/_装备/属性统计"; 
 import { GetSameIPPlayerCount } from "../[功能]/_GN_MorePlayer"
 
 ///////////////登陆///////////////
@@ -59,7 +59,7 @@ export function PlayerRegister(Player: TPlayObject): void {
 	Player.V.自动回收 = false //清空自动回收开关,防止某些玩家上限忘记开关结果回收了好装备BB
 	Player.SetSuperManMode(false)
 	Player.SetDenyAutoAddHP(false)
-	装备属性统计(Player, undefined, undefined, undefined);/*重新计算玩家身上的装备*/
+	装备属性统计(Player);/*重新计算玩家身上的装备*/
 }
 ///////////////注册///////////////
 export function GiveNewPlayer(Player: TPlayObject): void {

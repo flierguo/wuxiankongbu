@@ -1,6 +1,6 @@
 /*玩家 注册 登陆 单元*/
 
-import { 装备属性统计 } from '../../核心功能/装备属性统计';
+import { 装备属性统计 } from '../../_核心部分/_装备/属性统计';
 import { GetSameIPPlayerCount } from "../_功能"
 
 ///////////////登陆///////////////
@@ -52,14 +52,14 @@ export function PlayerRegister(Player: TPlayObject): void {
 		// 	// Player.SuperManMode = false
 		// 	// Player.ObserverMode = true
 	}
-	Player.SetMaxBagSize(206);
+	Player.SetMaxBagSize(226);
 	delete GameLib.V[Player.PlayerID]
 	GameLib.V[Player.PlayerID] = {}
 	Player.SetAttackMode(1) //每次登录和平模式
 	Player.V.自动回收 = false //清空自动回收开关,防止某些玩家上限忘记开关结果回收了好装备BB
 	Player.SetSuperManMode(false)
 	Player.SetDenyAutoAddHP(false)
-	装备属性统计(Player, undefined, undefined, undefined);/*重新计算玩家身上的装备*/
+	装备属性统计(Player);/*重新计算玩家身上的装备*/
 }
 ///////////////注册///////////////
 export function GiveNewPlayer(Player: TPlayObject): void {
@@ -195,25 +195,24 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.正义 ??= false
 	Player.V.不动 ??= false
 
-	Player.V.种族阶数 ??= 0
 
 
+	Player.V.基因 ??= []
+	Player.V.基因阶数 ??= 0
 
-
-	Player.R.极品率 ??= 0
-	Player.R.回收倍率 ??= 0
-
-
-	
 
 
 	Player.R.本职装备几率 ??= 0
 
 
 
+	Player.R.极品倍率 ??= 0
+	Player.R.最终极品倍率 ??= 0
 
 
-
+	Player.V.回收屏蔽 ??= false
+	Player.R.回收倍率 ??= 0
+	Player.R.最终回收倍率 ??= 100
 
 	Player.V.宣传爆率 ??= 0
 	Player.V.宣传回收 ??= 0

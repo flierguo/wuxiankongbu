@@ -1,7 +1,7 @@
 // import { 数字转单位2, 数字转单位3 } from "../../大数值版本/大数值版本/字符计算";
-import { 装备属性统计 } from "../../核心功能/装备属性统计";
+import { 装备属性统计 } from "../_装备/属性统计";
 // import { 特效 } from "../../_核心部分/基础常量";
-import { 人物登录BUFF } from "../../_核心部分/_玩家/登录触发";
+import { 人物登录BUFF } from "../_玩家/登录触发";
 
 // 新职业技能数据
 const 职业数据 = {
@@ -184,7 +184,7 @@ export function 选择职业(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     }
 
     人物登录BUFF(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
     显示职业技能内部(Npc, Player, 职业 as keyof typeof 职业数据)
 }
 
@@ -285,7 +285,7 @@ export function 确认转职本职业(Npc: TNormNpc, Player: TPlayObject, Args: 
     Player.SendMessage(`转职成功！已转为【${本职业.名称}】,所有技能已重置为1级!`)
 
     人物登录BUFF(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
     显示职业技能内部(Npc, Player, 当前新职业 ? (当前新职业 as keyof typeof 职业数据) : '天枢')
 }
 
@@ -351,7 +351,7 @@ export function 确认重置新职业(Npc: TNormNpc, Player: TPlayObject, _Args:
     Player.SendMessage('新职业已重置,所有新职业技能已清空!')
 
     人物登录BUFF(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
     显示职业技能内部(Npc, Player, '天枢')
 }
 

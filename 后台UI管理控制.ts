@@ -1,7 +1,6 @@
 
 import * as 地图 from './_核心部分/_地图/地图';
 import { 按分钟检测, 秒钟第一次进入刷怪 } from "./功能脚本组/[怪物]/_M_Robot"
-import { 打印性能报告, 清空所有缓存, 重置所有统计 } from './性能优化/index_智能优化';
 import { Decimal } from "./大数值/big_number";
 import { 智能计算 } from "./大数值/核心计算方法";
 
@@ -88,25 +87,25 @@ GameLib.onAdminUIButtonClick = (controlName: string): void => {
         const 大数值2 = 智能计算('300000', '1e100', 3)
         console.log('大数值:', 大数值2)
         console.log('副本长度:', GameLib.R.地图池.length)
-       let Player = GameLib.FindPlayer('鸿福'); //查找玩家
+        let Player = GameLib.FindPlayer('鸿福'); //查找玩家
         if (Player != null) {
 
-        Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
+            Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
             console.log(`Player.R.怒斩范围:${Player.R.怒斩范围}`)
-        }      
+        }
     }
 
     if (controlName == '打印性能报告') {
-        打印性能报告()
+
 
     }
 
     if (controlName == '清空所有缓存') {
-        清空所有缓存()
+
     }
 
     if (controlName == '重置所有统计') {
-        重置所有统计()
+
     }
 
     //------------------------------------------------------------以下示范-------------------------------------------------------------

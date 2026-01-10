@@ -7,17 +7,17 @@ import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../_�
 import { Main } from "../_核心部分/_装备/装备回收"
 import { 交易市场, 测试用的 } from "../功能脚本组/[服务]/延时跳转"
 import { 杀怪鞭尸 } from "../功能脚本组/[玩家]/_P_杀怪触发"
-import * as 交易中心 from "../功能脚本组/[服务]/交易中心"
+import * as 交易中心 from "../_核心部分/_服务/交易中心"
 // import { 计算伤害 } from "../大数值版本/攻击计算"
 // import { 计算伤害 } from '../应用智能优化版';
 // import { 计算伤害 } from '../性能优化/攻击计算_极致优化';
 import { 计算伤害 } from '../_核心部分/攻击计算';
-import { 装备属性统计 } from "../核心功能/装备属性统计"
+import { 属性下一页, 装备属性统计 } from "../_核心部分/_装备/属性统计"
 import { 实时回血, 血量显示 } from "../核心功能/字符计算"
 import { js_war } from "../全局脚本[公共单元]/utils/计算方法"
 import * as 地图1 from '../_核心部分/_地图/地图';
 import { 记录充值数据 } from "../功能脚本组/[服务]/充值属性"
-import * as 材料仓库 from "../功能脚本组/[服务]/材料仓库"
+import * as 材料仓库 from "../_核心部分/_服务/材料仓库"
 import { 地图配置 } from "../_核心部分/世界配置"
 
 // 判断是否使用新刷怪系统的地图
@@ -68,7 +68,7 @@ GameLib.onMonitorDamageEx = (ActorObject: TActor, ADamageSource: TActor, Tag: nu
     if (ADamageSource.Handle == ActorObject.Handle) { return 0 }//判断攻击者和被攻击者都不是自己
 
     计算伤害(ADamageSource, ActorObject, SkillID, 1)
-    if(SkillID == 170){
+    if (SkillID == 170) {
         ADamageSource.DamageDelay(ActorObject, 1, 300, 10170)
     }
 
@@ -127,6 +127,7 @@ GameLib.onScriptButtonClick = (Player: TPlayObject, params: string): void => {
         case '综合服务': Player.DelayCallMethod('_YXFW_Anniukg.Main', 10, true); break
         // case '天赋': 天赋(GameLib.QFunctionNpc, Player); break
         case '交易市场': 交易中心.Main(Player); break
+        case '属性下一页': 属性下一页(Player);
     }
 }
 
@@ -186,7 +187,7 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
     Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
     Player.SetAlwaysShowHP(true)
     登录触发.自定义变量(Player)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
     血量显示(Player)
     实时回血(Player, Player.GetSVar(92))
     if (Player.V.自定属性[999] === '死亡') {
@@ -260,7 +261,7 @@ GameLib.onProcessCommand = (Player: TPlayObject, Command: string, param: string)
                     Play.GameGold += 元宝
                     Play.GoldChanged()
                     Play.SendCenterMessage(`充值成功，一共充值:${礼卷}点礼卷,${真实充值}点真实充值...`, 0)
-                    Play.V.累计领取次数 += 1                             
+                    Play.V.累计领取次数 += 1
                     Play.AddTextList('D:\\12MIR\\充值\\已领充值.txt', '当前领取金额:' + Money + '时间:' + now + '账号：' + Play.GetAccount() + 'IP：' + Play.GetIPAddress() + '角色名' + Play.GetName() + '总共领取金额' + Play.V.真实充值 + '累计领取次数' + Play.V.累计领取次数);
                     GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点礼卷,${真实充值}点真实充值`, 249, 255);
                     GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点礼卷,${真实充值}点真实充值`, 249, 255);

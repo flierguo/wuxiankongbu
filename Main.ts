@@ -1,4 +1,4 @@
-import {CreateAdminUI} from "./后台UI管理控制"
+import { CreateAdminUI } from "./后台UI管理控制"
 CreateAdminUI()
 
 const UnitMap = new Map<string, any>()
@@ -19,6 +19,9 @@ import * as 装备回收 from "./_核心部分/_装备/装备回收"
 
 
 import * as 传送阵法 from "./_核心部分/_地图/传送阵法"
+
+import * as 神器系统 from "./_核心部分/_服务/神器系统"
+
 //=======================自制=======================================
 
 
@@ -26,7 +29,7 @@ import * as 传送阵法 from "./_核心部分/_地图/传送阵法"
 // import * as XXXX from "./XXXX"
 import * as _GN_Close from "./功能脚本组/[功能]/_GN_Close"
 import * as 充值使者 from "./功能脚本组/[服务]/充值使者"
-import * as 材料仓库 from "./功能脚本组/[服务]/材料仓库"
+import * as 材料仓库 from "./_核心部分/_服务/材料仓库"
 import * as _YXFW_King from "./功能脚本组/[服务]/_YXFW_King"
 import * as _P_CanSeeStorage from "./功能脚本组/[玩家]/_P_CanSeeStorage"
 
@@ -38,20 +41,20 @@ import * as _GN_Monitoring from "./功能脚本组/[功能]/_GN_Monitoring"
 import * as 充值属性 from "./功能脚本组/[服务]/充值属性"
 
 import * as 延时跳转 from "./功能脚本组/[服务]/延时跳转"
-import * as 职业选择 from "./功能脚本组/[服务]/职业选择"
+import * as 职业选择 from "./_核心部分/_服务/职业选择"
 import * as 技能学习 from "./功能脚本组/[服务]/技能学习"
-import * as 可视仓库 from "./功能脚本组/[服务]/可视仓库"
+import * as 可视仓库 from "./_核心部分/_服务/可视仓库"
 
 import * as 升级幸运 from "./功能脚本组/[服务]/升级幸运"
 
 import * as 测试NPC from "./功能脚本组/[服务]/测试NPC"
-import * as 生命水池 from "./功能脚本组/[服务]/生命水池"
+import * as 生命水池 from "./_核心部分/_服务/生命水池"
 
 
 import * as 大陆传送 from "./功能脚本组/[服务]/大陆传送"
 import * as 勋章合成 from "./功能脚本组/[服务]/勋章合成"
 import * as _GN_功能 from "./功能脚本组/[功能]/_功能"
-import * as 交易中心 from "./功能脚本组/[服务]/交易中心"
+import * as 交易中心 from "./_核心部分/_服务/交易中心"
 import * as 后台管理 from "./后台管理"
 import * as 技能伤害选择 from "./功能脚本组/[装备]/技能伤害选择"
 import * as 技能提高 from "./功能脚本组/[服务]/技能提高"
@@ -104,6 +107,7 @@ UnitMap.set("延时触发", 延时触发)
 
 
 
+UnitMap.set("神器系统", 神器系统)
 
 
 //引擎启动检查创建必要文件

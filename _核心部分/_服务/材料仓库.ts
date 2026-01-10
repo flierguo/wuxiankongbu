@@ -1,4 +1,4 @@
-import { 大数值整数简写 } from "../../_核心部分/字符计算";
+import { 大数值整数简写 } from "../字符计算";
 
 // 材料仓库配置
 interface 材料信息 {
@@ -8,8 +8,8 @@ interface 材料信息 {
 
 // 材料列表配置
 const 材料列表: 材料信息[] = [
-    { 名称: '书页',     变量名: '材料_书页' },
-    { 名称: '挑战石',   变量名: '材料_挑战石' },
+    { 名称: '书页', 变量名: '材料_书页' },
+    { 名称: '挑战石', 变量名: '材料_挑战石' },
     { 名称: '血石精华', 变量名: '材料_血石精华' },
     { 名称: '泰坦结晶', 变量名: '材料_泰坦结晶' },
     { 名称: '专属碎片', 变量名: '材料_专属碎片' },
@@ -57,7 +57,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
         const 当前数量 = Player.V[材料.变量名] || 0;
         const 数量简写 = 大数值整数简写(当前数量.toString())
         const Y坐标 = 60 + (i - 开始索引) * 25;
-        
+
         界面内容 += `<{S=${材料.名称};HINT=点击名称取出物品;C=20;X=40;Y=${Y坐标}}/@@材料仓库.InPutInteger(请输入要取出的${材料.名称}数量:,${材料.名称})>`;
         界面内容 += `{S=当前库存${数量简写}个;HINT=${当前数量};C=22;X=200;Y=${Y坐标}}`;
         界面内容 += `<{S=存入所有本材料;C=250;X=360;Y=${Y坐标}}/@材料仓库.存入本材料(${材料.名称})>\\\\`;
@@ -78,7 +78,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 export function 一键存入所有材料(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let 总存入数量 = 0;
     let 存入记录 = [];
-    
+
     // 遍历所有材料，将背包中的材料存入到仓库
     for (const 材料 of 材料列表) {
         const 背包数量 = Player.GetItemCount(材料.名称);
@@ -94,14 +94,14 @@ export function 一键存入所有材料(Npc: TNormNpc, Player: TPlayObject, Arg
 
     if (总存入数量 > 0) {
         Player.SendMessage(`成功存入所有材料到仓库！总计: ${总存入数量}个物品`);
-    } 
+    }
 
 }
 
 // 存入背包中所有指定材料到仓库
 export function 存入本材料(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 材料名称 = Args.Str[0];
-    
+
     const 背包数量 = Player.GetItemCount(材料名称);
     if (背包数量 <= 0) {
         Player.MessageBox(`背包中没有 ${材料名称}！`);
@@ -118,12 +118,12 @@ export function 存入本材料(Npc: TNormNpc, Player: TPlayObject, Args: TArgs)
 
     // 扣除背包中的物品
     Npc.Take(Player, 材料名称, 背包数量);
-    
+
     // 增加库存
     Player.V[材料信息.变量名] = (Player.V[材料信息.变量名] || 0) + 背包数量;
-    
+
     Player.MessageBox(`成功存入 ${背包数量}个 ${材料名称}！当前库存: ${Player.V[材料信息.变量名]}个`);
-    
+
     // 返回主界面
     Main(Npc, Player, Args);
 }
@@ -132,7 +132,7 @@ export function 存入本材料(Npc: TNormNpc, Player: TPlayObject, Args: TArgs)
 export function InPutInteger(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 材料名称 = Args.Str[0];
     const 输入数量 = Args.Int[1] || 0;
-    
+
     if (输入数量 <= 0) {
         Player.MessageBox('请输入有效的数量！');
         Main(Npc, Player, Args);
@@ -155,12 +155,12 @@ export function InPutInteger(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 
     // 扣除库存
     Player.V[材料信息.变量名] -= 输入数量;
-    
+
     // 给予材料到背包
     Npc.Give(Player, 材料名称, 输入数量);
 
     Player.MessageBox(`成功取出 ${输入数量}个 ${材料名称}！剩余库存: ${Player.V[材料信息.变量名]}个`);
-    
+
     // 返回主界面
     Main(Npc, Player, Args);
 }

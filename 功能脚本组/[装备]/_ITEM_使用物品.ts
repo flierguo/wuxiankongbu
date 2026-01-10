@@ -1,5 +1,5 @@
 
-import { 装备属性统计 } from '../../性能优化/index_智能优化';
+import { 装备属性统计 } from "../../_核心部分/_装备/属性统计";
 import { js_number } from "../../全局脚本[公共单元]/utils/计算方法_优化版";
 export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUserItem): void {
     Randomize()
@@ -346,5 +346,5 @@ export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUser
             Player.MapMove('第十五章', 10, 10)
             break;
     }
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
 }

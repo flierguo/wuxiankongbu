@@ -13,7 +13,6 @@ import { _M_N_宝宝释放群雷, _M_N_猎人宝宝群攻 } from "../功能脚�
 import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
 import { 智能计算, 转大数值, js_百分比, js_范围随机, js_war } from "../大数值/核心计算方法";
 
-import { 人物额外属性计算 } from "../核心功能/装备属性统计"
 import * as 地图 from '../_核心部分/_地图/地图'
 import * as 刷怪 from '../功能脚本组/[怪物]/_M_Refresh'
 
@@ -21,7 +20,7 @@ import { 按分钟检测清理, 深度清理, 获取清理性能统计 } from '.
 // 导入装备属性统计优化
 
 
-import { 一键存入所有材料 } from "../功能脚本组/[服务]/材料仓库"
+import { 一键存入所有材料 } from "../_核心部分/_服务/材料仓库"
 
 
 
@@ -202,13 +201,13 @@ export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
     // _M_Robot.按分钟检测(Player)
     Player = GameLib.FindPlayer('鸿福'); //查找玩家
     if (Player != null) {
-        Player.SetSVar(92 , 转大数值('1e100')) 
+        Player.SetSVar(92, 转大数值('1e100'))
         // Player.SetSVar(91 , '1e100') 
-        实时回血(Player, '1e50')
+        实时回血(Player, '1e100')
         血量显示(Player);
         Player.UpdateName();
-        GameLib.SetClientSpeed(10000)
-        GameLib.SendChangeClientSpeed()
+        // GameLib.SetClientSpeed(1000)
+        // GameLib.SendChangeClientSpeed()
     }
 
     //    // GameLib.MonGenEx( Player.Map , '多钩猫', 30, 120, 120, 30, 0, 0, 1, true, true, true, true)
@@ -536,7 +535,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 // 对周围5码敌人造成伤害
                 const 范围 = 5 + (R.血气燃烧范围 || 0);
                 const 目标列表 = 获取玩家范围内目标(Player, 范围);
-                for (const 目标 of 目标列表) {                    
+                for (const 目标 of 目标列表) {
                     Player.Damage(目标, 1, _P_Base.技能ID.血神.血气燃烧);
                 }
             }

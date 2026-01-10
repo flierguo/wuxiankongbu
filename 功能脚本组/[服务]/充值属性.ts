@@ -1,5 +1,5 @@
 import { 数字转单位2, 数字转单位3 } from "../../核心功能/字符计算";
-import { 装备属性统计 } from '../../性能优化/index_智能优化';
+import { 装备属性统计 } from "../../_核心部分/_装备/属性统计"; 
 
 // =================================== 数据库配置 ===================================
 /**
@@ -594,7 +594,7 @@ export function 领取(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
             GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}领取了‘{S=6000元礼包;C=250}’!`);
             break
     }
-    装备属性统计(Player, undefined, undefined, undefined);
+    装备属性统计(Player);
 }
 
 

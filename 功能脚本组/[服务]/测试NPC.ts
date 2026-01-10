@@ -1,4 +1,4 @@
-import { 装备属性统计 } from '../../性能优化/index_智能优化';
+
 import { 特效 } from "../../_核心部分/基础常量";
 
 
@@ -24,29 +24,29 @@ export function InPutInteger(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     Player.SetGamePoint(Player.GetGamePoint() + 数量)
     Player.GoldChanged()
     Player.MessageBox(`你领取了${数量}充值以及${数量}礼卷!`)
-    装备属性统计(Player,undefined,undefined,undefined);
+
 }
 
 
 export function 清理每日(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Player.V.荣誉值=Player.V.荣誉值+1000
+    Player.V.荣誉值 = Player.V.荣誉值 + 1000
 }
 
 
 export function 领取荣誉(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Player.V.荣誉值=Player.V.荣誉值+1000
+    Player.V.荣誉值 = Player.V.荣誉值 + 1000
 }
 
 export function 换碎骨(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Npc.Give(Player,'碎骨',1000)
+    Npc.Give(Player, '碎骨', 1000)
 }
 
 export function 命运之书(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Npc.Give(Player,'命运之书',10000)
+    Npc.Give(Player, '命运之书', 10000)
 }
 
 export function 领取书页(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Npc.Give(Player,'书页',10000)
+    Npc.Give(Player, '书页', 10000)
 }
 export function 转职(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const S = `\\\\\\\\\\
@@ -187,7 +187,7 @@ export function 开始转职(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     }
     Player.MessageBox('转职完毕,建议小退!')
     Player.RecalcAbilitys()
-    装备属性统计(Player,undefined,undefined,undefined);
+
 }
 
 export function 种族变更(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -204,7 +204,7 @@ export function 换种族(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void
     let 种族 = Args.Str[0]
     Player.V.种族 = 种族
     Player.MessageBox(`你换成了一个${种族}`)
-    装备属性统计(Player,undefined,undefined,undefined);
+
 }
 
 

@@ -1,5 +1,5 @@
 
-import { 装备属性统计 } from "../../核心功能/装备属性统计"
+import { 装备属性统计 } from "../../_核心部分/_装备/属性统计" 
 import { main } from "../[功能]/_GN_Number_To_Chinese"
 import { 特效 } from "../../_核心部分/基础常量"
 
@@ -129,7 +129,7 @@ export function 提升技能(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     Player.V[变量名] = 下一级
     
     Player.SendMessage(`恭喜！${技能名称}技能成功提升到${下一级}级！`, 1)
-    装备属性统计(Player, undefined, undefined, undefined)
+    装备属性统计(Player)
     Main(Npc,Player,Args)
 
     // Debug(`Player.V[${变量名}]=${Player.V[变量名]}`)

@@ -34,6 +34,7 @@ export const 怪物技能4ID = 19;
 export const 怪物技能4几率 = 20;
 export const 怪物星星 = 21;
 export const 怪物类型 = 22;
+export const 怪物难度系数 = 23;
 
 export enum 装备颜色 {
     普通颜色 = 255,
