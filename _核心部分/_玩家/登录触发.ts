@@ -198,8 +198,14 @@ export function 自定义变量(Player: TPlayObject): void {
 
 
 	Player.V.基因 ??= []
-	Player.V.基因阶数 ??= 0
+	Player.R.狂化阶数 ??= 0
+	Player.R.迅疾阶数 ??= 0
+	Player.R.甲壳阶数 ??= 0
+	Player.R.融合阶数 ??= 0
+	Player.R.念力阶数 ??= 0
+	Player.R.协作阶数 ??= 0
 
+	
 
 
 	Player.R.本职装备几率 ??= 0

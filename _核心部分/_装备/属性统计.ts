@@ -17,6 +17,7 @@ import {
     职业第一条, 职业第六条,
     基础词条, 技能魔次
 } from "../基础常量"
+import { 神器属性统计 } from "./神器统计"
 
 // ==================== JSON缓存系统 ====================
 class 装备JSON缓存 {
@@ -145,6 +146,19 @@ export function 清空变量(Player: TPlayObject): void {
     Player.R.经验加成 = 0;
     Player.R.爆率加成 = 0;
     Player.R.造成伤害 = '0';
+
+    // 神器相关属性（每次统计时重置，由神器统计模块重新计算）
+    Player.R.全体魔次 = '0';
+    Player.R.狂化阶数 = 0;
+    Player.R.融合阶数 = 0;
+    Player.R.迅疾阶数 = 0;
+    Player.R.念力阶数 = 0;
+    Player.R.甲壳阶数 = 0;
+    Player.R.协作阶数 = 0;
+    Player.R.神器爆率加成 = 0;
+    Player.R.神器回收加成 = 0;
+    Player.R.神器增伤加成 = '0';
+    Player.R.基因锁等级 = Player.R.基因锁等级 || 0; // 基因锁等级保留，不重置
 
     Player.RecalcAbilitys();
 }
@@ -440,7 +454,7 @@ function 应用属性倍数(Player: TPlayObject): void {
 
     // 职业属性倍数映射
     const 倍数映射: { [key: number]: string } = {
-        161: '攻击倍数', 162: '魔法倍数', 163: '道术倍数',
+        120: '攻击倍数', 162: '魔法倍数', 163: '道术倍数',
         164: '刺术倍数', 165: '射术倍数', 166: '武术倍数',
         167: '生命倍数', 168: '防御倍数'
     };
@@ -557,6 +571,9 @@ export function 装备属性统计(Player: TPlayObject): void {
 
     // 步骤3：应用属性倍数
     应用属性倍数(Player);
+
+    // 步骤3.5：统计神器属性
+    神器属性统计(Player);
 
     // 步骤4：刷新属性并更新显示
     Player.SetSVar(92, Player.R.自定属性[167]); // 最大血量
