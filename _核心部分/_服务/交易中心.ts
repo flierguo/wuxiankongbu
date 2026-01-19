@@ -1,5 +1,5 @@
-import * as 功能 from '../../功能脚本组/[功能]/_功能'
-import * as 交易市场 from "../../功能脚本组/[服务]/延时跳转"
+import * as 功能 from '../_功能'
+// import * as 交易市场 from "../../功能脚本组/[服务]/延时跳转"
 
 
 

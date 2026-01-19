@@ -1,24 +1,24 @@
 // import * as XXXX from "../功能脚本组/[XX]/XXXX"
 import * as 登录触发 from "../_核心部分/_玩家/登录触发"
-import { Refresh as 旧刷怪属性 } from "../功能脚本组/[怪物]/_M_Refresh"
 import { Refresh as 新刷怪属性 } from "../_核心部分/_生物/生物属性"
-
 import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../_核心部分/基础常量"
 import { Main } from "../_核心部分/_装备/装备回收"
-import { 交易市场, 测试用的 } from "../功能脚本组/[服务]/延时跳转"
-import { 杀怪鞭尸 } from "../功能脚本组/[玩家]/_P_杀怪触发"
+// import { 交易市场 } from "../_核心部分/_服务/交易中心"
+// import { 杀怪鞭尸 } from "../_核心部分/_玩家/杀怪触发"
 import * as 交易中心 from "../_核心部分/_服务/交易中心"
 // import { 计算伤害 } from "../大数值版本/攻击计算"
 // import { 计算伤害 } from '../应用智能优化版';
 // import { 计算伤害 } from '../性能优化/攻击计算_极致优化';
 import { 计算伤害 } from '../_核心部分/攻击计算';
 import { 属性下一页, 装备属性统计 } from "../_核心部分/_装备/属性统计"
-import { 实时回血, 血量显示 } from "../核心功能/字符计算"
+import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
 import { js_war } from "../全局脚本[公共单元]/utils/计算方法"
 import * as 地图1 from '../_核心部分/_地图/地图';
-import { 记录充值数据 } from "../功能脚本组/[服务]/充值属性"
-import * as 材料仓库 from "../_核心部分/_服务/材料仓库"
+import { 记录充值数据 } from "../_核心部分/充值属性"
+
+
 import { 地图配置 } from "../_核心部分/世界配置"
+import { 测试功能 } from "../_核心部分/测试功能"
 
 // 判断是否使用新刷怪系统的地图
 function 是新刷怪系统地图(地图名: string): boolean {
@@ -30,8 +30,6 @@ function Refresh(Envir: TEnvirnoment, Monster: TActor, Tag: number): void {
     const 地图显示名 = Envir.DisplayName || Envir.GetName() || ''
     if (是新刷怪系统地图(地图显示名)) {
         新刷怪属性(Envir, Monster, Tag)
-    } else {
-        旧刷怪属性(Envir, Monster, Tag)
     }
 }
 
@@ -203,7 +201,7 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
         GameLib.BroadcastSay(format('%s玩家[%s]在[%s]上线了！', ['(*)', Player.Name, Player.Map.Name]), 249, 255)
     }
 
-    交易市场(GameLib.QFunctionNpc, Player)
+    // 交易市场(GameLib.QFunctionNpc, Player)
 
 
     Player.SetPVar(关闭仓库, 0);//P变量关闭仓库
@@ -333,7 +331,7 @@ GameLib.onOpenMember = (Player: TPlayObject): void => { }
 //玩家打开帮助时内容
 GameLib.onPlayerHelp = (Player: TPlayObject): void => {
     // 会员(GameLib.QFunctionNpc,Player)
-    测试用的(GameLib.QFunctionNpc, Player)
+    测试功能(GameLib.QFunctionNpc, Player)
 }
 //玩家点击热点后触发
 GameLib.onPlayerHot = (Player: TPlayObject): void => { }

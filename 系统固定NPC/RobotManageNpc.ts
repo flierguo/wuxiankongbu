@@ -1,26 +1,24 @@
 /*机器人*/
 import { 获取玩家范围内目标, 获取目标范围内目标 } from "./MagicNpc"
 
-import { RobotPlugIn } from "../功能脚本组/[功能]/_GN_Monitoring"
 import {
     _P_N_监狱计时, _P_N_可复活次数, 技能ID
 } from "../_核心部分/基础常量"
-import * as _P_Base from "../_核心部分/基础常量"
-import * as _M_Robot from "../功能脚本组/[怪物]/_M_Robot"
+import * as 基础常量 from "../_核心部分/基础常量"
 import * as 生物刷新 from "../_核心部分/_生物/生物刷新"
-import { _M_N_宝宝释放群雷, _M_N_猎人宝宝群攻 } from "../功能脚本组/[怪物]/_M_Base"
 
 import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
-import { 智能计算, 转大数值, js_百分比, js_范围随机, js_war } from "../大数值/核心计算方法";
+import { 智能计算, 转大数值, js_百分比, js_范围随机, js_war } from "../_大数值/核心计算方法";
 
 import * as 地图 from '../_核心部分/_地图/地图'
-import * as 刷怪 from '../功能脚本组/[怪物]/_M_Refresh'
 
-import { 按分钟检测清理, 深度清理, 获取清理性能统计 } from '../核心功能/清理冗余数据'
+
+
 // 导入装备属性统计优化
 
 
 import { 一键存入所有材料 } from "../_核心部分/_服务/材料仓库"
+import { RobotPlugIn } from "../_核心部分/_服务/_GN_Monitoring";
 
 
 
@@ -99,13 +97,6 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 
     //测试用
 
-    if (Player.V.驯兽师 && Player.R.宝宝释放群雷 == false) {
-        for (let a = 0; a <= Player.SlaveCount; a++) {
-            if (Player.GetSlave(a)) {
-                Player.GetSlave(a).SetNVar(_M_N_宝宝释放群雷, 0)
-            }
-        }
-    }
 
     if (Player.R.被攻击状态) {
         Player.R.被攻击不允许随机 = Player.R.被攻击不允许随机 + 1
@@ -129,19 +120,6 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 
         }
     }
-
-    if (Player.R.暴怒状态) {
-        Player.R.暴怒状态时间 ??= 0
-        Player.R.暴怒状态时间 = Player.R.暴怒状态时间 + 1
-        Player.SetCustomEffect(1, 107)
-        if (Player.R.暴怒状态时间 >= (5 + Math.floor(Player.V.暴怒等级 / 20))) {
-            Player.R.暴怒状态 = false
-            Player.SetCustomEffect(1, 0)
-            Player.SendMessage(`{S=【暴怒状态结束】;C=253}: 你离开了暴怒状态！`, 1)
-            Player.R.暴怒状态时间 = 0
-        }
-    }
-
 
     let Magic: TUserMagic
     Magic = Player.FindSkill('隐身开关');
@@ -220,8 +198,7 @@ export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 export function 全局1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // 新刷怪系统：检测玩家首次进入地图，10秒后刷全怪
     生物刷新.秒钟检测首次刷怪()
-    // 旧刷怪系统保留兼容
-    _M_Robot.秒钟第一次进入刷怪()
+
 }
 /*十秒执行*/
 export function 个人10秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -242,19 +219,6 @@ export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): vo
     生物刷新.定时补怪检测()
     // 新刷怪系统：特殊BOSS刷新检测(击杀2000怪触发)
     生物刷新.特殊BOSS刷新检测()
-    // 旧刷怪系统保留兼容
-    _M_Robot.按分钟检测(Player)
-
-    GameLib.R.测试属性 ??= 0
-    GameLib.R.测试属性 += 1
-    if (GameLib.R.测试属性 >= 100) {
-
-        if (js_war(Player.V.杀怪翻倍, '1') > 0) {
-            console.log(`玩家名字:${Player.GetName()} ,杀怪翻倍:${Player.V.杀怪翻倍}`)
-        }
-        GameLib.R.测试属性 = 0
-    }
-
 
     // ; 
 }
@@ -288,7 +252,6 @@ export function 全局1分钟(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): 
     GameLib.R.定期加载 += 1
     if (GameLib.R.定期加载 >= 10) { // 从5改为30分钟，减少CPU消耗
         // 🚀 性能优化：仅在必要时重载脚本引擎
-        按分钟检测清理()
         GameLib.ReLoadScriptEngine();
         GameLib.R.定期加载 = 0
     }
@@ -335,7 +298,6 @@ export function 个人每日清理(Npc: TNormNpc, Player: TPlayObject, Args: TAr
     Player.V.今日回收神器 = 0
     Player.V.今日兑换礼卷 = 0
     Player.V.每日宣传兑换次数 = 0
-    深度清理()
 }
 
 
@@ -480,7 +442,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
                 if (最近目标) {
-                    Player.MagicAttack(最近目标, _P_Base.技能ID.天枢.怒斩);
+                    Player.MagicAttack(最近目标, 基础常量.技能ID.天枢.怒斩);
                 }
             }
         }
@@ -491,7 +453,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
                 if (最近目标) {
-                    Player.MagicAttack(最近目标, _P_Base.技能ID.血神.血气献祭);
+                    Player.MagicAttack(最近目标, 基础常量.技能ID.血神.血气献祭);
                 }
             }
         }
@@ -500,7 +462,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         if (V.职业 === '血神' && !Player.InSafeZone && R.血魔临身自动施法 && !R.血魔临身) {
             Magic = Player.FindSkill('血魔临身');
             if (Magic) {
-                Player.MagicAttack(Player, _P_Base.技能ID.血神.血魔临身);
+                Player.MagicAttack(Player, 基础常量.技能ID.血神.血魔临身);
             }
         }
 
@@ -525,7 +487,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             let 最大血量 = Player.GetSVar(92)
             if (js_war(当前血量, 智能计算(最大血量, `0.1`, 3)) <= 0) {
                 R.血气燃烧 = false;
-                Player.SetCustomEffect(_P_Base.永久特效.血气燃烧, -1);
+                Player.SetCustomEffect(基础常量.永久特效.血气燃烧, -1);
                 Player.SendMessage('血量低于10%,血气燃烧自动关闭!', 2);
             } else {
                 // 消耗1%血量
@@ -536,7 +498,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 const 范围 = 5 + (R.血气燃烧范围 || 0);
                 const 目标列表 = 获取玩家范围内目标(Player, 范围);
                 for (const 目标 of 目标列表) {
-                    Player.Damage(目标, 1, _P_Base.技能ID.血神.血气燃烧);
+                    Player.Damage(目标, 1, 基础常量.技能ID.血神.血气燃烧);
                 }
             }
         }
@@ -547,7 +509,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
                 if (最近目标) {
-                    Player.MagicAttack(最近目标, _P_Base.技能ID.暗影.暗影袭杀);
+                    Player.MagicAttack(最近目标, 基础常量.技能ID.暗影.暗影袭杀);
                 }
             }
         }
@@ -558,7 +520,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             if (Magic && R.暗影点 >= 5) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
                 if (最近目标) {
-                    Player.MagicAttack(最近目标, _P_Base.技能ID.暗影.暗影风暴);
+                    Player.MagicAttack(最近目标, 基础常量.技能ID.暗影.暗影风暴);
                 }
             }
         }
@@ -567,7 +529,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         if (V.职业 === '暗影' && !Player.InSafeZone && R.暗影附体自动施法 && !R.暗影附体) {
             Magic = Player.FindSkill('暗影附体');
             if (Magic && R.暗影点 >= 10) {
-                Player.MagicAttack(Player, _P_Base.技能ID.暗影.暗影附体);
+                Player.MagicAttack(Player, 基础常量.技能ID.暗影.暗影附体);
             }
         }
 
@@ -577,7 +539,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             // 检查暗影点，不足则自动关闭
             if (!R.暗影点 || R.暗影点 < 1) {
                 R.暗影剔骨 = false;
-                Player.SetCustomEffect(_P_Base.永久特效.暗影剔骨, -1);
+                Player.SetCustomEffect(基础常量.永久特效.暗影剔骨, -1);
                 Player.SendMessage('暗影点不足,暗影剔骨自动关闭!', 2);
             } else {
                 // 消耗1点暗影点
@@ -587,8 +549,8 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 for (let i = 0; i < AActorList.Count; i++) {
                     const Actor = AActorList.Actor(i);
                     if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                        Player.SetCustomEffect(1, _P_Base.特效.暗影剔骨);
-                        Player.Damage(Actor, 1, _P_Base.技能ID.暗影.暗影剔骨);
+                        Player.SetCustomEffect(1, 基础常量.特效.暗影剔骨);
+                        Player.Damage(Actor, 1, 基础常量.技能ID.暗影.暗影剔骨);
                     }
                 }
             }
@@ -600,7 +562,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
                 if (最近目标) {
-                    Player.MagicAttack(最近目标, _P_Base.技能ID.烈焰.火焰追踪);
+                    Player.MagicAttack(最近目标, 基础常量.技能ID.烈焰.火焰追踪);
                 }
             }
         }
@@ -612,8 +574,8 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             for (let i = 0; i < AActorList.Count; i++) {
                 const Actor = AActorList.Actor(i);
                 if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                    Actor.ShowEffectEx2(_P_Base.特效.圣光, -10, 20, true, 1);
-                    Player.Damage(Actor, 1, _P_Base.技能ID.正义.圣光);
+                    Actor.ShowEffectEx2(基础常量.特效.圣光, -10, 20, true, 1);
+                    Player.Damage(Actor, 1, 基础常量.技能ID.正义.圣光);
                 }
             }
         }
@@ -622,7 +584,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         if (V.职业 === '不动' && !Player.InSafeZone && R.人王盾自动施法 && !R.人王盾护盾值) {
             Magic = Player.FindSkill('人王盾');
             if (Magic) {
-                Player.MagicAttack(Player, _P_Base.技能ID.不动.人王盾);
+                Player.MagicAttack(Player, 基础常量.技能ID.不动.人王盾);
             }
         }
 
@@ -632,7 +594,7 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
                 if (最近目标) {
-                    Player.MagicAttack(最近目标, _P_Base.技能ID.不动.金刚掌);
+                    Player.MagicAttack(最近目标, 基础常量.技能ID.不动.金刚掌);
                 }
             }
         }
@@ -644,8 +606,8 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             for (let i = 0; i < AActorList.Count; i++) {
                 const Actor = AActorList.Actor(i);
                 if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                    Actor.ShowEffectEx2(_P_Base.特效.如山, -10, 20, true, 1);
-                    Player.Damage(Actor, 1, _P_Base.技能ID.不动.如山);
+                    Actor.ShowEffectEx2(基础常量.特效.如山, -10, 20, true, 1);
+                    Player.Damage(Actor, 1, 基础常量.技能ID.不动.如山);
                 }
             }
         }
@@ -660,8 +622,8 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             for (let i = 0; i < AActorList.Count; i++) {
                 const Actor = AActorList.Actor(i);
                 if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                    Actor.ShowEffectEx2(_P_Base.特效.烈焰护甲, -10, 20, true, 1);
-                    Player.Damage(Actor, 1, _P_Base.技能ID.烈焰.烈焰护甲);
+                    Actor.ShowEffectEx2(基础常量.特效.烈焰护甲, -10, 20, true, 1);
+                    Player.Damage(Actor, 1, 基础常量.技能ID.烈焰.烈焰护甲);
                 }
             }
         }

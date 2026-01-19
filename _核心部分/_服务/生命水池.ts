@@ -1,4 +1,4 @@
-import { 实时回血 } from "../../核心功能/字符计算"
+import { 实时回血 } from "../字符计算"
 import { 装备属性统计 } from "../_装备/属性统计"
 import { 特效 } from "../基础常量"
 

@@ -95,7 +95,7 @@ const 本职业数据: { [key: number]: { 名称: string, 技能: { 图标: numb
     4: { // 弓箭
         名称: '弓箭',
         技能: [
-            { 图标: 150, 名称: '精准剑术', 描述: '被动:对目标造成200%伤害,每级提高20%.' },
+            { 图标: 150, 名称: '精准箭术', 描述: '被动:对目标造成200%伤害,每级提高20%.' },
             { 图标: 694, 名称: '万箭齐发', 描述: '主动,对目标3格敌人造成120%伤害,每级提升12%.' },
         ]
     },
@@ -134,6 +134,34 @@ export function 显示职业技能(Npc: TNormNpc, Player: TPlayObject, Args: TAr
 }
 
 
+// 自动换行处理（本地实现）
+function 自动换行(文本: string, 最大宽度: number): string[] {
+    const 结果: string[] = [];
+    let 当前行 = '';
+    let 当前宽度 = 0;
+
+    for (let i = 0; i < 文本.length; i++) {
+        const 字符 = 文本[i];
+        // 中文字符宽度为2，其他为1
+        const 字符宽度 = 字符.charCodeAt(0) > 127 ? 2 : 1;
+
+        if (当前宽度 + 字符宽度 > 最大宽度) {
+            结果.push(当前行);
+            当前行 = 字符;
+            当前宽度 = 字符宽度;
+        } else {
+            当前行 += 字符;
+            当前宽度 += 字符宽度;
+        }
+    }
+
+    if (当前行.length > 0) {
+        结果.push(当前行);
+    }
+
+    return 结果;
+}
+
 // 内部显示职业技能函数
 function 显示职业技能内部(Npc: TNormNpc, Player: TPlayObject, 职业名: keyof typeof 职业数据): void {
     const 数据 = 职业数据[职业名]
@@ -141,21 +169,55 @@ function 显示职业技能内部(Npc: TNormNpc, Player: TPlayObject, 职业名:
 
     const 技能列表 = 数据.技能
     let 技能显示 = ''
-    const Y基准 = 120
+    const Y基准 = 70
+    const 图标大小 = 34        // 图标高度
+    const 描述最大宽度 = 58    // 每行最大字符宽度（中文算2个）
+    const 文字行高 = 16        // 文字行高
+    const 技能间距 = 16         // 技能之间的间距
+    let 当前Y = Y基准
 
     for (let i = 0; i < 技能列表.length; i++) {
         const 技能 = 技能列表[i]
-        const Y位置 = Y基准 + i * 40
-        技能显示 += `{i=${技能.图标};f=magicon2.wzl;X=10;Y=${Y位置}}  {S=${技能.名称};X=40;Y=${Y位置};C=215}  {S=${技能.描述};X=90;Y=${Y位置};H=5;W=100;C=253}\\\\`
+        // 对技能描述进行自动换行
+        const 描述行 = 自动换行(技能.描述, 描述最大宽度)
+
+        // 计算技能块高度：至少是图标高度，如果描述行数多则扩展
+        const 描述总高度 = 描述行.length * 文字行高
+        const 技能块高度 = Math.max(图标大小, 描述总高度)
+
+        // 图标：垂直居中于技能块
+        const 图标Y = 当前Y + Math.floor((技能块高度 - 图标大小) / 2)
+
+        // 技能名称：与图标顶部对齐，稍微偏下让视觉居中
+        const 名称Y = 当前Y + Math.floor((技能块高度 - 文字行高) / 2)
+
+        // 描述：起始Y位置，使描述在技能块内垂直居中
+        const 描述起始Y = 当前Y + Math.floor((技能块高度 - 描述总高度) / 2)
+
+        // 图标
+        技能显示 += `{i=${技能.图标};f=magicon2.wzl;X=0;Y=${图标Y}}`
+
+        // 技能名称
+        技能显示 += `{S=${技能.名称};X=38;Y=${名称Y - 10};C=251;FS=12}`
+
+        // 多行描述
+        for (let j = 0; j < 描述行.length; j++) {
+            const 描述Y = 描述起始Y + j * 文字行高
+            技能显示 += `{S=${描述行[j]};X=115;Y=${描述Y - 12};C=253}`
+        }
+        技能显示 += `\\\\`
+
+        // 计算下一个技能的Y位置
+        当前Y += 技能块高度 + 技能间距
     }
 
     // 职业名称使用FS=14放大字体
     const S = `
-                              请选择你的职业\\\\\\
+                              请选择你的职业\\\\
     <{S=天枢;C=${职业名 === '天枢' ? 249 : 251};FS=13}/@显示职业技能(天枢)>       <{S=血神;C=${职业名 === '血神' ? 249 : 251};FS=13}/@显示职业技能(血神)>       <{S=暗影;C=${职业名 === '暗影' ? 249 : 251};FS=13}/@显示职业技能(暗影)>       <{S=烈焰;C=${职业名 === '烈焰' ? 249 : 251};FS=13}/@显示职业技能(烈焰)>       <{S=正义;C=${职业名 === '正义' ? 249 : 251};FS=13}/@显示职业技能(正义)>       <{S=不动;C=${职业名 === '不动' ? 249 : 251};FS=13}/@显示职业技能(不动)>\\\\
 ${技能显示}\\\\
-                                     <{S=选择${职业名};X=350;Y=350}/@选择职业(${职业名})>\\\\\\
-             <{S=重置系统职业;C=250;X=80;Y=350;FS=13;HINT=重置战士,法师,道士这类}/@重置本职业>    <{S=重置新职业;C=191;X=210;Y=350;FS=13;HINT=需要2000元宝}/@重置新职业>
+                                     <{S=选择此职业;X=350;Y=350}/@选择职业(${职业名})>\\\\\\
+             <{S=重置系统职业;C=250;X=80;Y=350;HINT=重置战士,法师,道士这类}/@职业选择.重置本职业>    <{S=重置新职业;C=191;X=210;Y=350;HINT=需要2000元宝}/@职业选择.重置新职业>
     `
     Npc.SayEx(Player, 'NPC大窗口', S);
 }
@@ -189,21 +251,21 @@ export function 选择职业(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 }
 
 
-// 重置本职业 - 显示职业选择界面
+// 重置本职业 - 显示职业选择弹窗
 export function 重置本职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     const S = `\\\\
         {S=选择本职业转职;X=165;Y=10}
         {S=请选择要转职的本职业;C=249;X=50;y=40}
         {S=转职将清空所有职业技能及技能等级;C=253;x=50;y=65}
-    <{S=战士;C=251;FS=13;X=50;Y=100}/@选择本职业转职(0)>       <{S=法师;C=251;FS=13;X=150;Y=100}/@选择本职业转职(1)>       <{S=道士;C=251;FS=13;X=250;Y=100}/@选择本职业转职(2)>\\\\\\
-    <{S=刺客;C=251;FS=13;X=50;Y=140}/@选择本职业转职(3)>       <{S=弓箭手;C=251;FS=13;X=150;Y=140}/@选择本职业转职(4)>       <{S=武僧;C=251;FS=13;X=250;Y=140}/@选择本职业转职(5)>\\\\\\
-    <{S=返回;X=350;Y=165}/@Main>
+    <{S=战士;C=251;FS=13;X=50;Y=100}/@职业选择.确认转职本职业弹窗(0)>       <{S=法师;C=251;FS=13;X=150;Y=100}/@职业选择.确认转职本职业弹窗(1)>       <{S=道士;C=251;FS=13;X=250;Y=100}/@职业选择.确认转职本职业弹窗(2)>\\\\\\
+    <{S=刺客;C=251;FS=13;X=50;Y=140}/@职业选择.确认转职本职业弹窗(3)>       <{S=弓箭手;C=251;FS=13;X=150;Y=140}/@职业选择.确认转职本职业弹窗(4)>       <{S=武僧;C=251;FS=13;X=250;Y=140}/@职业选择.确认转职本职业弹窗(5)>\\\\\\
+    <{S=返回;X=350;Y=165}/@职业选择.Main>
     `
     Npc.SayEx(Player, 'NPC扁窗口', S);
 }
 
-// 选择本职业转职 - 显示确认界面
-export function 选择本职业转职(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+// 确认转职本职业弹窗 - 使用 Player.Question()
+export function 确认转职本职业弹窗(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const jobId = Number(Args.Str[0])
     const 本职业 = 本职业数据[jobId]
     if (!本职业) { Player.MessageBox('无效的职业ID!'); return }
@@ -217,15 +279,20 @@ export function 选择本职业转职(Npc: TNormNpc, Player: TPlayObject, Args: 
         return
     }
 
-    const S = `
-        {S=确认重置新职业;X=165;Y=10}\\\\
-        {S=转职目标：【${职业名}】;C=249;X=50;Y=40}\\\\
-        {S=转职将清空所有职业技能及技能等级;C=253;X=50;Y=70}\\\\
-        {S=是否确认重置？;C=250;X=50;Y=130}
-    <{S=确认转职;C=250;X=250;Y=165;HINT=转职将清空所有职业技能及技能等级}/@确认转职本职业(${jobId})>\\\\\\
-    <{S=取消;X=350;Y=165}/@重置本职业>
-    `
-    Npc.SayEx(Player, 'npc扁窗口', S);
+    // 保存选择的职业ID到临时变量
+    Player.V.临时职业ID = jobId
+
+    Player.Question(
+        `确定要转职为【${职业名}】吗？\\\\转职将清空所有职业技能及技能等级！`,
+        '职业选择.执行转职本职业',
+        '职业选择.重置本职业'
+    )
+}
+
+// 执行转职本职业
+export function 执行转职本职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
+    const jobId = Player.V.临时职业ID
+    确认转职本职业(Npc, Player, { Str: [String(jobId)] } as TArgs)
 }
 
 // 确认转职本职业
@@ -235,7 +302,6 @@ export function 确认转职本职业(Npc: TNormNpc, Player: TPlayObject, Args: 
     if (!本职业) { Player.MessageBox('无效的职业ID!'); return }
 
     const vAny = Player.V as any
-    const rAny = Player.R as any
 
     // 先保存新职业信息（如果存在）
     const 当前新职业 = Player.V.职业
@@ -243,21 +309,19 @@ export function 确认转职本职业(Npc: TNormNpc, Player: TPlayObject, Args: 
     // 清除所有技能
     Player.ClearSkill()
 
-    // 重置所有本职业技能等级和魔次
+    // 重置所有本职业技能等级
     for (const [key] of Object.entries(本职业数据)) {
         const 技能列表 = 获取本职业技能列表(Number(key))
         for (const 技能名 of 技能列表) {
             vAny[`${技能名}等级`] = 1
-            rAny[`${技能名}魔次`] = '0'
         }
     }
 
-    // 重置新职业技能等级和魔次（如果已选择新职业）
+    // 重置新职业技能等级（如果已选择新职业）
     if (当前新职业) {
         const 新职业技能 = 获取新职业技能列表(当前新职业)
         for (const 技能名 of 新职业技能) {
             vAny[`${技能名}等级`] = 1
-            rAny[`${技能名}魔次`] = '0'
         }
     }
 
@@ -265,7 +329,7 @@ export function 确认转职本职业(Npc: TNormNpc, Player: TPlayObject, Args: 
     Player.Job = jobId
 
     // 添加新职业的基础技能
-    Player.AddSkill('心灵召唤', 3);
+    // Player.AddSkill('心灵召唤', 3);
     Player.AddSkill('查看属性', 3);
 
     // 添加新本职业技能
@@ -282,14 +346,11 @@ export function 确认转职本职业(Npc: TNormNpc, Player: TPlayObject, Args: 
         }
     }
 
-    Player.SendMessage(`转职成功！已转为【${本职业.名称}】,所有技能已重置为1级!`)
-
-    人物登录BUFF(Player)
-    装备属性统计(Player)
-    显示职业技能内部(Npc, Player, 当前新职业 ? (当前新职业 as keyof typeof 职业数据) : '天枢')
+    Player.MessageBox(`转职成功！已转为【${本职业.名称}】,所有技能已重置为1级!,请重新登录,否则将于5秒后自动下线!`)
+    Player.DelayCallMethod('延时触发.重新登录', 5000, false)
 }
 
-// 重置新职业 - 显示确认界面
+// 重置新职业 - 使用 Player.Question() 弹窗确认
 export function 重置新职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     if (Player.V.职业 == '') {
         Player.MessageBox('你还未选择新职业,无法重置!');
@@ -301,30 +362,15 @@ export function 重置新职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs
         return
     }
 
-    const S = `
-                        {S=确认重置新职业;X=165;Y=10}\\\\
-                        {S=当前职业：【${Player.V.职业}】;C=249;X=50;Y=40}\\
-                    {S=重置将清空新职业技能及技能等级;C=253;X=50;Y=70}\\\\
-                    {S=需要消耗2000元宝;C=250;X=50;Y=100}\\\\
-                    {S=是否确认重置？;C=250;X=50;Y=130}\\\\\\
-    <{S=确认重置;C=250;X=250;Y=165;HINT=重置将清空新职业技能及技能等级}/@确认重置新职业>\\\\\\
-    <{S=取消;X=350;Y=165}/@Main>
-    `
-    Npc.SayEx(Player, 'npc扁窗口', S);
+    Player.Question(
+        `确定要重置新职业吗？\\\\当前职业：【${Player.V.职业}】\\\\重置将清空新职业技能及技能等级！\\\\需要消耗2000元宝`,
+        '职业选择.确认重置新职业',
+        '职业选择.Main'
+    )
 }
 
 // 确认重置新职业
 export function 确认重置新职业(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
-    if (Player.GetGameGold() < 2000) {
-        Player.MessageBox('元宝不足2000,重置失败!');
-        return
-    }
-
-    if (Player.V.职业 == '') {
-        Player.MessageBox('你还未选择新职业,无法重置!');
-        return
-    }
-
     const vAny = Player.V as any
     const rAny = Player.R as any
 
@@ -342,16 +388,12 @@ export function 确认重置新职业(Npc: TNormNpc, Player: TPlayObject, _Args:
     for (const 技能名 of 旧职业技能) {
         Player.DelSkill(技能名)
         vAny[`${技能名}等级`] = 1
-        rAny[`${技能名}魔次`] = '0'
     }
 
     // 清空新职业
     Player.V.职业 = ''
 
-    Player.SendMessage('新职业已重置,所有新职业技能已清空!')
-
-    人物登录BUFF(Player)
-    装备属性统计(Player)
-    显示职业技能内部(Npc, Player, '天枢')
+    Player.MessageBox('新职业已重置,所有新职业技能已清空!,请重新登录,否则将于5秒后自动下线!')
+    Player.DelayCallMethod('延时触发.重新登录', 5000, false)
 }
 

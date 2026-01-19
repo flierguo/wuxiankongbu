@@ -118,16 +118,24 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.武术 ??= '0'
 
 
-	Player.R.生命倍数 ??= 1
-	Player.R.防御倍数 ??= 1
-	Player.R.攻击倍数 ??= 1
-	Player.R.魔法倍数 ??= 1
-	Player.R.道术倍数 ??= 1
-	Player.R.刺术倍数 ??= 1
-	Player.R.射术倍数 ??= 1
-	Player.R.武术倍数 ??= 1
-	Player.R.伤害倍数 ??= 1
-	Player.R.暴击几率 ??= 0
+	// 基础属性倍数
+	Player.R.生命百分比 = 100;
+	Player.R.防御百分比 = 100;
+	Player.R.攻击百分比 = 100;
+	Player.R.魔法百分比 = 100;
+	Player.R.道术百分比 = 100;
+	Player.R.刺术百分比 = 100;
+	Player.R.射术百分比 = 100;
+	Player.R.武术百分比 = 100;
+	Player.R.天枢职业百分比 = 100;
+	Player.R.血神职业百分比 = 100;
+	Player.R.暗影职业百分比 = 100;
+	Player.R.烈焰职业百分比 = 100;
+	Player.R.正义职业百分比 = 100;
+	Player.R.不动职业百分比 = 100;
+	Player.R.全体职业百分比 = 100;
+
+
 
 	Player.R.圣耀地图爆率加成 ??= 1
 
@@ -205,12 +213,23 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.念力阶数 ??= 0
 	Player.R.协作阶数 ??= 0
 
-	
+	Player.R.暴击几率 ??= 0
+	Player.R.暴击伤害 ??= 0
+	Player.R.无视防御 ??= 0
+
+
+
+
+	Player.R.神器爆率加成 ??= 0;
+	Player.R.神器回收加成 ??= 0;
+	Player.R.神器增伤加成 ??= '0';
+	Player.R.基因锁等级 ??= 0;
+
 
 
 	Player.R.本职装备几率 ??= 0
 
-
+	Player.V.捐献点数 ??= '0'
 
 	Player.R.极品倍率 ??= 0
 	Player.R.最终极品倍率 ??= 0
@@ -219,6 +238,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.回收屏蔽 ??= false
 	Player.R.回收倍率 ??= 0
 	Player.R.最终回收倍率 ??= 100
+
 
 	Player.V.宣传爆率 ??= 0
 	Player.V.宣传回收 ??= 0

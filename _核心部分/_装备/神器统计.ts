@@ -8,7 +8,7 @@
  * - 每个组件最多使用10次
  */
 
-import { 智能计算 } from "../../大数值/核心计算方法";
+import { 智能计算 } from "../../_大数值/核心计算方法";
 
 // ==================== 套装数据结构 ====================
 interface 神器套装数据 {
@@ -21,7 +21,7 @@ interface 神器套装数据 {
 }
 
 // 套装配置（与神器系统保持一致）
-const 神器套装配置: 神器套装数据[] = [
+export const 神器套装配置: 神器套装数据[] = [
     {
         套装名称: "蜂巢生存套",
         单件属性值: 200,
@@ -70,7 +70,7 @@ const 神器套装配置: 神器套装数据[] = [
 ];
 
 // 组件名称到套装的映射（预计算，避免重复查找）
-const 组件套装映射 = new Map<string, 神器套装数据>();
+export const 组件套装映射 = new Map<string, 神器套装数据>();
 for (const 套装 of 神器套装配置) {
     for (const 组件 of 套装.组件列表) {
         组件套装映射.set(组件, 套装);
@@ -84,24 +84,12 @@ for (const 套装 of 神器套装配置) {
  * 统计所有神器组件的属性加成
  */
 export function 神器属性统计(Player: TPlayObject): void {
-    // 初始化神器相关R变量（已在清空变量中初始化，这里确保存在）
-    Player.R.全体魔次 ??= '0';
-    Player.R.狂化阶数 ??= 0;
-    Player.R.融合阶数 ??= 0;
-    Player.R.迅疾阶数 ??= 0;
-    Player.R.念力阶数 ??= 0;
-    Player.R.甲壳阶数 ??= 0;
-    Player.R.协作阶数 ??= 0;
-    Player.R.神器爆率加成 ??= 0;
-    Player.R.神器回收加成 ??= 0;
-    Player.R.神器增伤加成 ??= '0';
-    Player.R.基因锁等级 ??= 0;
 
     // 遍历所有套装统计属性
     for (const 套装 of 神器套装配置) {
         统计套装属性(Player, 套装);
     }
-    
+
     // 将全体魔次加成应用到所有技能魔次
     const 全体魔次 = Player.R.全体魔次;
     if (全体魔次 && 全体魔次 !== '0') {
@@ -159,25 +147,25 @@ function 应用全体魔次加成(Player: TPlayObject, 魔次值: string): void 
  */
 function 统计套装属性(Player: TPlayObject, 套装: 神器套装数据): void {
     let 已激活组件数 = 0;
-    
+
     // 统计每个组件的属性加成
     for (const 组件名称 of 套装.组件列表) {
         const 使用次数 = Player.V[组件名称] || 0;
         if (使用次数 <= 0) continue;
-        
+
         已激活组件数++;
-        
+
         // 计算该组件的全体魔次加成
         // 第一次：全额，第2-10次：减半
         const 有效次数 = Math.min(使用次数, 10);
         const 首次加成 = 套装.单件属性值;
         const 后续加成 = Math.floor(套装.单件属性值 / 2);
         const 后续次数 = 有效次数 - 1;
-        
+
         const 总加成 = 首次加成 + 后续加成 * 后续次数;
         Player.R.全体魔次 = 智能计算(Player.R.全体魔次, String(总加成), 1);
     }
-    
+
     // 检查套装是否完整激活（所有组件至少使用1次）
     const 套装激活标记 = `${套装.套装名称}_已激活`;
     if (已激活组件数 >= 套装.组件列表.length && !Player.V[套装激活标记]) {
@@ -215,8 +203,8 @@ function 应用套装效果(Player: TPlayObject, 套装: 神器套装数据): vo
             }
             // 对2大陆及以上怪物增伤5000%
             Player.R.神器增伤加成 = 智能计算(
-                Player.R.神器增伤加成, 
-                String(套装.套装属性值), 
+                Player.R.神器增伤加成,
+                String(套装.套装属性值),
                 1
             );
             break;
@@ -232,28 +220,30 @@ function 应用套装效果(Player: TPlayObject, 套装: 神器套装数据): vo
 export function 使用神器组件(Player: TPlayObject, 组件名称: string): boolean {
     const 套装 = 组件套装映射.get(组件名称);
     if (!套装) {
-        Player.SendMessage(`未知的神器组件: ${组件名称}`, 1);
+        Player.MessageBox(`未知的神器组件: ${组件名称}`);
         return false;
     }
-    
+
     const 当前次数 = Player.V[组件名称] || 0;
     if (当前次数 >= 10) {
-        Player.SendMessage(`${组件名称} 已达到最大炼化次数(10次)`, 1);
+        Player.MessageBox(`${组件名称} 已达到最大炼化次数(10次)`);
         return false;
     }
-    
+
     // 增加使用次数
     Player.V[组件名称] = 当前次数 + 1;
-    
+
     // 计算本次获得的属性
     const 是首次 = 当前次数 === 0;
     const 本次加成 = 是首次 ? 套装.单件属性值 : Math.floor(套装.单件属性值 / 2);
-    
-    Player.SendMessage(`成功炼化 ${组件名称}，全体魔次 +${本次加成}`, 1);
-    
+
+    Player.MessageBox(`成功炼化 ${组件名称}，全体魔次 +${本次加成}`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了‘{S=${组件名称};C=250}’!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了‘{S=${组件名称};C=250}’!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了‘{S=${组件名称};C=250}’!`);
     // 检查是否激活套装
     检查套装激活(Player, 套装);
-    
+
     return true;
 }
 
@@ -263,30 +253,90 @@ export function 使用神器组件(Player: TPlayObject, 组件名称: string): b
 function 检查套装激活(Player: TPlayObject, 套装: 神器套装数据): void {
     const 套装激活标记 = `${套装.套装名称}_已激活`;
     if (Player.V[套装激活标记]) return; // 已激活
-    
+
     // 检查所有组件是否都至少使用1次
     for (const 组件名称 of 套装.组件列表) {
         if ((Player.V[组件名称] || 0) <= 0) return;
     }
-    
+
     // 激活套装
     Player.V[套装激活标记] = 1;
-    Player.SendMessage(`恭喜！${套装.套装名称} 已激活！`, 1);
-    
+    Player.SendMessage(`恭喜！${套装.套装名称} 已激活！`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了‘{S=${套装.套装名称};C=250}’!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了‘{S=${套装.套装名称};C=250}’!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了‘{S=${套装.套装名称};C=250}’!`);
+
     // 显示套装效果
     switch (套装.套装属性类型) {
         case '爆率':
-            Player.SendMessage(`套装效果：爆率提高 ${套装.套装属性值}%`, 1);
+            Player.SendMessage(`套装效果：爆率提高 ${套装.套装属性值}%`);
             break;
         case '回收':
-            Player.SendMessage(`套装效果：回收倍率提高 ${套装.套装属性值}%`, 1);
+            Player.SendMessage(`套装效果：回收倍率提高 ${套装.套装属性值}%`);
             break;
         case '阶数':
-            Player.SendMessage(`套装效果：${套装.套装阶数目标?.join('、')} 等级 +${套装.套装属性值}`, 1);
+            Player.SendMessage(`套装效果：${套装.套装阶数目标?.join('、')} 等级 +${套装.套装属性值}`);
             break;
         case '基因锁':
-            Player.SendMessage(`套装效果：解锁基因锁一级，对2大陆及以上怪物增伤 ${套装.套装属性值}%`, 1);
+            Player.SendMessage(`套装效果：解锁基因锁一级，对2大陆及以上怪物增伤 ${套装.套装属性值}%`);
             break;
+    }
+}
+
+// ==================== 管理接口 ====================
+
+/**
+ * 套装给与 - 给予玩家整套神器组件
+ * @param 参数 格式：玩家名称-套装名称
+ * @returns 是否给予成功
+ */
+export function 套装给与(Player: TPlayObject, 参数: string): boolean {
+    // 验证参数是否存在
+    if (!参数 || 参数.trim() === '') {
+        Player.SendMessage('请输入参数，格式：玩家名称-套装名称');
+        return false;
+    }
+
+    const 分割 = 参数.split('-');
+    if (分割.length !== 2) {
+        Player.SendMessage('参数格式错误，正确格式：玩家名称-套装名称');
+        return false;
+    }
+
+    const 玩家名称 = 分割[0].trim();
+    const 套装名称 = 分割[1].trim();
+
+    // 查找套装配置
+    const 套装 = 神器套装配置.find(s => s.套装名称 === 套装名称);
+    if (!套装) {
+        Player.SendMessage(`未找到套装：${套装名称}`);
+        Player.SendMessage(`可用套装：${神器套装配置.map(s => s.套装名称).join('、')}`);
+        return false;
+    }
+
+    // 使用 GameLib.FindPlayer 查找玩家（91m2说明书推荐方式）
+    const 目标玩家: TPlayObject = GameLib.FindPlayer(玩家名称);
+    if (!目标玩家) {
+        Player.SendMessage(`未找到在线玩家：${玩家名称}`);
+        return false;
+    }
+
+    // 给予所有组件
+    let 成功数量 = 0;
+    for (const 组件名称 of 套装.组件列表) {
+        const item = 目标玩家.GiveItem(组件名称);
+        if (item) {
+            成功数量++;
+        }
+    }
+
+    if (成功数量 > 0) {
+        目标玩家.SendMessage(`获得 ${套装名称} 全套组件(${成功数量}/${套装.组件列表.length})`, 1);
+        Player.SendMessage(`成功给予 ${玩家名称} ${套装名称} 全套组件(${成功数量}/${套装.组件列表.length})`);
+        return true;
+    } else {
+        Player.SendMessage(`给予失败，可能是背包已满或物品不存在`);
+        return false;
     }
 }
 
@@ -312,12 +362,12 @@ export function 获取套装激活状态(Player: TPlayObject, 套装名称: stri
 export function 获取套装进度(Player: TPlayObject, 套装名称: string): { 已收集: number; 总数: number } {
     const 套装 = 神器套装配置.find(s => s.套装名称 === 套装名称);
     if (!套装) return { 已收集: 0, 总数: 0 };
-    
+
     let 已收集 = 0;
     for (const 组件名称 of 套装.组件列表) {
         if ((Player.V[组件名称] || 0) > 0) 已收集++;
     }
-    
+
     return { 已收集, 总数: 套装.组件列表.length };
 }
 

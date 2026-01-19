@@ -10,7 +10,7 @@
  * 使用大数值计算方法，支持超大数值运算
  */
 
-import { 智能计算, 比较 } from "../../大数值/核心计算方法"
+import { 智能计算, 比较 } from "../../_大数值/核心计算方法"
 import { 大数值整数简写, 血量显示 } from "../字符计算"
 import {
     基础属性第一条, 基础属性第八条,
@@ -18,6 +18,7 @@ import {
     基础词条, 技能魔次
 } from "../基础常量"
 import { 神器属性统计 } from "./神器统计"
+import { 计算捐献爆率加成 } from "../_服务/捐献排名";
 
 // ==================== JSON缓存系统 ====================
 class 装备JSON缓存 {
@@ -87,14 +88,21 @@ export function 清空变量(Player: TPlayObject): void {
     Player.R.自定属性[169] = '0';    // 全属性
 
     // 基础属性倍数
-    Player.R.生命倍数 = 1;
-    Player.R.防御倍数 = 1;
-    Player.R.攻击倍数 = 1;
-    Player.R.魔法倍数 = 1;
-    Player.R.道术倍数 = 1;
-    Player.R.刺术倍数 = 1;
-    Player.R.射术倍数 = 1;
-    Player.R.武术倍数 = 1;
+    Player.R.生命百分比 = 100;
+    Player.R.防御百分比 = 100;
+    Player.R.攻击百分比 = 100;
+    Player.R.魔法百分比 = 100;
+    Player.R.道术百分比 = 100;
+    Player.R.刺术百分比 = 100;
+    Player.R.射术百分比 = 100;
+    Player.R.武术百分比 = 100;
+    Player.R.天枢职业百分比 = 100;
+    Player.R.血神职业百分比 = 100;
+    Player.R.暗影职业百分比 = 100;
+    Player.R.烈焰职业百分比 = 100;
+    Player.R.正义职业百分比 = 100;
+    Player.R.不动职业百分比 = 100;
+    Player.R.全体职业百分比 = 100;
 
     // 基础技能魔次
     Player.R.攻杀剑术魔次 = '0';
@@ -199,6 +207,51 @@ function 处理基础词条(Player: TPlayObject, 词条ID: number, 属性值: st
         case 基础词条.防御:
         case 基础词条.防御2:
             Player.R.自定属性[168] = 智能计算(Player.R.自定属性[168], 属性值, 1);
+            break;
+        case 基础词条.攻击百分比:
+            Player.R.攻击百分比 = 智能计算(Player.R.攻击百分比, 属性值, 1);
+            break;
+        case 基础词条.魔法百分比:
+            Player.R.魔法百分比 = 智能计算(Player.R.魔法百分比, 属性值, 1);
+            break;
+        case 基础词条.道术百分比:
+            Player.R.道术百分比 = 智能计算(Player.R.道术百分比, 属性值, 1);
+            break;
+        case 基础词条.刺术百分比:
+            Player.R.刺术百分比 = 智能计算(Player.R.刺术百分比, 属性值, 1);
+            break;
+        case 基础词条.箭术百分比:
+            Player.R.箭术百分比 = 智能计算(Player.R.箭术百分比, 属性值, 1);
+            break;
+        case 基础词条.武术百分比:
+            Player.R.武术百分比 = 智能计算(Player.R.武术百分比, 属性值, 1);
+            break;
+        case 基础词条.血量百分比:
+            Player.R.血量百分比 = 智能计算(Player.R.血量百分比, 属性值, 1);
+            break;
+        case 基础词条.防御百分比:
+            Player.R.防御百分比 = 智能计算(Player.R.防御百分比, 属性值, 1);
+            break;
+        case 基础词条.天枢职业百分比:
+            Player.R.天枢职业百分比 = 智能计算(Player.R.天枢职业百分比, 属性值, 1);
+            break;
+        case 基础词条.血神职业百分比:
+            Player.R.血神职业百分比 = 智能计算(Player.R.血神职业百分比, 属性值, 1);
+            break;
+        case 基础词条.暗影职业百分比:
+            Player.R.暗影职业百分比 = 智能计算(Player.R.暗影职业百分比, 属性值, 1);
+            break;
+        case 基础词条.烈焰职业百分比:
+            Player.R.烈焰职业百分比 = 智能计算(Player.R.烈焰职业百分比, 属性值, 1);
+            break;
+        case 基础词条.正义职业百分比:
+            Player.R.正义职业百分比 = 智能计算(Player.R.正义职业百分比, 属性值, 1);
+            break;
+        case 基础词条.不动职业百分比:
+            Player.R.不动职业百分比 = 智能计算(Player.R.不动职业百分比, 属性值, 1);
+            break;
+        case 基础词条.全体职业百分比:
+            Player.R.全体职业百分比 = 智能计算(Player.R.全体职业百分比, 属性值, 1);
             break;
     }
 }
@@ -413,31 +466,72 @@ function 处理JSON属性(Player: TPlayObject, 属性数据: any): void {
 
         if (词条ID == null || 属性值 === '' || 属性值 === '0') continue;
 
-        // 基础词条处理
-        if (词条ID >= 100 && 词条ID <= 115) {
+        // 基础词条处理（100-115 基础属性，116-130 百分比属性）
+        if (词条ID >= 100 && 词条ID <= 130) {
             处理基础词条(Player, 词条ID, 属性值);
         }
         // 技能魔次处理
         else if (词条ID >= 10001 && 词条ID <= 10050) {
             处理技能魔次(Player, 词条ID, 属性值);
         }
-        // 倍数属性处理
-        else {
-            switch (词条ID) {
-                case 650: case 204: case 816:
-                    Player.R.人物技能倍攻 = 智能计算(Player.R.人物技能倍攻 || '0', 属性值, 1);
-                    break;
-                case 651: case 205: case 817:
-                    Player.R.所有宝宝倍攻 = 智能计算(Player.R.所有宝宝倍攻 || '0', 属性值, 1);
-                    break;
-                case 818:
-                    Player.R.攻击属性倍率 = 智能计算(Player.R.攻击属性倍率 || '0', 属性值, 1);
-                    break;
-                case 819:
-                    Player.R.技能伤害倍率 = 智能计算(Player.R.技能伤害倍率 || '0', 属性值, 1);
-                    break;
-            }
-        }
+    }
+}
+
+// ==================== 基因加成应用 ====================
+/** 应用基因加成到属性 */
+function 应用基因加成(Player: TPlayObject): void {
+    // 狂化：暴击几率提高20%，暴击伤害提高500%
+    if (Player.R.狂化阶数 > 0) {
+        Player.AddedAbility.CriticalHit += 20;
+        Player.AddedAbility.CriticalHitAppendDamage += 500;
+    }
+
+    // 迅疾：攻击无视防御20%，攻击伤害提高200%
+    if (Player.R.迅疾阶数 > 0) {
+        Player.R.无视防御 += 20;
+        Player.R.基因攻击伤害 += 200;
+    }
+
+    // 甲壳：防御力提高30%，血量提高50%
+    if (Player.R.甲壳阶数 > 0) {
+        const 防御原值 = Player.R.自定属性[168] || '0';
+        const 防御增量 = 智能计算(防御原值, '0.3', 3);
+        Player.R.自定属性[168] = 智能计算(防御原值, 防御增量, 1);
+
+        const 血量原值 = Player.R.自定属性[167] || '0';
+        const 血量增量 = 智能计算(血量原值, '0.5', 3);
+        Player.R.自定属性[167] = 智能计算(血量原值, 血量增量, 1);
+    }
+
+    // 融合：回收倍率提高50%，血量提高50%
+    if (Player.R.融合阶数 > 0) {
+        Player.R.神器回收加成 = 智能计算(Player.R.神器回收加成 || '0', '50', 1);
+
+        const 血量原值 = Player.R.自定属性[167] || '0';
+        const 血量增量 = 智能计算(血量原值, '0.5', 3);
+        Player.R.自定属性[167] = 智能计算(血量原值, 血量增量, 1);
+    }
+
+    // 念力：爆率提高20%，主属性提高10%
+    if (Player.R.念力阶数 > 0) {
+        Player.AddedAbility.ItemRate += 20;
+
+        // 根据职业提高主属性
+        const 主属性索引 = 161 + Player.Job; // 161-166对应job 0-5
+        const 主属性原值 = Player.R.自定属性[主属性索引] || '0';
+        const 主属性增量 = 智能计算(主属性原值, '0.1', 3);
+        Player.R.自定属性[主属性索引] = 智能计算(主属性原值, 主属性增量, 1);
+    }
+
+    // 协作：极品率提高10%，主属性提高10%
+    if (Player.R.协作阶数 > 0) {
+        Player.R.最终极品倍率 = 智能计算(Player.R.最终极品倍率 || '0', '10', 1);
+
+        // 根据职业提高主属性
+        const 主属性索引 = 161 + Player.Job; // 161-166对应job 0-5
+        const 主属性原值 = Player.R.自定属性[主属性索引] || '0';
+        const 主属性增量 = 智能计算(主属性原值, '0.1', 3);
+        Player.R.自定属性[主属性索引] = 智能计算(主属性原值, 主属性增量, 1);
     }
 }
 
@@ -452,21 +546,74 @@ function 应用属性倍数(Player: TPlayObject): void {
         }
     }
 
-    // 职业属性倍数映射
-    const 倍数映射: { [key: number]: string } = {
-        120: '攻击倍数', 162: '魔法倍数', 163: '道术倍数',
-        164: '刺术倍数', 165: '射术倍数', 166: '武术倍数',
-        167: '生命倍数', 168: '防御倍数'
+    // 百分比属性映射：自定属性索引 -> 百分比变量名
+    const 百分比映射: { [key: number]: string } = {
+        161: '攻击百分比', 162: '魔法百分比', 163: '道术百分比',
+        164: '刺术百分比', 165: '箭术百分比', 166: '武术百分比',
+        167: '血量百分比', 168: '防御百分比'
     };
 
-    // 应用倍数
-    for (const [索引, 倍数名] of Object.entries(倍数映射)) {
-        const 倍数 = Player.R[倍数名] || 1;
-        if (倍数 > 1) {
+    // 应用百分比加成（基础值 * 百分比 / 100）
+    for (const [索引, 百分比名] of Object.entries(百分比映射)) {
+        const 百分比 = Player.R[百分比名] || 100;
+        if (百分比 > 100) {
             const idx = Number(索引);
             const 原值 = Player.R.自定属性[idx] || '0';
-            const 增量 = 智能计算(原值, String(倍数 - 1), 3);
+            // 增量 = 原值 * (百分比 - 100) / 100 = 原值 * 倍率
+            const 倍率 = (百分比 - 100) / 100;
+            const 增量 = 智能计算(原值, String(倍率), 3);
             Player.R.自定属性[idx] = 智能计算(原值, 增量, 1);
+        }
+    }
+
+    // 职业技能魔次百分比映射
+    const 职业魔次映射: { [key: string]: string[] } = {
+        '天枢职业百分比': ['怒斩魔次', '人之怒魔次', '地之怒魔次', '天之怒魔次', '神之怒魔次'],
+        '血神职业百分比': ['血气献祭魔次', '血气燃烧魔次'],
+        '暗影职业百分比': ['暗影袭杀魔次', '暗影剔骨魔次', '暗影风暴魔次', '暗影附体魔次'],
+        '烈焰职业百分比': ['火焰追踪魔次', '烈焰护甲魔次', '爆裂火冢魔次', '烈焰突袭魔次'],
+        '正义职业百分比': ['圣光魔次', '行刑魔次', '洗礼魔次'],
+        '不动职业百分比': ['如山魔次', '金刚掌魔次'],
+    };
+
+    // 全部技能魔次列表（用于全体职业百分比）
+    const 全部魔次列表 = [
+        '攻杀剑术魔次', '半月弯刀魔次', '雷电术魔次', '暴风雪魔次',
+        '灵魂火符魔次', '飓风破魔次', '暴击术魔次', '霜月魔次',
+        '精准箭术魔次', '万箭齐发魔次', '罗汉棍法魔次', '天雷阵魔次',
+        '怒斩魔次', '人之怒魔次', '地之怒魔次', '天之怒魔次', '神之怒魔次',
+        '血气献祭魔次', '血气燃烧魔次',
+        '暗影袭杀魔次', '暗影剔骨魔次', '暗影风暴魔次', '暗影附体魔次',
+        '火焰追踪魔次', '烈焰护甲魔次', '爆裂火冢魔次', '烈焰突袭魔次',
+        '圣光魔次', '行刑魔次', '洗礼魔次',
+        '如山魔次', '金刚掌魔次'
+    ];
+
+    // 应用职业技能魔次百分比
+    for (const [百分比名, 魔次列表] of Object.entries(职业魔次映射)) {
+        const 百分比 = Player.R[百分比名] || 100;
+        if (百分比 > 100) {
+            const 倍率 = (百分比 - 100) / 100;
+            for (const 魔次名 of 魔次列表) {
+                const 原值 = Player.R[魔次名] || '0';
+                if (原值 !== '0') {
+                    const 增量 = 智能计算(原值, String(倍率), 3);
+                    Player.R[魔次名] = 智能计算(原值, 增量, 1);
+                }
+            }
+        }
+    }
+
+    // 应用全体职业百分比（影响所有技能魔次）
+    const 全体百分比 = Player.R.全体职业百分比 || 100;
+    if (全体百分比 > 100) {
+        const 倍率 = (全体百分比 - 100) / 100;
+        for (const 魔次名 of 全部魔次列表) {
+            const 原值 = Player.R[魔次名] || '0';
+            if (原值 !== '0') {
+                const 增量 = 智能计算(原值, String(倍率), 3);
+                Player.R[魔次名] = 智能计算(原值, 增量, 1);
+            }
         }
     }
 }
@@ -486,7 +633,7 @@ export function 人物额外属性计算(Player: TPlayObject): void {
     Player.AddedAbility.SC = 0;
     Player.AddedAbility.SCMax = 0;
     Player.AddedAbility.HP = 0;
-    Player.AddedAbility.MP = Player.Level * 1000;
+    Player.AddedAbility.MP = Player.Level * 500;
     Player.AddedAbility.HitPoint = 0;
     Player.AddedAbility.SpeedPoint = 0;
     Player.AddedAbility.AntiPoison = 0;
@@ -496,7 +643,7 @@ export function 人物额外属性计算(Player: TPlayObject): void {
     Player.AddedAbility.AntiMagic = 0;
     Player.AddedAbility.ExpRate = Player.R.经验加成 || 0;
     Player.AddedAbility.GoldRate = 0;
-    Player.AddedAbility.ItemRate = (Player.R.爆率加成 || 0) + (Player.V.赞助爆率 || 0) + (Player.V.宣传爆率 || 0);
+    Player.AddedAbility.ItemRate = Player.R.最终爆率加成 || 0;
     Player.AddedAbility.DamageAdd = 0;
     Player.AddedAbility.AppendDamage = 0;
     Player.AddedAbility.Rebound = 0;
@@ -513,11 +660,11 @@ export function 人物额外属性计算(Player: TPlayObject): void {
     Player.AddedAbility.WearWeight = 0;
     Player.AddedAbility.MaxWeight = 65535;
 
-    // 同步血量
-    Player.SetSVar(92, Player.R.自定属性[167]);
-    if (比较(Player.GetSVar(91), Player.GetSVar(92)) >= 0) {
-        Player.SetSVar(91, Player.GetSVar(92));
-    }
+    // // 同步血量
+    // Player.SetSVar(92, Player.R.自定属性[167]);
+    // if (比较(Player.GetSVar(91), Player.GetSVar(92)) >= 0) {
+    //     Player.SetSVar(91, Player.GetSVar(92));
+    // }
 
     // 显示属性页面
     显示属性页面(Player, Player.R.属性页码 || 0);
@@ -575,6 +722,18 @@ export function 装备属性统计(Player: TPlayObject): void {
     // 步骤3.5：统计神器属性
     神器属性统计(Player);
 
+    // 步骤3.6：应用基因加成
+    应用基因加成(Player);
+
+    // 步骤3.7：应用捐献爆率加成
+    const 捐献爆率加成 = 计算捐献爆率加成(Player);
+
+    Player.R.最终爆率加成 = Math.max((Player.R.神器爆率加成 || 0) + (Player.V.宣传爆率 || 0) + (Player.V.赞助爆率 || 0) + 捐献爆率加成, 0)
+
+    Player.R.最终回收倍率 = Math.max((Player.R.回收倍率 || 100) + (Player.V.宣传回收 || 0) + (Player.V.赞助回收 || 0), 100)
+
+    Player.R.最终极品倍率 = Math.max((Player.R.极品率加成 || 0) + (Player.V.宣传极品 || 0) + (Player.V.赞助极品 || 0), 0)
+
     // 步骤4：刷新属性并更新显示
     Player.SetSVar(92, Player.R.自定属性[167]); // 最大血量
     if (比较(Player.GetSVar(91), Player.GetSVar(92)) > 0) {
@@ -603,10 +762,17 @@ const 属性配置: Array<[string, number, (p: TPlayObject) => string]> = [
     ['刺术', 149, p => p.R.自定属性[164] || '0'],
     ['箭术', 149, p => p.R.自定属性[165] || '0'],
     ['武术', 149, p => p.R.自定属性[166] || '0'],
-    ['爆率百分比', 19, p => String(p.AddedAbility.ItemRate) || '100'],
+    ['爆率百分比', 19, p => String(p.R.最终爆率加成) || '100'],
     ['极品百分比', 19, p => String(p.R.最终极品倍率) || '0'],
-    ['回收百分比', 19, p => String(p.R.最终回收倍率) || '0'],
-    ['武术', 149, p => p.R.自定属性[166] || '0'],
+    ['回收百分比', 19, p => String(p.R.最终回收倍率) || '100'],
+    ['基因类型', 9, p => String(p.V.基因) || '100'],
+    ['狂化阶数', 9, p => String(p.R.狂化阶数) || '0'],
+    ['迅疾阶数', 9, p => String(p.R.迅疾阶数) || '0'],
+    ['甲壳阶数', 9, p => String(p.R.甲壳阶数) || '0'],
+    ['融合阶数', 9, p => String(p.R.融合阶数) || '0'],
+    ['念力阶数', 9, p => String(p.R.念力阶数) || '0'],
+    ['协作阶数', 9, p => String(p.R.协作阶数) || '0'],
+
 
 ];
 
@@ -627,7 +793,7 @@ export function 显示属性页面(Player: TPlayObject, 页码: number): void {
         const y = i * 25;
         // HINT转码: HINT= -> HINT#61
         内容 += `#123S#61${名称}#59C#61${色值}#59X#6110#59Y#61${y}#59H#6125#125`;
-        内容 += `#123S#61${大数值整数简写(值)}#59X#6180#59Y#61${y}#59H#6125#59HINT#61${值}#125`;
+        内容 += `#123S#61${大数值整数简写(值)}#59X#61100#59Y#61${y}#59H#6125#59HINT#61${值}#125`;
         内容 += `#123S#61${计算位数(值)}位#59X#61220#59Y#61${y}#59H#6125#125`;
     }
     Player.SetClientUIProperty('新属性显示', `SayText=${内容}`);

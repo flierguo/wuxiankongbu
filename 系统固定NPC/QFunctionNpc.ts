@@ -1,12 +1,11 @@
 
-import { ItemProperty } from "../功能脚本组/[装备]/_ITEM_Drop"
+
 import { 攻击触发, 释放魔法触发 } from "../_核心部分/_玩家/攻击触发"
 import { 装备掉落 } from "../_核心部分/_装备/装备掉落"
-import { monitoring } from "../功能脚本组/[功能]/_GN_Monitoring"
+import { monitoring } from "../_核心部分/_服务/_GN_Monitoring"
 import * as _P_Base from "../_核心部分/基础常量"
 
-import { 宝宝杀怪触发, 杀怪触发, 杀怪鞭尸, 特殊掉落, 经验勋章 } from "../功能脚本组/[玩家]/_P_杀怪触发"
-import { 使用物品 } from "../功能脚本组/[装备]/_ITEM_使用物品"
+import { 使用物品 } from "../_核心部分/_装备/物品使用"
 import { 取两点距离 } from "./RobotManageNpc"
 
 import { 装备属性统计 } from "../_核心部分/_装备/属性统计"
@@ -14,33 +13,20 @@ import { 装备属性统计 } from "../_核心部分/_装备/属性统计"
 import { Main } from "../后台管理"
 import * as 地图 from '../_核心部分/_地图/地图';
 
-import { 实时回血, 血量显示 } from "../核心功能/字符计算"
+import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
 import * as 随身仓库 from "../_核心部分/_服务/可视仓库"
+import { 杀怪触发 } from "../_核心部分/_玩家/杀怪触发"
 
 //人物杀怪
 GameLib.onKillMonster = (Player: TPlayObject, Monster: TActor): void => {
     Randomize()
     杀怪触发(Player, Monster);  //人物杀怪获得经验
-    // 经验勋章(Player, Monster);
-    // 特殊掉落(Player, Monster);
-    // if (random(100) < Player.V.鞭尸几率 && Monster.GetNVar(允许鞭尸) == 0) {
-    //     杀怪鞭尸(Player, Monster);
-    // }
-    // if (Player.GetJewelrys(3) != null && Player.GetJewelrys(3).GetName() == '阿拉贡魔戒' && Monster.GetNVar(允许鞭尸) == 0) {
-    //     if (Player.GetJewelrys(3).GetOutWay3(0) < 10 && random(100) < Player.GetJewelrys(3).GetOutWay2(1)) {
-    //         杀怪鞭尸(Player, Monster);
-    //     } else if (Player.GetJewelrys(3).GetOutWay3(0) >= 10 && Monster.GetNVar(允许鞭尸) == 0) {
-    //         for (let a = 0; a < 5; a++) {
-    //             杀怪鞭尸(Player, Monster);
-    //         }
 
-    //     }
-    // }
 }
 //宝宝杀怪触发
 GameLib.onSlaveKillMonster = (Player: TPlayObject, Slave: TActor, Monster: TActor): void => {
     Randomize()
-    宝宝杀怪触发(Player, Slave, Monster);//宝宝杀怪人物获得经验;
+    // 宝宝杀怪触发(Player, Slave, Monster);//宝宝杀怪人物获得经验;
 
 }
 //人物死亡触发
@@ -554,8 +540,4 @@ GameLib.onSendHotKey = (Player: TPlayObject, Akey: number, KeyCtrl: boolean, Key
         }
 
     }
-}
-export function 宝宝锁定攻击触发(Player: TPlayObject, Slave: TActor, Monster: TActor): void {
-
-
 }

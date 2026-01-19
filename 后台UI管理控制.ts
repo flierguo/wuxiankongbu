@@ -1,8 +1,8 @@
 
 import * as 地图 from './_核心部分/_地图/地图';
-import { 按分钟检测, 秒钟第一次进入刷怪 } from "./功能脚本组/[怪物]/_M_Robot"
-import { Decimal } from "./大数值/big_number";
-import { 智能计算 } from "./大数值/核心计算方法";
+
+import { Decimal } from "./_大数值/big_number";
+import { 智能计算 } from "./_大数值/核心计算方法";
 
 import * as _P_Base from "./_核心部分/基础常量"
 
@@ -79,7 +79,7 @@ GameLib.onAdminUIButtonClick = (controlName: string): void => {
     }
 
     if (controlName == '地图刷怪') {
-        秒钟第一次进入刷怪()
+        // 秒钟第一次进入刷怪()
     }
 
     if (controlName == '测试功能输出') {
