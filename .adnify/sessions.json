@@ -1,0 +1,42 @@
+{
+  "adnify-agent-store": {
+    "state": {
+      "threads": {
+        "9b1f44b3-9b06-46e9-95d4-c4c8298f929c": {
+          "id": "9b1f44b3-9b06-46e9-95d4-c4c8298f929c",
+          "createdAt": 1769258073328,
+          "lastModified": 1769258224593,
+          "messages": [
+            {
+              "id": "db3ede02-28c3-465a-9f80-aec3ac1d0ee2",
+              "role": "assistant",
+              "content": "❌ 您还没有开通套餐，请先兑换卡密或购买套餐",
+              "timestamp": 1769258224593,
+              "isStreaming": false,
+              "parts": [
+                {
+                  "type": "text",
+                  "content": "❌ 您还没有开通套餐，请先兑换卡密或购买套餐"
+                }
+              ],
+              "toolCalls": []
+            }
+          ],
+          "contextItems": [],
+          "state": {
+            "currentCheckpointIdx": null,
+            "isStreaming": false
+          },
+          "contextSummary": null
+        }
+      },
+      "currentThreadId": "9b1f44b3-9b06-46e9-95d4-c4c8298f929c",
+      "plan": null,
+      "branches": {},
+      "activeBranchId": {},
+      "messageCheckpoints": [],
+      "compressionStats": null
+    },
+    "version": 0
+  }
+}

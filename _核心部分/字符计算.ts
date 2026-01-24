@@ -171,24 +171,6 @@ export function 实时扣血(DamageSource: TActor, Target: TActor, 扣血数值:
     if (!Target.IsPlayer()) {
       Target.GoDie(DamageSource, DamageSource)
 
-      // ✅ 增加击杀计数（用于TAG 7特殊BOSS触发）
-      try {
-        const 地图ID = Target.Map?.MapName
-        if (地图ID) {
-          增加击杀计数(地图ID)
-
-          // 检查是否为特殊BOSS或大陆BOSS死亡
-          const 怪物TAG = Target.GetNVar(TAG)
-          if (怪物TAG === 7) {
-            特殊BOSS死亡(地图ID)
-          } else if (怪物TAG === 6) {
-            大陆BOSS死亡(地图ID)
-          }
-        }
-      } catch (e) {
-        // 忽略错误
-      }
-
       // ✅ 实时清理：怪物死亡时立即清理其信息缓存
       try {
         const 怪物Handle = `${Target.Handle}`;

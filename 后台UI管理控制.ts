@@ -89,9 +89,9 @@ GameLib.onAdminUIButtonClick = (controlName: string): void => {
         console.log('副本长度:', GameLib.R.地图池.length)
         let Player = GameLib.FindPlayer('鸿福'); //查找玩家
         if (Player != null) {
-
-            Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
-            console.log(`Player.R.怒斩范围:${Player.R.怒斩范围}`)
+Player.R.暗影值 = 100
+            // Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
+            console.log(`Player.R.怒斩范围:${Player.R.暗影值}`)
         }
     }
 

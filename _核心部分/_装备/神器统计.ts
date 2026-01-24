@@ -9,73 +9,10 @@
  */
 
 import { 智能计算 } from "../../_大数值/核心计算方法";
+import { 神器套装配置, 特殊单件配置, 组件套装映射, 特殊单件映射, type 神器套装数据, type 特殊单件数据 } from "../_服务/神器配置";
 
-// ==================== 套装数据结构 ====================
-interface 神器套装数据 {
-    套装名称: string;
-    单件属性值: number;      // 全体魔次加成数值
-    套装属性类型: '爆率' | '回收' | '阶数' | '基因锁';
-    套装属性值: number | string;
-    套装阶数目标?: string[]; // 阶数类型时的目标属性
-    组件列表: string[];
-}
-
-// 套装配置（与神器系统保持一致）
-export const 神器套装配置: 神器套装数据[] = [
-    {
-        套装名称: "蜂巢生存套",
-        单件属性值: 200,
-        套装属性类型: '爆率',
-        套装属性值: 100,
-        组件列表: ["蜂巢门禁卡", "荧光战术灯", "多功能工兵铲", "便携氧气罐", "伤口应急喷", "声波探测器", "防水战术包"]
-    },
-    {
-        套装名称: "丧尸近战套",
-        单件属性值: 200,
-        套装属性类型: '回收',
-        套装属性值: 200,
-        组件列表: ["锰钢斩尸刀", "高压电击棍", "战术护臂腿", "脚挂式飞斧", "负重格斗靴", "速干止血带", "战术钢指虎", "气味屏蔽剂"]
-    },
-    {
-        套装名称: "舔食远程套",
-        单件属性值: 1000,
-        套装属性类型: '阶数',
-        套装属性值: 2,
-        套装阶数目标: ['狂化阶数', '融合阶数'],
-        组件列表: ["改装弩箭枪", "穿甲爆破箭", "红外瞄准镜", "震动感应雷", "神经烟雾弹", "便携弹药包"]
-    },
-    {
-        套装名称: "病毒研究套",
-        单件属性值: 1000,
-        套装属性类型: '阶数',
-        套装属性值: 2,
-        套装阶数目标: ['迅疾阶数', '念力阶数'],
-        组件列表: ["病毒样本管", "便携测序仪", "抗体催化剂", "病毒检测仪", "轻型防护服", "数据存储盘", "PH调节原液"]
-    },
-    {
-        套装名称: "应急逃生套",
-        单件属性值: 1000,
-        套装属性类型: '阶数',
-        套装属性值: 2,
-        套装阶数目标: ['甲壳阶数', '协作阶数'],
-        组件列表: ["破片手雷弹", "绳索钩爪枪", "烟雾掩护弹", "应急信号枪", "多功能工具钳", "高浓缩能量棒", "备用电池组", "团队通讯耳"]
-    },
-    {
-        套装名称: "团队支援套",
-        单件属性值: 2000,
-        套装属性类型: '基因锁',
-        套装属性值: '5000',
-        组件列表: ["医疗急救箱", "蜂巢战术图", "生命监测仪", "临时强化针", "丧尸诱饵弹", "主神兑换券"]
-    }
-];
-
-// 组件名称到套装的映射（预计算，避免重复查找）
-export const 组件套装映射 = new Map<string, 神器套装数据>();
-for (const 套装 of 神器套装配置) {
-    for (const 组件 of 套装.组件列表) {
-        组件套装映射.set(组件, 套装);
-    }
-}
+// 导出配置供外部使用
+export { 神器套装配置 };
 
 // ==================== 核心统计函数 ====================
 
@@ -88,6 +25,11 @@ export function 神器属性统计(Player: TPlayObject): void {
     // 遍历所有套装统计属性
     for (const 套装 of 神器套装配置) {
         统计套装属性(Player, 套装);
+    }
+
+    // 统计特殊单件属性
+    for (const 单件 of 特殊单件配置) {
+        统计特殊单件属性(Player, 单件);
     }
 
     // 将全体魔次加成应用到所有技能魔次
@@ -155,11 +97,11 @@ function 统计套装属性(Player: TPlayObject, 套装: 神器套装数据): vo
 
         已激活组件数++;
 
-        // 计算该组件的全体魔次加成
+        // 计算该组件的全体魔次加成（优化：直接乘0.5）
         // 第一次：全额，第2-10次：减半
         const 有效次数 = Math.min(使用次数, 10);
         const 首次加成 = 套装.单件属性值;
-        const 后续加成 = Math.floor(套装.单件属性值 / 2);
+        const 后续加成 = Math.floor(套装.单件属性值 * 0.5);
         const 后续次数 = 有效次数 - 1;
 
         const 总加成 = 首次加成 + 后续加成 * 后续次数;
@@ -176,6 +118,24 @@ function 统计套装属性(Player: TPlayObject, 套装: 神器套装数据): vo
         // 已激活过，重新应用效果（用于属性刷新）
         应用套装效果(Player, 套装);
     }
+}
+
+/**
+ * 统计特殊单件属性
+ */
+function 统计特殊单件属性(Player: TPlayObject, 单件: 特殊单件数据): void {
+    const 使用次数 = Player.V[单件.组件名称] || 0;
+    if (使用次数 <= 0) return;
+
+    // 计算该单件的全体魔次加成（优化：直接乘0.5）
+    // 第一次：全额，第2-10次：减半
+    const 有效次数 = Math.min(使用次数, 10);
+    const 首次加成 = 单件.属性值;
+    const 后续加成 = Math.floor(单件.属性值 * 0.5);
+    const 后续次数 = 有效次数 - 1;
+
+    const 总加成 = 首次加成 + 后续加成 * 后续次数;
+    Player.R.全体魔次 = 智能计算(Player.R.全体魔次, String(总加成), 1);
 }
 
 /**
@@ -201,7 +161,7 @@ function 应用套装效果(Player: TPlayObject, 套装: 神器套装数据): vo
             if (Player.R.基因锁等级 < 1) {
                 Player.R.基因锁等级 = 1;
             }
-            // 对2大陆及以上怪物增伤5000%
+            // 对2大陆及以上怪物增伤
             Player.R.神器增伤加成 = 智能计算(
                 Player.R.神器增伤加成,
                 String(套装.套装属性值),
@@ -218,6 +178,13 @@ function 应用套装效果(Player: TPlayObject, 套装: 神器套装数据): vo
  * @returns 是否使用成功
  */
 export function 使用神器组件(Player: TPlayObject, 组件名称: string): boolean {
+    // 先检查是否为特殊单件
+    const 特殊单件 = 特殊单件映射.get(组件名称);
+    if (特殊单件) {
+        return 使用特殊单件(Player, 特殊单件);
+    }
+
+    // 检查是否为套装组件
     const 套装 = 组件套装映射.get(组件名称);
     if (!套装) {
         Player.MessageBox(`未知的神器组件: ${组件名称}`);
@@ -233,16 +200,41 @@ export function 使用神器组件(Player: TPlayObject, 组件名称: string): b
     // 增加使用次数
     Player.V[组件名称] = 当前次数 + 1;
 
-    // 计算本次获得的属性
+    // 计算本次获得的属性（优化：直接乘0.5）
     const 是首次 = 当前次数 === 0;
-    const 本次加成 = 是首次 ? 套装.单件属性值 : Math.floor(套装.单件属性值 / 2);
+    const 本次加成 = 是首次 ? 套装.单件属性值 : Math.floor(套装.单件属性值 * 0.5);
 
     Player.MessageBox(`成功炼化 ${组件名称}，全体魔次 +${本次加成}`);
-    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了‘{S=${组件名称};C=250}’!`);
-    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了‘{S=${组件名称};C=250}’!`);
-    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了‘{S=${组件名称};C=250}’!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了'{S=${组件名称};C=250}'!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了'{S=${组件名称};C=250}'!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了'{S=${组件名称};C=250}'!`);
     // 检查是否激活套装
     检查套装激活(Player, 套装);
+
+    return true;
+}
+
+/**
+ * 使用特殊单件
+ */
+function 使用特殊单件(Player: TPlayObject, 单件: 特殊单件数据): boolean {
+    const 当前次数 = Player.V[单件.组件名称] || 0;
+    if (当前次数 >= 10) {
+        Player.MessageBox(`${单件.组件名称} 已达到最大炼化次数(10次)`);
+        return false;
+    }
+
+    // 增加使用次数
+    Player.V[单件.组件名称] = 当前次数 + 1;
+
+    // 计算本次获得的属性（优化：直接乘0.5）
+    const 是首次 = 当前次数 === 0;
+    const 本次加成 = 是首次 ? 单件.属性值 : Math.floor(单件.属性值 * 0.5);
+
+    Player.MessageBox(`成功炼化 ${单件.组件名称}，全体魔次 +${本次加成}`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了'{S=${单件.组件名称};C=250}'!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了'{S=${单件.组件名称};C=250}'!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}炼化了'{S=${单件.组件名称};C=250}'!`);
 
     return true;
 }
@@ -262,9 +254,9 @@ function 检查套装激活(Player: TPlayObject, 套装: 神器套装数据): vo
     // 激活套装
     Player.V[套装激活标记] = 1;
     Player.SendMessage(`恭喜！${套装.套装名称} 已激活！`);
-    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了‘{S=${套装.套装名称};C=250}’!`);
-    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了‘{S=${套装.套装名称};C=250}’!`);
-    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了‘{S=${套装.套装名称};C=250}’!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了'{S=${套装.套装名称};C=250}'!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了'{S=${套装.套装名称};C=250}'!`);
+    GameLib.BroadcastCenterMessage(`恭喜玩家{S=${Player.GetName()};C=250}成功激活了'{S=${套装.套装名称};C=250}'!`);
 
     // 显示套装效果
     switch (套装.套装属性类型) {
@@ -314,7 +306,7 @@ export function 套装给与(Player: TPlayObject, 参数: string): boolean {
         return false;
     }
 
-    // 使用 GameLib.FindPlayer 查找玩家（91m2说明书推荐方式）
+    // 使用 GameLib.FindPlayer 查找玩家
     const 目标玩家: TPlayObject = GameLib.FindPlayer(玩家名称);
     if (!目标玩家) {
         Player.SendMessage(`未找到在线玩家：${玩家名称}`);

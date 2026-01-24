@@ -30,7 +30,8 @@ const 可捐献品质 = [
     装备颜色.传说颜色,
     装备颜色.史诗颜色,
     装备颜色.稀有颜色,
-    装备颜色.优秀颜色
+    装备颜色.优秀颜色,
+    装备颜色.普通颜色
 ]
 
 const 有效装备类型 = [5, 6, 10, 11, 15, 16, 19, 20, 21, 22, 23, 24, 26, 27, 28, 68]
@@ -48,6 +49,7 @@ function 获取品质名称(颜色: number): string {
         case 装备颜色.史诗颜色: return '史诗'
         case 装备颜色.稀有颜色: return '稀有'
         case 装备颜色.优秀颜色: return '优秀'
+        case 装备颜色.普通颜色: return '普通'
         default: return '普通'
     }
 }
@@ -144,9 +146,11 @@ function 执行捐献(Player: TPlayObject): { 数量: number, 总点数: string 
         if (!检查可捐献(item)) continue
 
         const 魔次值 = 计算装备魔次(item)
-        if (魔次值 === '0') continue
-
-        总点数 = 智能计算(总点数, 魔次值, 1)
+        // 累加魔次值（即使为0也删除装备）
+        if (魔次值 !== '0') {
+            总点数 = 智能计算(总点数, 魔次值, 1)
+        }
+        
         Player.DeleteItem(item)
         数量++
     }

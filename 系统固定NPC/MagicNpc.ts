@@ -1,7 +1,7 @@
 import * as _P_Base from "../_核心部分/基础常量"
-import { 实时回血, 大数值整数简写 } from "../_核心部分/字符计算"
+import { 实时回血, 大数值整数简写, 血量显示 } from "../_核心部分/字符计算"
 // import { 大数值整数简写 } from "../功能脚本组/[服务]/延时跳转"
-import { 智能计算, 小于 } from "../_大数值/核心计算方法"
+import { 智能计算, 小于, js_war } from "../_大数值/核心计算方法"
 import { BOSS技能1, BOSS技能4, 怪物技能1ID, 怪物技能1几率, 怪物技能4ID, 怪物技能4几率 } from "../_核心部分/基础常量"
 
 // ==================== 怪物技能选择回调 ====================
@@ -163,7 +163,6 @@ export function 罗汉棍法(Source: TActor, Target: TActor): void {
 export function 天雷阵(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
     Player.Damage(Target, 1, _P_Base.技能ID.基础技能.天雷阵);
-
 }
 
 
@@ -200,21 +199,9 @@ export function 神之怒(_Source: TActor, _Target: TActor): void {
 }
 
 // ==================== 血神职业技能 ====================
-// 血气献祭: 主动,消耗1%的生命,对目标造成500%的伤害,每级提高50%(血量低于10%时不发动)
+// 血气献祭: 主动,对目标造成500%的伤害,每级提高50%
 export function 血气献祭(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
-    const 当前血量 = Player.GetSVar(91);
-    const 最大血量 = Player.GetSVar(92);
-    // 大数值比较：当前血量 < 最大血量 * 10%
-    const 血量阈值 = 智能计算(最大血量, '10', 4); // 最大血量 / 10 = 10%
-    if (小于(当前血量, 血量阈值)) {
-        Player.SendMessage('血量低于10%,血气献祭无法发动!');
-        return;
-    }
-    // 消耗1%血量
-    const 消耗血量 = 智能计算(最大血量, '100', 4); // 最大血量 / 100 = 1%
-    const 新血量 = 智能计算(当前血量, 消耗血量, 2); // 当前血量 - 消耗血量
-    Player.SetSVar(91, 新血量);
     Target.ShowEffectEx2(_P_Base.特效.血气献祭, -10, 20, true, 1);
     Player.Damage(Target, 1, _P_Base.技能ID.血神.血气献祭);
 }
@@ -247,54 +234,44 @@ export function 血气迸发(_Source: TActor, _Target: TActor): void {
 export function 血魔临身(Source: TActor, _Target: TActor): void {
     const Player = Source as TPlayObject;
     if (!Player || !Player.R) return;
-    Player.R.血魔临身CD ??= 180
     // 如果技能正在生效中，不重复触发
     if (Player.R.血魔临身) {
         Player.SendMessage('血魔临身正在生效中!', 2);
         return;
     }
+    const 技能等级 = Player.V.血魔临身等级 || 1;
+    // 每5级增加1S，基础30S，最高180S
+    const 持续时间 = Math.min(30 + Math.floor(技能等级 / 5), 180);
+    // 每5级回复提高1%，基础1%
+    const 回血百分比 = 1 + Math.floor(技能等级 / 5);
+    Player.DeleteDelayCallMethod('延时触发.血魔临身结束')
+    Player.R.血魔临身 = true;
+    Player.R.血魔临身回血百分比 = 回血百分比;
+    Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
+    Player.SendMessage(`血魔临身开启,每秒回血${回血百分比}%,持续${持续时间}秒!`, 2);
+    Player.DelayCallMethod('延时触发.血魔临身结束', 持续时间 * 1000, false);
 
-    const 冷却时间 = Math.min(Player.R.血魔临身CD, 180); // 秒
-    // 计算CD已过时间（秒）
-    const cd = DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('血魔临身').AsDateTime);
-    if (cd >= 冷却时间) {
-        const 技能等级 = Player.V.血魔临身等级 || 1;
-        // 每5级增加1S，基础30S，最高180S
-        const 持续时间 = Math.min(30 + Math.floor(技能等级 / 5), 180);
-        // 每5级回复提高1%，基础1%
-        const 回血百分比 = 1 + Math.floor(技能等级 / 5);
-        Player.DeleteDelayCallMethod('延时触发.血魔临身结束')
-        Player.R.血魔临身 = true;
-        Player.R.血魔临身回血百分比 = 回血百分比;
-        Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
-        Player.SendMessage(`血魔临身开启,每秒回血${回血百分比}%,持续${持续时间}秒!`, 2);
-        Player.DelayCallMethod('延时触发.血魔临身结束', 持续时间 * 1000, false);
-
-        // 记录本次使用时间，用于CD计算
-        Player.VarDateTime('血魔临身').AsDateTime = DateUtils.Now();
-    } else {
-        Player.SendCountDownMessage(`'血魔临身'技能CD剩余时间：${冷却时间 - Math.round(cd)}秒`, 0);
-    }
 }
 
 
 // ==================== 暗影职业技能 ====================
-// 暗影猎取: 被动,攻击1%的几率获取暗影点,每点提高1%主属性,每5级提高1点上限 (被动技能)
+// 暗影猎取: 被动,攻击1%的几率获取暗影值,每点提高1%主属性,每5级提高1点上限 (被动技能)
 export function 暗影猎取(_Source: TActor, _Target: TActor): void {
-    // 被动技能,在攻击计算模块处理暗影点获取
+    // 被动技能,在攻击计算模块处理暗影值获取
 }
 
 // 暗影袭杀: 主动,对目标造成500%伤害,每级提高50%
 export function 暗影袭杀(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
-    Target.ShowEffectEx2(_P_Base.特效.暗影袭杀, -10, 20, true, 1);
+    Target.ShowEffectEx2(_P_Base.特效.暗影袭杀, 0, 0, true, 1);
     Player.Damage(Target, 1, _P_Base.技能ID.暗影.暗影袭杀);
 }
 
-// 暗影剔骨: 开启后,对周围6码范围内敌人造成300%伤害,每级提高30%,每秒消耗1点暗影点
+// 暗影剔骨: 开启后,对周围6码范围内敌人造成300%伤害,每级提高30%,每秒消耗1点暗影值
 export function 暗影剔骨(Source: TActor, _Target: TActor): void {
     const Player = Source as TPlayObject;
-    if (!Player.R.暗影剔骨) {
+    // console.log(Player.R.暗影值) 
+    if (!Player.R.暗影剔骨 && Player.R.暗影值 > 1) {
         Player.R.暗影剔骨 = true;
         Player.SetCustomEffect(_P_Base.永久特效.暗影剔骨, _P_Base.特效.暗影剔骨);
         Player.SendMessage('暗影剔骨开启', 2);
@@ -305,79 +282,55 @@ export function 暗影剔骨(Source: TActor, _Target: TActor): void {
     }
 }
 
-// 暗影风暴: 主动,对目标范围5码内敌人造成400%伤害,消耗5点暗影点.每级提高40%.冷却20S
+// 暗影风暴: 主动,对目标范围5码内敌人造成400%伤害,消耗5点暗影值.每级提高40%.冷却20S
 export function 暗影风暴(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
     if (!Player || !Player.R) return;
-    Player.R.暗影风暴CD ??= 20;
-    
-    if (!Player.R.暗影点 || Player.R.暗影点 < 5) { 
-        Player.SendMessage('暗影点不足5点,无法使用暗影风暴!'); 
-        return; 
+    if (!Player.R.暗影值 || Player.R.暗影值 < 5) {
+        Player.SendMessage('暗影值不足5点,无法使用暗影风暴!');
+        return;
     }
-    
-    const 冷却时间 = Math.min(Player.R.暗影风暴CD, 20); // 秒
-    const cd = DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('暗影风暴').AsDateTime);
-    
-    if (cd >= 冷却时间) {
-        Player.R.暗影点 = Player.R.暗影点 - 5;
-        const 范围 = 5 + (Player.R.暗影风暴范围 || 0);
-        const 目标列表 = Target ? 获取目标范围内目标(Player, Target, 范围) : [];
-        for (const 目标 of 目标列表) {
-            目标.ShowEffectEx2(_P_Base.特效.暗影风暴, -10, 20, true, 1);
-            Player.Damage(目标, 1, _P_Base.技能ID.暗影.暗影风暴);
-        }
-        
-        // 记录本次使用时间，用于CD计算
-        Player.VarDateTime('暗影风暴').AsDateTime = DateUtils.Now();
-    } else {
-        Player.SendCountDownMessage(`'暗影风暴'技能CD剩余时间：${冷却时间 - Math.round(cd)}秒`, 0);
+
+    Player.R.暗影值 = Player.R.暗影值 - 5;
+    const 范围 = 5 + (Player.R.暗影风暴范围 || 0);
+    const 目标列表 = Target ? 获取目标范围内目标(Player, Target, 范围) : [];
+    for (const 目标 of 目标列表) {
+        目标.ShowEffectEx2(_P_Base.特效.暗影风暴, -10, 20, true, 1);
+        Player.Damage(目标, 1, _P_Base.技能ID.暗影.暗影风暴);
     }
 }
 
-// 暗影附体: 主动,消耗10点暗影点,使暗影袭杀的攻击提高至1000%,持续5S,每10级增加1S.冷却3分钟
+// 暗影附体: 主动,消耗10点暗影值,使暗影袭杀的攻击提高至1000%,持续5S,每10级增加1S.冷却3分钟
 export function 暗影附体(Source: TActor, _Target: TActor): void {
     const Player = Source as TPlayObject;
     if (!Player || !Player.R) return;
-    Player.R.暗影附体CD ??= 180;
-    
+    const Magic = Player.FindSkill('暗影附体');
     // 如果技能正在生效中，不重复触发
     if (Player.R.暗影附体) {
         Player.SendMessage('暗影附体正在生效中!', 2);
         return;
     }
-    
-    if (!Player.R.暗影点 || Player.R.暗影点 < 10) { 
-        Player.SendMessage('暗影点不足10点,无法使用暗影附体!'); 
-        return; 
+
+    if (!Player.R.暗影值 || Player.R.暗影值 < 10) {
+        Player.SendMessage('暗影值不足10点,无法使用暗影附体!');
+        return;
     }
-    
-    const 冷却时间 = Math.min(Player.R.暗影附体CD, 180); // 秒
-    const cd = DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('暗影附体').AsDateTime);
-    
-    if (cd >= 冷却时间) {
-        Player.R.暗影点 = Player.R.暗影点 - 10;
-        const Magic = Player.FindSkill('暗影附体');
-        const 持续时间 = 5 + Math.floor((Magic?.Level || 1) / 10);
-        
-        Player.DeleteDelayCallMethod('延时触发.暗影附体结束');
-        Player.R.暗影附体 = true;
-        Player.SetCustomEffect(_P_Base.永久特效.暗影附体, _P_Base.特效.暗影附体);
-        Player.SendMessage(`暗影附体开启,持续${持续时间}秒!`, 2);
-        Player.DelayCallMethod('延时触发.暗影附体结束', 持续时间 * 1000, false);
-        
-        // 记录本次使用时间，用于CD计算
-        Player.VarDateTime('暗影附体').AsDateTime = DateUtils.Now();
-    } else {
-        Player.SendCountDownMessage(`'暗影附体'技能CD剩余时间：${冷却时间 - Math.round(cd)}秒`, 0);
-    }
+
+    Player.R.暗影值 = Player.R.暗影值 - 10;
+    const 持续时间 = 5 + Math.floor((Magic?.Level || 1) / 10);
+    Player.DeleteDelayCallMethod('延时触发.暗影附体结束');
+    Player.R.暗影附体 = true;
+    Player.SetCustomEffect(_P_Base.永久特效.暗影附体, _P_Base.特效.暗影附体);
+    Player.SendMessage(`暗影附体开启,持续${持续时间}秒!`, 2);
+    Player.DelayCallMethod('延时触发.暗影附体结束', 持续时间 * 1000, false);
+
 }
 
 // ==================== 烈焰职业技能 ====================
 // 火焰追踪: 主动,对目标造成200%伤害,每级提高20%
 export function 火焰追踪(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
-    Target.ShowEffectEx2(_P_Base.特效.爆裂火冢, -10, 20, true, 1);
+    // Target.ShowEffectEx2(_P_Base.特效.爆裂火冢, -10, 20, true, 1);
     Player.Damage(Target, 1, _P_Base.技能ID.烈焰.火焰追踪);
     // 火镰狂舞：被动,每10级可为火焰追踪的目标增加一个
     const 火镰狂舞等级 = Player.V.火镰狂舞等级 || 0;
@@ -388,7 +341,7 @@ export function 火焰追踪(Source: TActor, Target: TActor): void {
             const 目标列表 = 获取目标范围内目标(Player, Target, 8);
             for (let i = 0, count = 0; i < 目标列表.length && count < 额外目标数; i++) {
                 if (目标列表[i].GetHandle() !== targetHandle) {
-                    目标列表[i].ShowEffectEx2(_P_Base.特效.爆裂火冢, -10, 20, true, 1);
+                    // 目标列表[i].ShowEffectEx2(_P_Base.特效.爆裂火冢, -10, 20, true, 1);
                     Player.Damage(目标列表[i], 1, _P_Base.技能ID.烈焰.火焰追踪);
                     count++;
                 }
@@ -417,8 +370,15 @@ export function 烈焰护甲(Source: TActor, _Target: TActor): void {
 }
 
 // 爆裂火冢: 被动,击中目标20%几率造成8格范围300%伤害,每级提高30% (被动技能)
-export function 爆裂火冢(_Source: TActor, _Target: TActor): void {
-    // 被动技能,在攻击计算模块处理
+export function 爆裂火冢(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    // Target.ShowEffectEx2(_P_Base.特效.爆裂火冢, -10, 20, true, 1);
+    const 范围 = 3 + (Player.R.爆裂火冢范围 || 0);
+    const 目标列表 = Target ? 获取目标范围内目标(Player, Target, 范围) : [];
+    for (const 目标 of 目标列表) {
+        Player.Damage(目标, 1, _P_Base.技能ID.烈焰.爆裂火冢);
+    }
+    Player.SendCountDownMessage(`【爆裂火冢】触发！`, 0);
 }
 
 // 烈焰突袭: 被动,每攻击5次,使你下次伤害提升至200%,每重+20% (被动技能)
@@ -429,7 +389,7 @@ export function 烈焰突袭(_Source: TActor, _Target: TActor): void {
 
 // ==================== 正义职业技能 ====================
 // 圣光(正义): 开启后,每秒对周围5码内所有目标造成200%伤害,每级提高20%
-export function 圣光(Source: TActor, _Target: TActor): void {
+export function 圣光(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
     if (!Player.R.圣光) {
         Player.R.圣光 = true;
@@ -453,20 +413,37 @@ export function 洗礼(_Source: TActor, _Target: TActor): void {
     // 被动技能,在攻击计算模块处理
 }
 
-// 审判: 被动,对满血目标造成10%血量切割，每20级+1%切割,封顶40% (被动技能)
-export function 审判(_Source: TActor, _Target: TActor): void {
-    // 被动技能,在攻击计算模块处理
+// 审判: 被动,对满血目标造成2%血量切割，每200级+1%切割,封顶20% (被动技能)
+export function 审判(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    const 等级 = Player.V.审判等级 || 1;
+    const 切割比例 = Math.min(2 + Math.floor(等级 / 200), 20) / 100;
+    // 直接扣除怪物血量
+    const 切割伤害 = 智能计算(Target.GetSVar(91), String(切割比例), 3);
+    const 剩余血量 = 智能计算(Target.GetSVar(91), 切割伤害, 2);
+    Target.SetSVar(91, js_war(剩余血量, '0') < 0 ? '0' : 剩余血量);
+    血量显示(Target);
+    Player.SendCountDownMessage(`【审判】触发！切割${(切割比例 * 100).toFixed(0)}%最大血量`, 0);
 }
 
-// 神罚: 被动,攻击10%几率使目标遭受神罚，损失当前生命的1%，每40级+1% (被动技能)
-export function 神罚(_Source: TActor, _Target: TActor): void {
-    // 被动技能,在攻击计算模块处理
+// 神罚: 被动,攻击1%几率使目标遭受神罚，损失当前生命的1%，每200级+1%,封顶20% (被动技能)
+export function 神罚(Source: TActor, Target: TActor): void {
+    const Player = Source as TPlayObject;
+    const 等级 = Player.V.神罚等级 || 1;
+    const 比例 = Math.min(1 + Math.floor(等级 / 200), 20) / 100;
+    // 直接扣除怪物血量
+    const 神罚伤害 = 智能计算(Target.GetSVar(91), String(比例), 3);
+    const 剩余血量 = 智能计算(Target.GetSVar(91), 神罚伤害, 2);
+    Target.SetSVar(91, js_war(剩余血量, '0') < 0 ? '0' : 剩余血量);
+    血量显示(Target);
+    Player.SendCountDownMessage(`【神罚】触发！造成${(比例 * 100).toFixed(1)}%当前血量伤害`, 0);
 }
 
 // ==================== 不动职业技能 ====================
 // 如山: 开启后,每秒对周围5码内造成400%伤害,每级提高40%
 export function 如山(Source: TActor, _Target: TActor): void {
     const Player = Source as TPlayObject;
+    console.log(`如山${Player.R.如山}`)
     if (!Player.R.如山) {
         Player.R.如山 = true;
         Player.SetCustomEffect(_P_Base.永久特效.如山, _P_Base.特效.如山);
@@ -487,26 +464,15 @@ export function 泰山(_Source: TActor, _Target: TActor): void {
 export function 人王盾(Source: TActor, _Target: TActor): void {
     const Player = Source as TPlayObject;
     if (!Player || !Player.R) return;
-    Player.R.人王盾CD ??= 10;
-    
-    const 冷却时间 = Math.min(Player.R.人王盾CD, 10); // 秒
-    const cd = DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('人王盾').AsDateTime);
-    
-    if (cd >= 冷却时间) {
-        const Magic = Player.FindSkill('人王盾');
-        const 等级 = Magic?.Level || 1;
-        // 护盾值 = 防御上限 * (1000% + 每级100%)
-        const 防御上限 = Player.GetSVar(96) || '1000';
-        const 护盾倍率 = 10 + 等级;
-        Player.R.人王盾护盾值 = 智能计算(防御上限, String(护盾倍率), 3);
-        Player.SetCustomEffect(_P_Base.永久特效.人王盾, _P_Base.特效.人王盾);
-        Player.SendMessage(`人王盾开启,护盾值:${大数值整数简写(Player.R.人王盾护盾值)}`, 2);
-        
-        // 记录本次使用时间，用于CD计算
-        Player.VarDateTime('人王盾').AsDateTime = DateUtils.Now();
-    } else {
-        Player.SendCountDownMessage(`'人王盾'技能CD剩余时间：${冷却时间 - Math.round(cd)}秒`, 0);
-    }
+    const Magic = Player.FindSkill('人王盾');
+    const 等级 = Magic?.Level || 1;
+    // 护盾值 = 防御上限 * (1000% + 每级100%)
+    const 防御上限 = Player.R.自定属性[168] || '1000';
+    const 护盾倍率 = 10 + 等级;
+    Player.R.人王盾开启 = true;
+    Player.R.人王盾护盾值 = 智能计算(防御上限, String(护盾倍率), 3);
+    Player.SetCustomEffect(_P_Base.永久特效.人王盾, _P_Base.特效.人王盾);
+    Player.SendMessage(`人王盾开启,护盾值:${大数值整数简写(Player.R.人王盾护盾值)}`, 2);
 }
 
 // 铁布衫: 被动,提供20%格挡，每10级提高1%（50上限）(被动技能)
@@ -519,10 +485,10 @@ export function 金刚掌(Source: TActor, Target: TActor): void {
     const Player = Source as TPlayObject;
     if (!Player || !Player.R) return;
     Player.R.金刚掌CD ??= 15;
-    
+
     const 冷却时间 = Math.min(Player.R.金刚掌CD, 15); // 秒
     const cd = DateUtils.SecondSpan(DateUtils.Now(), Player.VarDateTime('金刚掌').AsDateTime);
-    
+
     if (cd >= 冷却时间) {
         if (!Target) return;
         const 目标列表 = 获取目标范围内目标(Player, Target, 8);
@@ -531,7 +497,7 @@ export function 金刚掌(Source: TActor, Target: TActor): void {
             目标.SetState(5, 3, 0); // 麻痹3秒
             Player.Damage(目标, 1, _P_Base.技能ID.不动.金刚掌);
         }
-        
+
         // 记录本次使用时间，用于CD计算
         Player.VarDateTime('金刚掌').AsDateTime = DateUtils.Now();
     } else {

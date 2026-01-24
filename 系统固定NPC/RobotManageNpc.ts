@@ -7,8 +7,8 @@ import {
 import * as 基础常量 from "../_核心部分/基础常量"
 import * as 生物刷新 from "../_核心部分/_生物/生物刷新"
 
-import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
-import { 智能计算, 转大数值, js_百分比, js_范围随机, js_war } from "../_大数值/核心计算方法";
+import { 大数值整数简写, 实时回血, 血量显示 } from "../_核心部分/字符计算"
+import { 智能计算, 转大数值, js_百分比, js_范围随机, js_war, 大于等于, 大于, 小于等于 } from "../_大数值/核心计算方法";
 
 import * as 地图 from '../_核心部分/_地图/地图'
 
@@ -19,6 +19,7 @@ import * as 地图 from '../_核心部分/_地图/地图'
 
 import { 一键存入所有材料 } from "../_核心部分/_服务/材料仓库"
 import { RobotPlugIn } from "../_核心部分/_服务/_GN_Monitoring";
+import { 装备属性统计 } from "../_核心部分/_装备/属性统计"
 
 
 
@@ -33,6 +34,22 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
     // ==================== 圣耀副本爆率检测 ====================
     // 每秒检测玩家是否离开圣耀副本，取消爆率加成
     地图.离开圣耀副本检测(Player)
+
+    // ==================== 特殊BOSS击杀进度显示 ====================
+    // 每秒更新显示当前地图的击杀进度
+    const 地图ID = Player.GetMapName()
+    const 击杀进度 = 生物刷新.获取击杀进度(地图ID)
+    if (击杀进度.需要击杀 > 0) {
+        let 进度提示 = ''
+        if (击杀进度.特殊BOSS存活) {
+            进度提示 = `{S=特殊BOSS已刷新!;C=251}`
+        } else {
+            const 百分比 = Math.floor((击杀进度.当前击杀 / 击杀进度.需要击杀) * 100)
+            进度提示 = `{S=特殊BOSS进度: ${击杀进度.当前击杀}/${击杀进度.需要击杀} (${百分比}%)}`
+        }
+        let 击杀进度Buff = Player.AddIntervalBuff(99, TBuffIntervalType.biNone, 0, 0, 0, 0)
+        Player.SetBuffIcon(击杀进度Buff.Handle, 'magicon.wzl', 2330, 2330, ``, '', 进度提示, false, false)
+    }
 
     // 🚀 性能优化：自动回收改为每5秒执行一次，而非每秒
     if (Player.V.自动回收 && Player.R.性能计数器 % 5 === 0) {
@@ -179,11 +196,15 @@ export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
     // _M_Robot.按分钟检测(Player)
     Player = GameLib.FindPlayer('鸿福'); //查找玩家
     if (Player != null) {
-        Player.SetSVar(92, 转大数值('1e100'))
-        // Player.SetSVar(91 , '1e100') 
-        实时回血(Player, '1e100')
-        血量显示(Player);
-        Player.UpdateName();
+        // Player.SetSVar(92, 转大数值('1e100'))
+        // // Player.SetSVar(91 , '1e100') 
+        // 实时回血(Player, '1e100')
+        // 血量显示(Player);
+        const Magic = Player.FindSkill('暗影附体');
+        // console.log(`cd:${Magic.GetUseTime()}ssssss${Magic.CDTime}`)
+        // // Magic.SetUseTime(0)
+        // Magic.GetKey
+        // console.log(Magic.GetKey())
         // GameLib.SetClientSpeed(1000)
         // GameLib.SendChangeClientSpeed()
     }
@@ -413,31 +434,21 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     let Magic: TUserMagic;
     let AActorList: TActorList;
 
-    // ==================== 初始化自动施法变量 ====================
-    // 天枢职业
-    R.怒斩自动施法 ??= false;
-    // 血神职业
-    R.血气献祭自动施法 ??= false;
-    R.血魔临身自动施法 ??= false;
-    // 暗影职业
-    R.暗影袭杀自动施法 ??= false;
-    R.暗影风暴自动施法 ??= false;
-    R.暗影附体自动施法 ??= false;
-    // 烈焰职业
-    R.火焰追踪自动施法 ??= false;
-    // 不动职业
-    R.人王盾自动施法 ??= false;
-    R.金刚掌自动施法 ??= false;
+    // ==================== 通用变量初始化 ====================
+    const 最大血量 = Player.GetSVar(92);
+    const 当前血量 = Player.GetSVar(91);
+    // mode 5 = 除法保留2位小数，避免整数除法截断
+    const 剩余血量百分比 = 智能计算(智能计算(当前血量, 最大血量, 5), '100', 3);
 
     // ==================== 六大新职业自动施法 ====================
     // 根据技能描述实现持续性技能的自动施法
-    // 注意：这些技能在MagicNpc.ts中通过开启/关闭函数控制状态，这里实现持续伤害效果
 
-    // ========== 每秒施法 ==========
-    if (R.施法读秒 % 1 === 0) {
-
-        // 天枢职业 - 怒斩：对周围8码内最近的敌人施法
-        if (V.职业 === '天枢' && !Player.InSafeZone && R.怒斩自动施法) {
+    // ============================================================
+    // ==================== 天枢职业 ====================
+    // ============================================================
+    if (V.职业 === '天枢' && !Player.InSafeZone) {
+        // 怒斩：对周围8码内最近的敌人施法（每秒）
+        if (V.自动_怒斩) {
             Magic = Player.FindSkill('怒斩');
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
@@ -446,9 +457,16 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 }
             }
         }
+    }
 
-        // 血神职业 - 血气献祭：对周围8码内最近的敌人施法
-        if (V.职业 === '血神' && !Player.InSafeZone && R.血气献祭自动施法) {
+    // ============================================================
+    // ==================== 血神职业 ====================
+    // ============================================================
+    if (V.职业 === '血神' && !Player.InSafeZone) {
+
+        // ---------- 血气献祭：对周围8码内最近的敌人施法（每秒） ----------
+        // 条件：血量 >= 5%
+        if (V.自动_血气献祭 && 大于等于(剩余血量百分比, '5')) {
             Magic = Player.FindSkill('血气献祭');
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
@@ -458,43 +476,74 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             }
         }
 
-        // 血神职业 - 血魔临身：自动释放（有CD）
-        if (V.职业 === '血神' && !Player.InSafeZone && R.血魔临身自动施法 && !R.血魔临身) {
-            Magic = Player.FindSkill('血魔临身');
-            if (Magic) {
-                Player.MagicAttack(Player, 基础常量.技能ID.血神.血魔临身);
+        // ---------- 血魔临身：自动释放 + 每秒回血效果 ----------
+        // 描述：开启后,每秒回血1%,持续时间30S(每5级回复提高1%,每5级增加1S,最高180S)
+        // CD: 180秒后可再次释放
+        Player.R.血魔临身CD ??= 0;
+        Player.R.血魔临身持续CD ??= 0;
+        if (V.自动_血魔临身 && !R.血魔临身) {
+            Player.R.血魔临身CD += 1;
+            if (Player.R.血魔临身CD >= 180) {
+                Magic = Player.FindSkill('血魔临身');
+                if (Magic) {
+                    R.血魔临身 = true;
+                    Player.R.血魔临身CD = 0;
+                    // 激活时计算并设置持续时间
+                    const 技能等级 = Player.V.血魔临身等级 || 1;
+                    const 持续时间 = Math.min(30 + Math.floor(技能等级 / 5), 180);
+                    Player.R.血魔临身持续CD = 持续时间;
+                    Player.MagicAttack(Player, 基础常量.技能ID.血神.血魔临身, true);
+                    Player.SetCustomEffect(基础常量.永久特效.血魔临身, 基础常量.特效.血魔临身);
+                    Player.SendMessage(`血魔临身开启，持续${持续时间}秒`, 2);
+                }
             }
         }
 
-        // 血神职业 - 血魔临身：每秒回血效果
-        // 描述：开启后,每秒回血1%,持续时间30S(每5级回复提高1%,每10级增加1S,最高180S)
-        if (V.职业 === '血神' && R.血魔临身) {
-            const 回血百分比 = R.血魔临身回血百分比 || 1;
-            const 最大血量 = Player.GetSVar(92);
-            const 当前血量 = Player.GetSVar(91);
-            // 只有血量未满时才回血
-            if (js_war(当前血量, 最大血量) < 0) {
-                const 回血量 = 智能计算(最大血量, String(回血百分比 / 100), 3);
-                实时回血(Player, 回血量);
+        // 血魔临身持续效果：每秒回血
+        if (R.血魔临身) {
+            Player.R.血魔临身CD += 1;
+            const 技能等级 = Player.V.血魔临身等级 || 1;
+            // const 持续时间 = Math.min(30 + Math.floor(技能等级 / 5), 180);
+            // Player.R.血魔临身持续CD = 持续时间;
+            if (Player.R.血魔临身持续CD > 0) {
+                const 回血百分比 = 1 + Math.floor(技能等级 / 5);
+                // 只有血量未满时才回血
+                if (js_war(当前血量, 最大血量) < 0) {
+                    const 回血量 = 智能计算(最大血量, String(回血百分比 / 100), 3);
+                    实时回血(Player, 回血量);
+                    Player.R.血魔临身持续CD--;
+                }
+            } else {
+                // 持续时间结束，关闭血魔临身
+                R.血魔临身 = false;
+                Player.SetCustomEffect(基础常量.永久特效.血魔临身, -1);
+                Player.SendMessage('血魔临身效果已结束!', 2);
             }
         }
+        // ---------- 血气燃烧：开启 + 持续效果 ----------
+        // 描述：开启后,每秒对周围5码范围内敌人造成150%的伤害,每级提高15%
+        // 每秒消耗1%血量，血量低于10%时自动关闭
+        if (V.自动_血气燃烧 && !R.血气燃烧 && 大于(剩余血量百分比, '10')) {
+            R.血气燃烧 = true;
+            Player.SetCustomEffect(基础常量.永久特效.血气燃烧, 基础常量.特效.血气燃烧);
+            Player.SendMessage('血气燃烧开启', 2);
+        }
 
-        // 血神职业 - 血气燃烧
-        // 描述：开启后,每秒对周围5码范围内敌人造成150%的伤害,每级提高15%.(每秒消耗1%血量.血量低于10%时关闭)
-        if (V.职业 === '血神' && R.血气燃烧) {
+        // 血气燃烧持续效果
+        if (R.血气燃烧) {
+            let 当前血量_燃烧 = Player.GetSVar(91);
+            let 最大血量_燃烧 = Player.GetSVar(92);
             // 检查血量是否低于10%，自动关闭
-            let 当前血量 = Player.GetSVar(91)
-            let 最大血量 = Player.GetSVar(92)
-            if (js_war(当前血量, 智能计算(最大血量, `0.1`, 3)) <= 0) {
+            if (js_war(当前血量_燃烧, 智能计算(最大血量_燃烧, '10', 4)) <= 0) {
                 R.血气燃烧 = false;
                 Player.SetCustomEffect(基础常量.永久特效.血气燃烧, -1);
                 Player.SendMessage('血量低于10%,血气燃烧自动关闭!', 2);
             } else {
                 // 消耗1%血量
-                当前血量 = 智能计算(当前血量, 智能计算(最大血量, `0.01`, 3), 2);
-                Player.SetSVar(91, 当前血量);
+                当前血量_燃烧 = 智能计算(当前血量_燃烧, 智能计算(最大血量_燃烧, '100', 4), 2);
+                Player.SetSVar(91, 当前血量_燃烧);
                 血量显示(Player);
-                // 对周围5码敌人造成伤害
+                // 对周围敌人造成伤害
                 const 范围 = 5 + (R.血气燃烧范围 || 0);
                 const 目标列表 = 获取玩家范围内目标(Player, 范围);
                 for (const 目标 of 目标列表) {
@@ -502,94 +551,180 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
                 }
             }
         }
+    }
 
-        // 暗影职业 - 暗影袭杀：对周围8码内最近的敌人施法
-        if (V.职业 === '暗影' && !Player.InSafeZone && R.暗影袭杀自动施法) {
+    // ============================================================
+    // ==================== 暗影职业 ====================
+    // ============================================================
+    if (V.职业 === '暗影' && !Player.InSafeZone) {
+
+        // ---------- 暗影袭杀 ----------
+        // R.暗影袭杀范围 > 0 时对目标范围内敌人造成伤害，否则攻击最近目标
+        if (V.自动_暗影袭杀) {
             Magic = Player.FindSkill('暗影袭杀');
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
                 if (最近目标) {
-                    Player.MagicAttack(最近目标, 基础常量.技能ID.暗影.暗影袭杀);
-                }
-            }
-        }
-
-        // 暗影职业 - 暗影风暴：对周围8码内最近的敌人施法（有CD）
-        if (V.职业 === '暗影' && !Player.InSafeZone && R.暗影风暴自动施法) {
-            Magic = Player.FindSkill('暗影风暴');
-            if (Magic && R.暗影点 >= 5) {
-                const 最近目标 = 获取周围最近目标(Player, 8);
-                if (最近目标) {
-                    Player.MagicAttack(最近目标, 基础常量.技能ID.暗影.暗影风暴);
-                }
-            }
-        }
-
-        // 暗影职业 - 暗影附体：自动释放（有CD）
-        if (V.职业 === '暗影' && !Player.InSafeZone && R.暗影附体自动施法 && !R.暗影附体) {
-            Magic = Player.FindSkill('暗影附体');
-            if (Magic && R.暗影点 >= 10) {
-                Player.MagicAttack(Player, 基础常量.技能ID.暗影.暗影附体);
-            }
-        }
-
-        // 暗影职业 - 暗影剔骨
-        // 描述：开启后对周围6码范围内敌人造成300%伤害,每级提高30%,每秒消耗1点暗影点
-        if (V.职业 === '暗影' && R.暗影剔骨 && !Player.InSafeZone) {
-            // 检查暗影点，不足则自动关闭
-            if (!R.暗影点 || R.暗影点 < 1) {
-                R.暗影剔骨 = false;
-                Player.SetCustomEffect(基础常量.永久特效.暗影剔骨, -1);
-                Player.SendMessage('暗影点不足,暗影剔骨自动关闭!', 2);
-            } else {
-                // 消耗1点暗影点
-                R.暗影点 = R.暗影点 - 1;
-                // 对周围6码敌人造成伤害
-                AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 6);
-                for (let i = 0; i < AActorList.Count; i++) {
-                    const Actor = AActorList.Actor(i);
-                    if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                        Player.SetCustomEffect(1, 基础常量.特效.暗影剔骨);
-                        Player.Damage(Actor, 1, 基础常量.技能ID.暗影.暗影剔骨);
+                    if (R.暗影袭杀范围 > 0) {
+                        // AOE模式：以最近目标为中心对范围内敌人造成伤害
+                        const 目标列表 = 获取目标范围内目标(Player, 最近目标, R.暗影袭杀范围);
+                        for (const 目标 of 目标列表) {
+                            Player.MagicAttack(目标, 基础常量.技能ID.暗影.暗影袭杀, true);
+                        }
+                    } else {
+                        // 单体模式
+                        Player.MagicAttack(最近目标, 基础常量.技能ID.暗影.暗影袭杀, true);
                     }
                 }
             }
         }
 
-        // 烈焰职业 - 火焰追踪：对周围8码内最近的敌人施法
-        if (V.职业 === '烈焰' && !Player.InSafeZone && R.火焰追踪自动施法) {
+        // ---------- 暗影风暴：有CD（20秒） ----------
+        // 消耗5点暗影值
+        Player.R.暗影风暴CD ??= 0;
+        if (V.自动_暗影风暴) {
+            Player.R.暗影风暴CD += 1;
+            if (Player.R.暗影风暴CD >= 20 && R.暗影值 >= 5) {
+                Magic = Player.FindSkill('暗影风暴');
+                if (Magic) {
+                    const 最近目标 = 获取周围最近目标(Player, 8);
+                    if (最近目标) {
+                        Player.MagicAttack(最近目标, 基础常量.技能ID.暗影.暗影风暴, true);
+                        Player.R.暗影风暴CD = 0;
+                    }
+                }
+            }
+        }
+
+        // ---------- 暗影附体：有CD（180秒） ----------
+        // 消耗180点暗影值
+        Player.R.暗影附体CD ??= 0;
+        if (V.自动_暗影附体 && !R.暗影附体) {
+            Player.R.暗影附体CD += 1;
+            if (Player.R.暗影附体CD >= 180 && R.暗影值 >= 180) {
+                Magic = Player.FindSkill('暗影附体');
+                if (Magic) {
+                    let 暗影Buff = Player.AddIntervalBuff(1, TBuffIntervalType.biNone, 0, 0, 0, 0);
+                    Player.SetBuffIcon(暗影Buff.Handle, 'magicon.wzl', 2312, 2312, '', '', `{S=当前暗影值: ${R.暗影值} 点}`, true, true);
+                    Player.MagicAttack(Player, 基础常量.技能ID.暗影.暗影附体, true);
+                    Player.R.暗影附体CD = 0;
+                }
+            }
+        }
+
+        // ---------- 暗影剔骨：开启 + 持续效果 ----------
+        // 描述：开启后对周围6码范围内敌人造成300%伤害,每级提高30%,每秒消耗1点暗影值
+        if (V.自动_暗影剔骨 && !R.暗影剔骨 && R.暗影值 >= 1) {
+            R.暗影剔骨 = true;
+            Player.SetCustomEffect(基础常量.永久特效.暗影剔骨, 基础常量.特效.暗影剔骨);
+            Player.SendMessage('暗影剔骨开启', 2);
+        }
+
+        // 暗影剔骨持续效果
+        if (R.暗影剔骨) {
+            if (R.暗影值 < 1) {
+                // 暗影值不足，自动关闭
+                R.暗影剔骨 = false;
+                Player.SetCustomEffect(基础常量.永久特效.暗影剔骨, -1);
+                Player.SendMessage('暗影值不足,暗影剔骨自动关闭!', 2);
+            } else {
+                // 消耗1点暗影值
+                R.暗影值 = R.暗影值 - 1;
+                装备属性统计(Player);
+                let 暗影Buff = Player.AddIntervalBuff(1, TBuffIntervalType.biNone, 0, 0, 0, 0);
+                Player.SetBuffIcon(暗影Buff.Handle, 'magicon.wzl', 2312, 2312, '', '', `{S=当前暗影值: ${R.暗影值} 点}`, true, true);
+                // 对周围敌人造成伤害
+                const 范围 = 6 + (R.暗影剔骨范围 || 0);
+                const 目标列表 = 获取玩家范围内目标(Player, 范围);
+                for (const 目标 of 目标列表) {
+                    Player.Damage(目标, 1, 基础常量.技能ID.暗影.暗影剔骨);
+                }
+            }
+        }
+    }
+
+    // ============================================================
+    // ==================== 烈焰职业 ====================
+    // ============================================================
+    if (V.职业 === '烈焰' && !Player.InSafeZone) {
+
+        // ---------- 火焰追踪：对周围10码内最近的敌人施法（每秒） ----------
+        if (V.自动_火焰追踪) {
             Magic = Player.FindSkill('火焰追踪');
             if (Magic) {
-                const 最近目标 = 获取周围最近目标(Player, 8);
+                const 最近目标 = 获取周围最近目标(Player, 10);
                 if (最近目标) {
                     Player.MagicAttack(最近目标, 基础常量.技能ID.烈焰.火焰追踪);
                 }
             }
         }
 
-        // 正义职业 - 圣光（正义光环）
-        // 描述：开启后,每秒对周围5码内所有目标造成200%伤害,每级提高20%
-        if (V.职业 === '正义' && R.圣光 && !Player.InSafeZone) {
-            AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 5);
+        if (V.自动_烈焰护甲) {
+            if (!Player.R.烈焰护甲) {
+                Player.R.烈焰护甲 = true;
+                Player.SetCustomEffect(基础常量.永久特效.烈焰护甲, 基础常量.特效.烈焰护甲);
+                Player.SendMessage('烈焰护甲开启', 2);
+            }
+        }
+        // ---------- 烈焰护甲：持续效果（每2秒） ----------
+        // 描述：开启后,每2秒对周围4格内的目标造成300%伤害,每级提高30%
+        if (R.烈焰护甲 && R.施法读秒 % 2 === 0) {
+            AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 4);
             for (let i = 0; i < AActorList.Count; i++) {
                 const Actor = AActorList.Actor(i);
                 if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                    Actor.ShowEffectEx2(基础常量.特效.圣光, -10, 20, true, 1);
-                    Player.Damage(Actor, 1, 基础常量.技能ID.正义.圣光);
+                    // Actor.ShowEffectEx2(基础常量.特效.烈焰护甲, -10, 20, true, 1);
+                    Player.Damage(Actor, 1, 基础常量.技能ID.烈焰.烈焰护甲);
                 }
             }
         }
+    }
 
-        // 不动职业 - 人王盾：自动释放（有CD）
-        if (V.职业 === '不动' && !Player.InSafeZone && R.人王盾自动施法 && !R.人王盾护盾值) {
-            Magic = Player.FindSkill('人王盾');
-            if (Magic) {
-                Player.MagicAttack(Player, 基础常量.技能ID.不动.人王盾);
+    // ============================================================
+    // ==================== 正义职业 ====================
+    // ============================================================
+    if (V.职业 === '正义' && !Player.InSafeZone) {
+
+        if (V.自动_正义 && !Player.R.圣光) {
+            Player.R.圣光 = true;
+            Player.SetCustomEffect(基础常量.永久特效.圣光, 基础常量.特效.圣光);
+            Player.SendMessage('圣光光环开启', 2);
+        }
+        // ---------- 圣光（正义光环）：持续效果（每秒） ----------
+        // 描述：开启后,每秒对周围5码内所有目标造成200%伤害,每级提高20%
+        if (R.圣光) {
+            const 范围 = 6 + (R.正义范围 || 0);
+            const 目标列表 = 获取玩家范围内目标(Player, 范围);
+            for (const 目标 of 目标列表) {
+                // 目标.ShowEffectEx2(基础常量.特效.圣光, -10, 20, true, 1);
+                Player.Damage(目标, 1, 基础常量.技能ID.正义.圣光);
             }
         }
+    }
 
-        // 不动职业 - 金刚掌：对周围8码内最近的敌人施法（有CD）
-        if (V.职业 === '不动' && !Player.InSafeZone && R.金刚掌自动施法) {
+    // ============================================================
+    // ==================== 不动职业 ====================
+    // ============================================================
+    if (V.职业 === '不动' && !Player.InSafeZone) {
+        let 暗影猎取 = Player.AddIntervalBuff(1, TBuffIntervalType.biNone, 0, 0, 0, 0)
+        Player.SetBuffIcon(暗影猎取.Handle, 'magicon.wzl', 2201, 2201, ``, '', `{S=当前人王盾: }{S=${大数值整数简写(Player.R.人王盾护盾值)};C=21}{S= 点}`, true, true)
+        // ---------- 人王盾：自动释放 ----------
+        // 条件：开启自动施法 且 护盾值为0时自动释放
+        if (R.人王盾自动施法 && !Player.R.人王盾开启) {
+            R.人王盾CD ??= 0;
+            R.人王盾CD++;
+            if (R.人王盾CD >= 10) {
+                R.人王盾CD = 0;
+                Magic = Player.FindSkill('人王盾');
+                if (Magic) {
+                    Player.R.人王盾开启 = true;
+                    Player.MagicAttack(Player, 基础常量.技能ID.不动.人王盾);
+
+                }
+            }
+        }
+        // ---------- 金刚掌：对周围8码内最近的敌人施法 ----------
+        if (R.金刚掌自动施法) {
             Magic = Player.FindSkill('金刚掌');
             if (Magic) {
                 const 最近目标 = 获取周围最近目标(Player, 8);
@@ -599,37 +734,18 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             }
         }
 
-        // 不动职业 - 如山
+        // ---------- 如山：持续效果（每秒） ----------
         // 描述：开启后,每秒对周围5码内造成400%伤害,每级提高40%
-        if (V.职业 === '不动' && R.如山 && !Player.InSafeZone) {
-            AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 5);
-            for (let i = 0; i < AActorList.Count; i++) {
-                const Actor = AActorList.Actor(i);
-                if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                    Actor.ShowEffectEx2(基础常量.特效.如山, -10, 20, true, 1);
-                    Player.Damage(Actor, 1, 基础常量.技能ID.不动.如山);
-                }
+        if (R.如山) {
+            const 范围 = 5 + (R.如山范围 || 0);
+            const 目标列表 = 获取玩家范围内目标(Player, 范围);
+            for (const 目标 of 目标列表) {
+                Player.Damage(目标, 1, 基础常量.技能ID.不动.如山);
             }
         }
     }
-
-    // ========== 每2秒施法 ==========
-    if (R.施法读秒 % 2 === 0) {
-        // 烈焰职业 - 烈焰护甲
-        // 描述：开启后,每2秒对周围4格内的目标造成300%伤害,每级提高30%
-        if (V.职业 === '烈焰' && R.烈焰护甲 && !Player.InSafeZone) {
-            AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 4);
-            for (let i = 0; i < AActorList.Count; i++) {
-                const Actor = AActorList.Actor(i);
-                if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() !== Player.GetHandle() && !Actor.IsPlayer() && !Actor.Master) {
-                    Actor.ShowEffectEx2(基础常量.特效.烈焰护甲, -10, 20, true, 1);
-                    Player.Damage(Actor, 1, 基础常量.技能ID.烈焰.烈焰护甲);
-                }
-            }
-        }
-    }
-
 }
+
 
 
 

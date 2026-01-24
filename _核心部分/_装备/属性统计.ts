@@ -10,7 +10,7 @@
  * 使用大数值计算方法，支持超大数值运算
  */
 
-import { 智能计算, 比较 } from "../../_大数值/核心计算方法"
+import { 大于, 智能计算, 比较 } from "../../_大数值/核心计算方法"
 import { 大数值整数简写, 血量显示 } from "../字符计算"
 import {
     基础属性第一条, 基础属性第八条,
@@ -88,21 +88,21 @@ export function 清空变量(Player: TPlayObject): void {
     Player.R.自定属性[169] = '0';    // 全属性
 
     // 基础属性倍数
-    Player.R.生命百分比 = 100;
-    Player.R.防御百分比 = 100;
-    Player.R.攻击百分比 = 100;
-    Player.R.魔法百分比 = 100;
-    Player.R.道术百分比 = 100;
-    Player.R.刺术百分比 = 100;
-    Player.R.射术百分比 = 100;
-    Player.R.武术百分比 = 100;
-    Player.R.天枢职业百分比 = 100;
-    Player.R.血神职业百分比 = 100;
-    Player.R.暗影职业百分比 = 100;
-    Player.R.烈焰职业百分比 = 100;
-    Player.R.正义职业百分比 = 100;
-    Player.R.不动职业百分比 = 100;
-    Player.R.全体职业百分比 = 100;
+    Player.R.生命百分比 = 0;
+    Player.R.防御百分比 = 0;
+    Player.R.攻击百分比 = 0;
+    Player.R.魔法百分比 = 0;
+    Player.R.道术百分比 = 0;
+    Player.R.刺术百分比 = 0;
+    Player.R.射术百分比 = 0;
+    Player.R.武术百分比 = 0;
+    Player.R.天枢职业百分比 = 0;
+    Player.R.血神职业百分比 = 0;
+    Player.R.暗影职业百分比 = 0;
+    Player.R.烈焰职业百分比 = 0;
+    Player.R.正义职业百分比 = 0;
+    Player.R.不动职业百分比 = 0;
+    Player.R.全体职业百分比 = 0;
 
     // 基础技能魔次
     Player.R.攻杀剑术魔次 = '0';
@@ -154,6 +154,8 @@ export function 清空变量(Player: TPlayObject): void {
     Player.R.经验加成 = 0;
     Player.R.爆率加成 = 0;
     Player.R.造成伤害 = '0';
+    Player.R.鞭尸几率 = 0;
+    Player.R.鞭尸次数 = 0;
 
     // 神器相关属性（每次统计时重置，由神器统计模块重新计算）
     Player.R.全体魔次 = '0';
@@ -165,8 +167,17 @@ export function 清空变量(Player: TPlayObject): void {
     Player.R.协作阶数 = 0;
     Player.R.神器爆率加成 = 0;
     Player.R.神器回收加成 = 0;
-    Player.R.神器增伤加成 = '0';
+    Player.R.神器增伤加成 = 0;
     Player.R.基因锁等级 = Player.R.基因锁等级 || 0; // 基因锁等级保留，不重置
+    Player.R.暴击几率 = 0;
+    Player.R.暴击伤害 = 0;
+    Player.R.无视防御 = 0;
+    Player.R.基因增加伤害 = 0;
+
+    Player.R.最终爆率加成 = 0;
+    Player.R.最终回收倍率 = 0;
+    Player.R.最终极品倍率 = 0;
+    Player.R.最终鞭尸次数 = 0;
 
     Player.RecalcAbilitys();
 }
@@ -450,7 +461,14 @@ function 处理技能魔次(Player: TPlayObject, 魔次ID: number, 属性值: st
 
 
 // ==================== JSON属性处理 ====================
-/** 处理装备CustomDesc中的JSON属性 */
+/** 
+ * 处理装备CustomDesc中的JSON属性
+ * 
+ * 注意：
+ * - OutWay 保存的是截断后的数值，无法处理大数值
+ * - CustomDesc JSON 保存的是完整的大数值字符串
+ * - 因此仅使用 JSON 统计属性，确保大数值计算正确
+ */
 function 处理JSON属性(Player: TPlayObject, 属性数据: any): void {
     if (!属性数据) return;
 
@@ -480,10 +498,14 @@ function 处理JSON属性(Player: TPlayObject, 属性数据: any): void {
 // ==================== 基因加成应用 ====================
 /** 应用基因加成到属性 */
 function 应用基因加成(Player: TPlayObject): void {
+
+    // 根据职业提高主属性
+    const 主属性索引 = 161 + Player.Job; // 161-166对应job 0-5
+    const 主属性原值 = Player.R.自定属性[主属性索引] || '0';
     // 狂化：暴击几率提高20%，暴击伤害提高500%
     if (Player.R.狂化阶数 > 0) {
-        Player.AddedAbility.CriticalHit += 20;
-        Player.AddedAbility.CriticalHitAppendDamage += 500;
+        Player.R.暴击几率 += 20;
+        Player.R.暴击伤害 += 500;
     }
 
     // 迅疾：攻击无视防御20%，攻击伤害提高200%
@@ -514,23 +536,25 @@ function 应用基因加成(Player: TPlayObject): void {
 
     // 念力：爆率提高20%，主属性提高10%
     if (Player.R.念力阶数 > 0) {
-        Player.AddedAbility.ItemRate += 20;
-
-        // 根据职业提高主属性
-        const 主属性索引 = 161 + Player.Job; // 161-166对应job 0-5
-        const 主属性原值 = Player.R.自定属性[主属性索引] || '0';
+        Player.R.神器爆率加成 += 20;
         const 主属性增量 = 智能计算(主属性原值, '0.1', 3);
         Player.R.自定属性[主属性索引] = 智能计算(主属性原值, 主属性增量, 1);
     }
 
     // 协作：极品率提高10%，主属性提高10%
     if (Player.R.协作阶数 > 0) {
-        Player.R.最终极品倍率 = 智能计算(Player.R.最终极品倍率 || '0', '10', 1);
-
-        // 根据职业提高主属性
-        const 主属性索引 = 161 + Player.Job; // 161-166对应job 0-5
-        const 主属性原值 = Player.R.自定属性[主属性索引] || '0';
+        Player.R.极品率加成 = 智能计算(Player.R.最终极品倍率 || '0', '10', 1);
         const 主属性增量 = 智能计算(主属性原值, '0.1', 3);
+        Player.R.自定属性[主属性索引] = 智能计算(主属性原值, 主属性增量, 1);
+    }
+    if (Player.V.职业 == '暗影') {
+        const 增量 = Player.R.暗影值 / 100
+        const 主属性增量 = 智能计算(主属性原值, String(增量), 3);
+        Player.R.自定属性[主属性索引] = 智能计算(主属性原值, 主属性增量, 1);
+    }
+    if (Player.V.泰山等级 > 0 && Player.V.职业 == '不动') {
+        const 增量 = (Player.V.泰山等级 * 0.03) + 0.27
+        const 主属性增量 = 智能计算(主属性原值, String(增量), 3);
         Player.R.自定属性[主属性索引] = 智能计算(主属性原值, 主属性增量, 1);
     }
 }
@@ -555,12 +579,12 @@ function 应用属性倍数(Player: TPlayObject): void {
 
     // 应用百分比加成（基础值 * 百分比 / 100）
     for (const [索引, 百分比名] of Object.entries(百分比映射)) {
-        const 百分比 = Player.R[百分比名] || 100;
-        if (百分比 > 100) {
+        const 百分比 = Player.R[百分比名] || 0;
+        if (百分比 > 0) {
             const idx = Number(索引);
             const 原值 = Player.R.自定属性[idx] || '0';
             // 增量 = 原值 * (百分比 - 100) / 100 = 原值 * 倍率
-            const 倍率 = (百分比 - 100) / 100;
+            const 倍率 = 百分比 / 100;
             const 增量 = 智能计算(原值, String(倍率), 3);
             Player.R.自定属性[idx] = 智能计算(原值, 增量, 1);
         }
@@ -591,12 +615,12 @@ function 应用属性倍数(Player: TPlayObject): void {
 
     // 应用职业技能魔次百分比
     for (const [百分比名, 魔次列表] of Object.entries(职业魔次映射)) {
-        const 百分比 = Player.R[百分比名] || 100;
-        if (百分比 > 100) {
-            const 倍率 = (百分比 - 100) / 100;
+        const 百分比 = Player.R[百分比名] || 0;
+        if (百分比 > 0) {
+            const 倍率 = 百分比 / 100;
             for (const 魔次名 of 魔次列表) {
                 const 原值 = Player.R[魔次名] || '0';
-                if (原值 !== '0') {
+                if (大于(原值, '0')) {
                     const 增量 = 智能计算(原值, String(倍率), 3);
                     Player.R[魔次名] = 智能计算(原值, 增量, 1);
                 }
@@ -605,12 +629,12 @@ function 应用属性倍数(Player: TPlayObject): void {
     }
 
     // 应用全体职业百分比（影响所有技能魔次）
-    const 全体百分比 = Player.R.全体职业百分比 || 100;
-    if (全体百分比 > 100) {
-        const 倍率 = (全体百分比 - 100) / 100;
+    const 全体百分比 = Player.R.全体职业百分比 || 0;
+    if (全体百分比 > 0) {
+        const 倍率 = 全体百分比 / 100;
         for (const 魔次名 of 全部魔次列表) {
             const 原值 = Player.R[魔次名] || '0';
-            if (原值 !== '0') {
+            if (大于(原值, '0')) {
                 const 增量 = 智能计算(原值, String(倍率), 3);
                 Player.R[魔次名] = 智能计算(原值, 增量, 1);
             }
@@ -688,25 +712,8 @@ export function 装备属性统计(Player: TPlayObject): void {
         const 装备 = 获取身上装备(Player, 位置);
         if (!装备) continue;
 
-        // 处理OutWay属性（基础属性 1-8条）
-        for (let i = 基础属性第一条; i <= 基础属性第八条; i++) {
-            const 词条ID = 装备.GetOutWay1(i);
-            const 属性值 = String(装备.GetOutWay2(i));
-            if (词条ID > 0 && 属性值 !== '0') {
-                处理基础词条(Player, 词条ID, 属性值);
-            }
-        }
-
-        // 处理职业魔次属性（10-15条）
-        for (let i = 职业第一条; i <= 职业第六条; i++) {
-            const 魔次ID = 装备.GetOutWay1(i);
-            const 属性值 = String(装备.GetOutWay2(i));
-            if (魔次ID > 0 && 属性值 !== '0') {
-                处理技能魔次(Player, 魔次ID, 属性值);
-            }
-        }
-
-        // 处理CustomDesc JSON属性
+        // 仅处理CustomDesc JSON属性（大数值完整保存在JSON中）
+        // 注意：OutWay 保存的是截断后的数值，无法处理大数值，因此不再使用
         const customDesc = 装备.GetCustomDesc();
         if (customDesc) {
             const 装备数据 = 装备JSON缓存.获取(customDesc);
@@ -728,11 +735,18 @@ export function 装备属性统计(Player: TPlayObject): void {
     // 步骤3.7：应用捐献爆率加成
     const 捐献爆率加成 = 计算捐献爆率加成(Player);
 
+    if (Player.R.鞭尸几率 >= 100) { Player.R.鞭尸次数 += 1 }
+
+
     Player.R.最终爆率加成 = Math.max((Player.R.神器爆率加成 || 0) + (Player.V.宣传爆率 || 0) + (Player.V.赞助爆率 || 0) + 捐献爆率加成, 0)
 
     Player.R.最终回收倍率 = Math.max((Player.R.回收倍率 || 100) + (Player.V.宣传回收 || 0) + (Player.V.赞助回收 || 0), 100)
 
     Player.R.最终极品倍率 = Math.max((Player.R.极品率加成 || 0) + (Player.V.宣传极品 || 0) + (Player.V.赞助极品 || 0), 0)
+
+    Player.R.最终鞭尸次数 = Math.max(Player.R.鞭尸次数 + (Player.V.赞助鞭尸 || 0), 0)
+
+    if (Player.R.圣耀副本爆率加成) { Player.R.最终爆率加成 += Player.R.圣耀副本倍率 }
 
     // 步骤4：刷新属性并更新显示
     Player.SetSVar(92, Player.R.自定属性[167]); // 最大血量
@@ -772,6 +786,8 @@ const 属性配置: Array<[string, number, (p: TPlayObject) => string]> = [
     ['融合阶数', 9, p => String(p.R.融合阶数) || '0'],
     ['念力阶数', 9, p => String(p.R.念力阶数) || '0'],
     ['协作阶数', 9, p => String(p.R.协作阶数) || '0'],
+    ['鞭尸几率', 21, p => String(p.R.鞭尸几率) || '0'],
+    ['鞭尸次数', 21, p => String(p.R.最终鞭尸次数) || '0'],
 
 
 ];
@@ -881,4 +897,141 @@ export function 显示技能页面(Player: TPlayObject): void {
     }
 
     Player.SetClientUIProperty('技能详细信息', `SayText=${内容}`);
+}
+
+/** 本职业技能配置 - 根据Job显示 [技能名] */
+const 本职业技能施法配置: { [job: number]: string[] } = {
+    1: ['雷电术', '暴风雪'],          // 法师
+    2: ['灵魂火符', '飓风破'],        // 道士
+    4: ['精准箭术', '万箭齐发'],      // 弓箭
+};
+
+/** 新职业技能配置 - 根据V.职业显示 [技能名] */
+const 新职业技能施法配置: { [职业: string]: string[] } = {
+    '天枢': ['怒斩'],
+    '血神': ['血气献祭', '血气燃烧', '血魔临身'],
+    '暗影': ['暗影袭杀', '暗影剔骨', '暗影风暴', '暗影附体'],
+    '烈焰': ['火焰追踪', '烈焰护甲'],
+    '正义': ['圣光'],
+    '不动': ['如山', '人王盾', '金刚掌'],
+};
+
+/**
+ * 初始化自动施法变量
+ */
+function 初始化自动施法变量(Player: TPlayObject): void {
+    // 基础职业技能自动施法开关
+
+    Player.V.自动_雷电术 ??= false;
+    Player.V.自动_暴风雪 ??= false;
+    Player.V.自动_灵魂火符 ??= false;
+    Player.V.自动_飓风破 ??= false;
+    Player.V.自动_精准箭术 ??= false;
+    Player.V.自动_万箭齐发 ??= false;
+
+    // 新职业技能自动施法开关
+    Player.V.自动_怒斩 ??= false;
+    Player.V.自动_血气献祭 ??= false;
+    Player.V.自动_血气燃烧 ??= false;
+    Player.V.自动_血魔临身 ??= false;
+    Player.V.自动_暗影袭杀 ??= false;
+    Player.V.自动_暗影剔骨 ??= false;
+    Player.V.自动_暗影风暴 ??= false;
+    Player.V.自动_暗影附体 ??= false;
+    Player.V.自动_火焰追踪 ??= false;
+    Player.V.自动_烈焰护甲 ??= false;
+    Player.V.自动_圣光 ??= false;
+    Player.V.自动_如山 ??= false;
+    Player.V.自动_人王盾 ??= false;
+    Player.V.自动_金刚掌 ??= false;
+}
+
+/**
+ * 自动施法设置主界面
+ */
+export function 自动设置(Npc: TNormNpc, Player: TPlayObject): void {
+    初始化自动施法变量(Player);
+
+    const jobId = Player.Job;
+    const 职业名 = Player.V.职业 || '';
+
+    let str = `{S=自动施法设置;C=251;X=200;Y=10}\n`;
+    str += `{S=勾选后技能将自动释放;C=154;X=20;Y=40}\n\n`;
+
+    let y = 70;
+
+    // 合并基础技能和新职业技能为一个列表
+    const 基础技能列表 = 本职业技能施法配置[jobId] || [];
+    const 新职业技能列表 = 新职业技能施法配置[职业名] || [];
+    const 全部技能列表 = [...基础技能列表, ...新职业技能列表];
+
+    // 每行4个顺序排列显示
+    for (let i = 0; i < 全部技能列表.length; i++) {
+        const 技能名 = 全部技能列表[i];
+        const x = 20 + (i % 5) * 100;
+        const 当前Y = y + Math.floor(i / 5) * 35;
+        const 变量名 = `自动_${技能名}`;
+        const 图标 = Player.V[变量名] ? '31' : '30';
+
+        str += `<{I=${图标};F=装备图标.DATA;X=${x};Y=${当前Y}}/@属性统计.勾选技能(${变量名})>{S=${技能名};C=9;OX=3;Y=${当前Y}}\n`;
+    }
+
+    y += Math.ceil(全部技能列表.length / 5) * 35 + 20;
+
+    Npc.SayEx(Player, 'NPC中大窗口', str);
+}
+
+/**
+ * 勾选技能自动施法
+ */
+export function 勾选技能(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 变量名 = Args.Str[0];
+    Player.V[变量名] = !Player.V[变量名];
+
+    const 技能名 = 变量名.replace('自动_', '');
+    const 状态 = Player.V[变量名] ? '开启' : '关闭';
+    Player.SendMessage(`${技能名}自动施法已${状态}`, 1);
+
+    自动设置(Npc, Player);
+}
+
+/**
+ * 自动施法设置主界面
+ */
+export function 提示设置(Npc: TNormNpc, Player: TPlayObject): void {
+    let str = `{S=提示设置;C=251;X=200;Y=10}\n`;
+    str += `{S=取消勾选后将不再提示;C=154;X=20;Y=40}\n\n`;
+
+    let y = 70;
+
+    // 合并基础技能和新职业技能为一个列表
+    const 提示列表 = ['伤害提示', '护盾提示', '掉落提示']
+
+    // 每行4个顺序排列显示
+    for (let i = 0; i < 提示列表.length; i++) {
+        const 提示名 = 提示列表[i];
+        const x = 20 + (i % 5) * 100;
+        const 当前Y = y + Math.floor(i / 5) * 35;
+        const 变量名 = `${提示名}`;
+        const 图标 = Player.V[变量名] ? '31' : '30';
+
+        str += `<{I=${图标};F=装备图标.DATA;X=${x};Y=${当前Y}}/@属性统计.勾选提示(${变量名})>{S=${提示名};C=9;OX=3;Y=${当前Y}}\n`;
+    }
+
+    y += Math.ceil(提示列表.length / 5) * 35 + 20;
+
+    Npc.SayEx(Player, 'NPC中大窗口', str);
+}
+/**
+ * 勾选技能自动施法
+ */
+export function 勾选提示(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 变量名 = Args.Str[0];
+    Player.V[变量名] = !Player.V[变量名];
+
+    const 提示名 = 变量名.replace('提示', '');
+    const 状态 = Player.V[变量名] ? '开启' : '关闭';
+    Player.SendMessage(`${提示名}提示已${状态}`, 1);
+
+    提示设置(Npc, Player);
 }

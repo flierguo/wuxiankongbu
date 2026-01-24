@@ -2,6 +2,8 @@
 
 import { 装备属性统计 } from '../../_核心部分/_装备/属性统计';
 import { GetSameIPPlayerCount } from "../_功能"
+import { 新人职业技能 } from '../_服务/职业选择';
+import { 设置基础属性 } from '../_装备/装备掉落';
 
 ///////////////登陆///////////////
 
@@ -21,12 +23,6 @@ export function PlayerRegister(Player: TPlayObject): void {
 		let exp1 = Player.Exp
 		Player.AddExp(-exp1)
 	}
-	// if (Player.GetIsAdmin()) {
-	// 	Player.SetIsAdminMode(true)
-	// }
-
-
-
 
 	if (Player.GetJewelrys(4) != null && Player.GetJewelrys(4).GetName() == '甘道夫之戒') {
 		if (Player.V.隐身开关 == false) {
@@ -36,21 +32,8 @@ export function PlayerRegister(Player: TPlayObject): void {
 		}
 	}
 
-	// if ((Player.V.战神 == false && Player.V.骑士 == false && Player.V.火神 == false && Player.V.冰法 == false && Player.V.驯兽师 == false && Player.V.牧师 == false &&
-	// 	Player.V.刺客 == false && Player.V.鬼舞者 == false && Player.V.神射手 == false && Player.V.猎人 == false && Player.V.武僧 == false && Player.V.罗汉 == false) || Player.V.种族 == '') {
-	// 	Player.MapMove('边界村', 69, 119)
-	// } else {
-	// 	Player.MapMove('主城', random(15) + 98, random(15) + 112)
-	// }
-
-	// console.log(`生命倍数:${Player.R.生命倍数} , 防御倍数:${Player.R.防御倍数} , 攻击倍数:${Player.R.攻击倍数} , 魔法倍数:${Player.R.魔法倍数} , 道术倍数:${Player.R.道术倍数} , 刺术倍数:${Player.R.刺术倍数} , 射术倍数:${Player.R.射术倍数} , 武术倍数:${Player.R.武术倍数}`)
-
 	if (Player.Name == `鸿福` && Player.Account == `775800`) {
 		Player.SetPermission(10)
-
-		// 	// Player.IsAdminMode = true
-		// 	// Player.SuperManMode = false
-		// 	// Player.ObserverMode = true
 	}
 	Player.SetMaxBagSize(226);
 	delete GameLib.V[Player.PlayerID]
@@ -60,6 +43,7 @@ export function PlayerRegister(Player: TPlayObject): void {
 	Player.SetSuperManMode(false)
 	Player.SetDenyAutoAddHP(false)
 	装备属性统计(Player);/*重新计算玩家身上的装备*/
+	人物登录BUFF(Player)
 }
 ///////////////注册///////////////
 export function GiveNewPlayer(Player: TPlayObject): void {
@@ -74,10 +58,11 @@ export function GiveNewPlayer(Player: TPlayObject): void {
 		Player.SetCheck(i, false);
 	}
 	/* 背包/包裹 数量设置 */
-	Player.SetMaxBagSize(216);
+	Player.SetMaxBagSize(226);
 	Player.SetFunctionState(TFunctionFlag.ffJewelryBox, true);//首饰盒
 	Player.SetFunctionState(TFunctionFlag.ffZodiac, true);//生肖盒
-	Player.MapMove('边界村', 69, 119)
+	Player.MapMove('主城', 105, 120)
+	新手装备(Player)
 	/*系统消息提示*/
 	switch (Player.Job) {
 		case 0: GameLib.Broadcast(format('{S=喜讯ぐ;C=151}：欢迎新玩家战士〖{S=%s;C=227}〗踏上了让人热血沸腾的征战之路！我们区又多了一位新朋友！！！', [Player.Name])); break;
@@ -91,22 +76,6 @@ export function GiveNewPlayer(Player: TPlayObject): void {
 export function 自定义变量(Player: TPlayObject): void {
 	const vAny = Player.V as any;
 	const rAny = Player.R as any;
-
-	Player.V.全屏拾取 ??= false
-	Player.R.爆率加成 ??= 0
-	Player.R.经验加成 ??= 0
-	Player.V.鞭尸几率 ??= 0
-	Player.R.鞭尸几率 ??= 0
-	Player.V.自动拾取 ??= true
-	Player.V.自动回收 ??= false
-	Player.V.开通回收 ??= false
-	Player.V.自动存材料 ??= false
-
-	Player.V.时装 ??= false
-	Player.V.种族 ??= ''
-	Player.V.职业 ??= ''
-	Player.V.我要秒怪 ??= false
-
 
 	Player.R.生命 ??= '0'
 	Player.R.防御 ??= '0'
@@ -137,7 +106,7 @@ export function 自定义变量(Player: TPlayObject): void {
 
 
 
-	Player.R.圣耀地图爆率加成 ??= 1
+
 
 	//=========================================技能部分=================================================
 	// 批量初始化：技能属性（等级、倍攻、范围）
@@ -216,9 +185,11 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.暴击几率 ??= 0
 	Player.R.暴击伤害 ??= 0
 	Player.R.无视防御 ??= 0
+	Player.R.基因增加伤害 ??= 0
 
 
-
+	Player.R.圣耀地图爆率加成 ??= 0
+	Player.R.圣耀副本倍率 ??= 0
 
 	Player.R.神器爆率加成 ??= 0;
 	Player.R.神器回收加成 ??= 0;
@@ -247,12 +218,27 @@ export function 自定义变量(Player: TPlayObject): void {
 
 	Player.V.赞助爆率 ??= 0
 	Player.V.赞助回收 ??= 0
+	Player.V.赞助极品 ??= 0
+	Player.V.赞助鞭尸 ??= 0
 	Player.V.赞助极品率 ??= 0
 
 
+	Player.V.全屏拾取 ??= false
+	Player.R.爆率加成 ??= 0
+	Player.R.经验加成 ??= 0
+	Player.R.鞭尸几率 ??= 0
+	Player.V.自动拾取 ??= true
+	Player.V.自动回收 ??= false
+	Player.V.开通回收 ??= false
+	Player.V.自动存材料 ??= false
+
+	Player.V.时装 ??= false
+	Player.V.种族 ??= ''
+	Player.V.职业 ??= ''
+	Player.V.我要秒怪 ??= false
+
+
 	Player.V.经验等级 ??= 0
-
-
 	Player.V.杀怪数量 ??= 0
 
 }
@@ -261,7 +247,61 @@ export function 自定义变量(Player: TPlayObject): void {
 
 export function 人物登录BUFF(Player: TPlayObject): void {
 	let Magic: TUserMagic
-	if (Player.V.职业 == '圣骑士') {
-
+	Magic = Player.FindSkill('查看属性')
+	if (!Magic) {
+		新人职业技能(Player)
+		Player.MapMove('主城', 105, 120)
 	}
 }
+// ==================== 类型定义 ====================
+
+// ==================== 类型定义 ====================
+interface 装备属性记录 {
+	职业属性_职业: number[]
+	职业属性_属性: string[]
+}
+
+function 新手装备(Player: TPlayObject): void {
+	// 初始化记录
+	const 装备属性记录: 装备属性记录 = {
+		职业属性_职业: [],
+		职业属性_属性: []
+	}
+	let Magic: TUserMagic;
+	let item: TUserItem
+	let 武器名字 = ''
+	let 衣服名字 = ''
+	const 武器值 = '1000'
+	const 衣服值 = '100000'
+	Player.Give('回城石', 1)
+	Player.Give('随机传送石', 1)
+	Player.Give('生命药水', 3)
+	switch (Player.GetJob()) {
+		case 0: 武器名字 = '乌木剑'; break
+		case 1: 武器名字 = '乌木剑'; break
+		case 2: 武器名字 = '乌木剑'; break
+		case 3: 武器名字 = '青铜匕首'; break
+		case 4: 武器名字 = '劣质的木弓'; break
+		case 5: 武器名字 = '盘龙棍'; break
+	}
+
+	item = Player.GiveItem(武器名字)
+	if (item) {
+		const 属性ID = Player.GetJob() + 100
+		设置基础属性(item, 1, 属性ID, 武器值, 装备属性记录)
+		item.SetCustomDesc(JSON.stringify(装备属性记录))
+	}
+	if (Player.GetGender() == 0) { 衣服名字 = '布衣(男)'; }
+	else { 衣服名字 = '布衣(女)'; }
+	item = Player.GiveItem(衣服名字)
+	if (item) {
+		设置基础属性(item, 1, 106, 衣服值, 装备属性记录)
+		设置基础属性(item, 2, 107, 衣服值, 装备属性记录)
+	}
+	// 保存属性记录
+	item.SetCustomDesc(JSON.stringify(装备属性记录))
+	Player.UpdateItem(item)
+	新人职业技能(Player)
+
+}
+

@@ -1,12 +1,14 @@
-import { 组件套装映射, 使用神器组件 } from "./神器统计"
+import { 使用神器组件 } from "./神器统计"
+import { 组件套装映射, 特殊单件映射 } from "../_服务/神器配置"
 import { 装备属性统计 } from "./属性统计"
 
 export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUserItem): void {
     const X = random(10)
 
-    // 检查是否为神器组件（使用 Map 查找）
-    if (组件套装映射.has(UserItem.GetName())) {
-        使用神器组件(Player, UserItem.GetName())
+    // 检查是否为神器组件（套装组件或特殊单件）
+    const 物品名称 = UserItem.GetName();
+    if (组件套装映射.has(物品名称) || 特殊单件映射.has(物品名称)) {
+        使用神器组件(Player, 物品名称)
         装备属性统计(Player)
         return  // 神器组件使用后直接返回
     }

@@ -3,10 +3,11 @@
  * 地图配置已迁移到 世界配置.ts 统一管理
  */
 
-import { 
-    难度等级, 
-    难度列表, 
-    固定副本数量, 
+import { 装备属性统计 } from '../_装备/属性统计'
+import {
+    难度等级,
+    难度列表,
+    固定副本数量,
     最大副本数,
     地图名称,
     地图配置,
@@ -47,7 +48,7 @@ export function 初始化副本池() {
     GameLib.R.难度等级 = 难度等级
     GameLib.R.难度列表 = 难度列表
     GameLib.R.地图配置 = 地图配置
-    
+
     // 检查是否已初始化
     let 现有副本池 = GameLib.R.地图池 as 副本信息[]
     if (现有副本池 && 现有副本池.length > 0) {
@@ -60,7 +61,7 @@ export function 初始化副本池() {
         }
         if (已有固定副本) return
     }
-    
+
     // 初始化副本池数组
     let 副本池: 副本信息[] = []
     for (let i = 0; i < 最大副本数 * 地图配置.length; i++) {
@@ -75,7 +76,7 @@ export function 初始化副本池() {
             难度: ''
         }
     }
-    
+
     GameLib.R.地图池 = 副本池
 
     // 为每个地图创建5个固定难度副本
@@ -92,10 +93,10 @@ export function 初始化副本池() {
 
 function 创建固定副本(地图名: string, 下标: number, 固定星级: number, 需求等级: number, 地图等级: number, 难度: string) {
     let 副本池 = GameLib.R.地图池 as 副本信息[]
-    
+
     if (!副本池 || 下标 < 0 || 下标 >= 副本池.length) return
     if (副本池[下标]?.地图ID && 副本池[下标].地图ID !== '') return
-    
+
     let map = GameLib.CreateDuplicateMap(地图名, 0)
     if (map) {
         let 显示名 = `${地图名}«${难度}»`
@@ -179,128 +180,10 @@ export function ID取地图名(副本ID: string): string {
     return '未知'
 }
 
-// ==================== 副本创建函数 ====================
-// export function 创建副本(地图名: string, 下标数组: number[], 固定星级: number, 需求等级: number) {
-//     let 副本池 = GameLib.R.地图池 as 副本信息[]
-    
-//     for (let i = 0; i < 副本池.length; i++) {
-//         if (副本池[i]?.地图名 === 地图名 && 
-//             副本池[i].固定星级 === 固定星级 && 
-//             副本池[i].需求等级 === 需求等级 &&
-//             副本池[i].地图ID !== '') {
-//             console.log(`已存在相同配置的副本: ${地图名} (星级:${固定星级})，跳过创建`)
-//             return
-//         }
-//     }
-
-//     下标数组.forEach(下标 => {
-//         if (下标 >= 0 && 下标 < 副本池.length) {
-//             if (副本池[下标]?.地图ID && 副本池[下标].地图ID !== '') {
-//                 console.log(`下标 ${下标} 已有副本，跳过创建`)
-//                 return
-//             }
-            
-//             let map = GameLib.CreateDuplicateMap(地图名, 0)
-//             if (map) {
-//                 副本池[下标] = {
-//                     地图名: 地图名,
-//                     地图ID: map.MapName,
-//                     显示名: `${地图名}(${固定星级}星)`,
-//                     固定星级: 固定星级,
-//                     需求等级: 需求等级,
-//                     下标: 下标,
-//                     地图等级: 固定星级,
-//                     难度: ''
-//                 }
-//                 map.DisplayName = 副本池[下标].显示名
-//             }
-//         }
-//     })
-
-// }
-
-// export function 创建单个副本(地图名: string, Player: TPlayObject): number {
-//     let 副本池 = GameLib.R.地图池 as 副本信息[]
-//     let 地图星级 = 0
-//     let 配置 = 地图配置.find(c => c.地图名 === 地图名)
-    
-//     if (!配置) {
-//         console.log(`错误：找不到地图配置 ${地图名}`)
-//         return -1
-//     }
-    
-//     地图星级 = 配置.固定星级 * Player.V.挑战倍数
-    
-//     for (let i = 0; i < 副本池.length; i++) {
-//         if (副本池[i]?.地图名 === 地图名 && 
-//             副本池[i].显示名 === `${地图名}(${地图星级}星)` &&
-//             副本池[i].地图ID !== '') {
-//             Player.MessageBox(`已存在相同配置的副本: ${地图名}(${地图星级}星)，请勿重复创建！`)
-//             return -1
-//         }
-//     }
-
-//     if (Player.Level < 配置.需求等级) {
-//         Player.MessageBox(`等级不足 (需求等级:${配置.需求等级}, 当前:${Player.Level})`)
-//         return -1
-//     }
-
-//     let 地图索引 = 地图配置.findIndex(c => c.地图名 === 地图名)
-//     if (地图索引 === -1) return -1
-
-//     let 起始下标 = 地图索引 * 最大副本数
-//     let 可用下标 = -1
-
-//     for (let i = 起始下标 + 固定副本数量 + 1; i < 起始下标 + 最大副本数; i++) {
-//         if (!副本池[i] || !副本池[i].地图ID) {
-//             可用下标 = i
-//             break
-//         }
-//     }
-
-//     if (可用下标 === -1) {
-//         console.log(`错误：${地图名} 已达到最大副本数`)
-//         return -1
-//     }
-
-//     GameLib.R.挑战倍数 ??= []
-//     GameLib.R.挑战倍数.push(Player.V.挑战倍数)
-//     GameLib.R.当前挑战倍数 = Player.V.挑战倍数
-
-//     地图星级 = 配置.固定星级 * Player.V.挑战倍数
-    
-//     let map = GameLib.CreateDuplicateMap(地图名, 0)
-//     if (map) {
-//         副本池[可用下标] = {
-//             地图名: 地图名,
-//             地图ID: map.MapName,
-//             显示名: `${地图名}(${地图星级}星)`,
-//             固定星级: 配置.固定星级,
-//             需求等级: 配置.需求等级,
-//             挑战倍数: 地图星级,
-//             下标: 可用下标,
-//             地图等级: 配置.地图等级,
-//             难度: ''
-//         }
-
-//         map.DisplayName = 副本池[可用下标].显示名
-//         console.log(`创建单个副本成功: ${副本池[可用下标].显示名} : ${副本池[可用下标].地图ID}`)
-
-//         Player.RandomMove(map.MapName)
-//         return 可用下标
-//     }
-
-//     return -1
-// }
-
-
-// ==================== 圣耀副本系统 ====================
-
-
 export function 创建圣耀副本(地图名: string, Player: TPlayObject): number {
     let 副本池 = GameLib.R.地图池 as 副本信息[]
     let 配置 = 地图配置.find(c => c.地图名 === 地图名)
-    
+
     if (!配置) {
         Player.MessageBox(`错误：找不到地图配置 ${地图名}`)
         return -1
@@ -414,7 +297,8 @@ export function 进入圣耀副本(Player: TPlayObject, 下标: number): boolean
         Player.R.圣耀副本爆率加成 = true
         Player.R.圣耀副本倍率 = 副本.圣耀倍率 || 1
         Player.R.当前圣耀副本ID = 副本.地图ID
-        Player.SendMessage(`{S=【圣耀副本】;C=250}进入圣耀副本，爆率提升 {S=${副本.圣耀倍率};C=253} 倍！`, 1)
+        装备属性统计(Player)
+        Player.SendMessage(`{S=【圣耀副本】;C=250}进入圣耀副本，爆率提升 {S=${副本.圣耀倍率};C=253} %！`, 1)
     }
 
     return true
@@ -427,6 +311,7 @@ export function 离开圣耀副本检测(Player: TPlayObject): void {
             Player.R.圣耀副本爆率加成 = false
             Player.R.圣耀副本倍率 = 0
             Player.R.当前圣耀副本ID = ''
+            装备属性统计(Player)
             Player.MessageBox(`{S=【圣耀副本】;C=254}离开圣耀副本，爆率加成已取消`)
         }
     }
@@ -435,13 +320,13 @@ export function 离开圣耀副本检测(Player: TPlayObject): void {
 export function 关闭圣耀副本(下标: number): void {
     let 副本池 = GameLib.R.地图池 as 副本信息[]
     let 副本 = 副本池[下标]
-    
+
     if (!副本 || !副本.是圣耀副本 || !副本.地图ID || 副本.地图ID === '') return
-    
+
     console.log(`手动关闭圣耀副本: ${副本.显示名}`)
     GameLib.ClearMapMon(副本.地图ID)
     GameLib.CloseDuplicateMap(副本.地图ID)
-    
+
     副本池[下标] = {
         地图名: '', 地图ID: '', 显示名: '', 固定星级: 0, 需求等级: 0,
         下标: 下标, 地图等级: 0, 难度: ''
@@ -451,12 +336,12 @@ export function 关闭圣耀副本(下标: number): void {
 export function 确认重建圣耀副本(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let 地图名 = Player.R.待重建圣耀副本地图名
     let 旧副本下标 = Player.R.待关闭圣耀副本下标
-    
+
     if (!地图名 || 旧副本下标 === undefined) {
         Player.MessageBox('操作已过期，请重新尝试')
         return
     }
-    
+
     关闭圣耀副本(旧副本下标)
     Player.R.待重建圣耀副本地图名 = undefined
     Player.R.待关闭圣耀副本下标 = undefined
@@ -510,23 +395,23 @@ export function 取圣耀爆率加成(Player: TPlayObject): number {
 export function 副本清理(): void {
     let 副本池 = GameLib.R.地图池 as 副本信息[]
     Randomize()
-    
+
     for (let i = 0; i < 副本池.length; i++) {
         if (!副本池[i] || 副本池[i].地图ID === '') continue
-        
+
         let map = GameLib.FindMap(副本池[i].地图ID)
         if (!map) continue
-        
+
         GameLib.R[`副本_${i}_检测清理`] ??= 0
         let 玩家数量 = map.GetHumCount() || 0
         let 已激活 = GameLib.R[副本池[i].地图ID] === true
-        
+
         if (玩家数量 < 1 && GameLib.R[`副本_${i}_检测清理`] < 30 && 已激活) {
             GameLib.R[`副本_${i}_检测清理`]++
-            
+
             if (GameLib.R[`副本_${i}_检测清理`] >= 10) {
                 let 是固定副本 = (副本池[i].下标 % 最大副本数) >= 1 && (副本池[i].下标 % 最大副本数) <= 固定副本数量
-                
+
                 if (是固定副本) {
                     GameLib.ClearMapMon(副本池[i].地图ID)
                     GameLib.R[`副本_${i}_检测清理`] = 0

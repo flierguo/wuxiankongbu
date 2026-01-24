@@ -5,7 +5,7 @@
 
 import { 小于等于, 智能计算, 比较 } from '../../_大数值/核心计算方法'
 import { 数字转单位2, 数字转单位3, 随机小数 } from '../字符计算'
-import { 取地图配置, 地图配置 } from '../世界配置'
+import { 取地图配置, 取完整地图配置, 地图配置 } from '../世界配置'
 import { TAG, 基础词条, 技能魔次, 装备颜色, 基础属性分割, 基础属性第一条, 基础属性第八条, 职业魔次分割, 职业第一条, 职业第六条, 装备需求等级, 基础数值 } from '../基础常量'
 import { 掉落自动回收 } from './装备回收'
 // import { TAG装备倍数 } from '../进阶系统'
@@ -87,7 +87,7 @@ const 随机范围 = (min: number, max: number): number => min + random(max - mi
 /**
  * 设置基础装备属性
  */
-function 设置基础属性(物品: TUserItem, 索引: number, 属性ID: number, 属性值: string, 记录: 装备属性记录): void {
+export function 设置基础属性(物品: TUserItem, 索引: number, 属性ID: number, 属性值: string, 记录: 装备属性记录): void {
     const 前端数字 = 数字转单位2(属性值)
     const 后端单位 = 数字转单位3(属性值)
     const 位数 = 计算位数(属性值)
@@ -95,7 +95,9 @@ function 设置基础属性(物品: TUserItem, 索引: number, 属性ID: number,
     物品.SetOutWay1(索引, 属性ID)
     物品.SetOutWay2(索引, Number(前端数字))
     物品.SetOutWay3(索引, Number(后端单位))
-    物品.SetCustomValue(属性ID - 100, 位数)  // 基础词条额外设置
+    if (属性ID >= 100 && 属性ID <= 115) {
+        物品.SetCustomValue(属性ID - 100, 位数)  // 基础词条额外设置
+    }
 
     记录.职业属性_职业.push(属性ID)
     记录.职业属性_属性.push(属性值)
@@ -136,15 +138,26 @@ function 设置魔次属性(物品: TUserItem, 索引: number, 属性ID: number,
  * @param TAG倍数 TAG装备倍数
  */
 function 计算属性值(地图等级: number, 翻倍类型: string, Player: TPlayObject, 基础翻倍: number, 装备基础: string): string {
-    // 基础值 = 地图等级 * 随机倍数 * 装备基础
-    const 随机倍数 = 随机小数(0.5, 2).toFixed(2)
+    // 多重随机因素，确保每条属性值独特
+    // 1. 主随机倍数（扩大范围：0.3-5）
+    const 随机倍数 = 随机小数(0.3, 5).toFixed(4)
     let 基础值 = 智能计算(String(地图等级), 随机倍数, 3)
 
+    // 2. 装备基础加成
     基础值 = 智能计算(基础值, 装备基础, 3)
-    // 使用传入的基础翻倍
+
+    // 3. 使用传入的基础翻倍
     基础值 = 智能计算(基础值, String(基础翻倍), 3)
 
-    基础值 = 智能计算(基础值, '0.1', 3)
+    // 4. 额外随机加成（0.8-1.5倍，增加差异性）
+    const 额外随机 = 随机小数(0.8, 1.5).toFixed(4)
+    基础值 = 智能计算(基础值, 额外随机, 3)
+
+    // 5. 随机偏移量（增加或减少1-20%，防止完全相同的数值）
+    const 偏移方向 = random(2) === 0 ? 1 : -1
+    const 偏移百分比 = 1 + 偏移方向 * (random(20) + 1) / 100
+    基础值 = 智能计算(基础值, String(偏移百分比.toFixed(4)), 3)
+
     // 极品倍率 = 1-(Player.R.极品率/100 + 20)  1/(2000-Player.R.极品率)几率
     const 极品率 = Player.R?.极品率 || 0
     const 极品几率分母 = Math.max(100, 1500 - 极品率)
@@ -168,11 +181,11 @@ function 计算属性值(地图等级: number, 翻倍类型: string, Player: TPl
  */
 function 计算魔次属性值(地图等级: number, 分组: number, Player: TPlayObject, 装备基础: string): string {
     // 魔次基础值 = 地图等级 * 随机倍数 * TAG倍数（每件装备独立随机）
-    const 随机倍数 = 随机小数(0.2, 8).toFixed(2)
+    const 随机倍数 = 随机小数(0.2, 2).toFixed(4)
     let 基础值 = 智能计算(String(地图等级), 随机倍数, 3)
 
     // 基础翻倍
-    const 基础翻倍 = 1 + random(10)
+    const 基础翻倍 = 1 + random(5)
     基础值 = 智能计算(基础值, String(基础翻倍), 3)
 
     // 职业技能(分组2)数值为其他的1/10000
@@ -227,8 +240,10 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     // 获取地图等级和TAG装备倍数
     const 地图名 = Monster.Map?.DisplayName || ''
     const 当前地图配置 = 取地图配置(地图名)
+    const 完整配置 = 取完整地图配置(地图名)
     const 需求等级 = 当前地图配置?.需求等级 || 1
     const 地图等级 = 当前地图配置?.地图等级 || 100
+    const 装备属性倍数 = 完整配置?.装备属性倍数 || 1
     const 装备基础 = Monster.GetSVar(基础数值)
 
     // 初始化记录
@@ -270,12 +285,12 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     }
 
     // 生成基础翻倍值（用于装备价值计算）
-    const 基础翻倍 = (数值平衡配置.基础翻倍最小 + random(数值平衡配置.基础翻倍范围)) * Player.R.最终回收倍率 / 10
-
+    const 基础翻倍 = (数值平衡配置.基础翻倍最小 + random(数值平衡配置.基础翻倍范围))
+    const 装备价值 = 基础翻倍 * Player.R.最终回收倍率 / 10
     // 设置装备需求及价值（OutWay3存储基础翻倍作为装备价值）
     UserItem.SetOutWay1(装备需求等级, 3)
     UserItem.SetOutWay2(装备需求等级, 需求等级)
-    UserItem.SetOutWay3(装备需求等级, 基础翻倍)
+    UserItem.SetOutWay3(装备需求等级, 装备价值)
 
     // 设置基础属性分割
     UserItem.SetOutWay1(基础属性分割, 1)

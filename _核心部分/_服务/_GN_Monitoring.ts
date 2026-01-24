@@ -156,7 +156,7 @@ export function RobotPlugIn(Player: TPlayObject): void {
         Player.SetPVar(_P_P_MAGIC, 0);
     }
     /*跑步 次数*/
-    if (Player.GetPVar(_P_P_RUNNING) > 22) {
+    if (Player.GetPVar(_P_P_RUNNING) > 30) {
         if (Player.GetPVar(_P_P_PRISON) > 2) {
             Player.RandomMove(Prison);
             Player.SetPVar(_P_P_PRISON, 0);

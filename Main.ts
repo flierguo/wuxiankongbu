@@ -19,6 +19,7 @@ import * as 延时触发 from "./_核心部分/_玩家/延时触发"
 
 import * as 装备掉落 from "./_核心部分/_装备/装备掉落"
 import * as 装备回收 from "./_核心部分/_装备/装备回收"
+import * as 属性统计 from "./_核心部分/_装备/属性统计"
 
 import * as 职业选择 from "./_核心部分/_服务/职业选择"
 import * as 升级幸运 from "./_核心部分/_服务/升级幸运"
@@ -65,6 +66,7 @@ UnitMap.set("传送阵法", 传送阵法)
 UnitMap.set("延时触发", 延时触发)
 UnitMap.set("测试功能", 测试功能)
 UnitMap.set("宣传使者", 宣传使者)
+UnitMap.set("属性统计", 属性统计)
 
 
 

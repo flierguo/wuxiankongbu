@@ -17,6 +17,9 @@ import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
 import * as 随身仓库 from "../_核心部分/_服务/可视仓库"
 import { 杀怪触发 } from "../_核心部分/_玩家/杀怪触发"
 
+// 导入开关类/光环类技能函数
+import { 圣光, 血气燃烧, 暗影剔骨, 烈焰护甲, 如山, 血魔临身, 暗影附体 } from "./MagicNpc"
+
 //人物杀怪
 GameLib.onKillMonster = (Player: TPlayObject, Monster: TActor): void => {
     Randomize()
@@ -115,7 +118,30 @@ GameLib.onMagicSpell = (Player: TPlayObject, UserMagic: TUserMagic, nTargetX: nu
     if (UserMagic.GetMagID() == 166) {  //用了潜行再用自定义技能随便放个内置技能强行退出隐身
         return true
     }
+
+    // ==================== 开关类/光环类技能处理 ====================
+    // 这些技能无需目标即可触发，直接在此处理
+    const 技能名 = UserMagic.GetName();
+    const 开关类技能映射: { [key: string]: (Source: TActor, Target: TActor) => void } = {
+        '圣光': 圣光,
+        '血气燃烧': 血气燃烧,
+        '暗影剔骨': 暗影剔骨,
+        '烈焰护甲': 烈焰护甲,
+        '如山': 如山,
+        '血魔临身': 血魔临身,
+        '暗影附体': 暗影附体,
+    };
+
+    const 技能函数 = 开关类技能映射[技能名];
+    if (技能函数) {
+        // 开关类技能直接调用对应的处理函数，传入玩家自身作为 Source 和 Target
+        技能函数(Player, Player);
+        return true; // 返回 true 表示已处理，不再执行引擎默认逻辑
+    }
+
     释放魔法触发(Player, UserMagic, Target)
+
+
     return false
 }
 //人物获得经验值时触发
@@ -436,9 +462,15 @@ GameLib.onCustomBuffAct = function (Actor: TActor, Buff: TBuff): void {
 //移除Buff时触发
 GameLib.onRemoveBuff = function (Actor: TActor, Buff: TBuff): void {
     let Player: TPlayObject = Actor as TPlayObject
+    装备属性统计(Player)
 }
 //添加BUFF触发
 GameLib.onAddBuff = (Actor: TActor, Buff: TBuff, Accept: boolean): boolean => {
+    // 装备属性统计(player)
+    // if (Actor instanceof TPlayObject) {
+    let Player: TPlayObject = Actor as TPlayObject
+    装备属性统计(Player)
+    // }
     return true
 }
 //点击背包物品触发 

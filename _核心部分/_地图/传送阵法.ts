@@ -3,13 +3,18 @@ import * as 地图 from './地图';
 const 地图声明 = 地图.地图配置
 
 // 传送阵地图配置表 - 根据 Npc.Tag 配置不同地图列表
-const 传送阵配置: Record<number, { 地图列表: string[], 显示倍数设置?: boolean, 绑定回城石?: number }> = {
+const 传送阵配置: Record<number, { 地图列表: string[], 显示倍数设置?: boolean, 显示地图信息?: boolean, 绑定回城石?: number }> = {
     // 默认配置 (Tag=0 或其他未定义的Tag)
     0: {
-        地图列表: ['浣熊市', '蜂巢入口', '病毒研究室', '生化实验室', '激光走廊', '红后控制室'],
-        显示倍数设置: true
+        地图列表: ['新手地图'],
+        显示倍数设置: true,
+        显示地图信息: true
     },
     1: {
+        地图列表: ['浣熊市', '蜂巢入口', '病毒研究室', '生化实验室', '激光走廊', '红后控制室'],
+        显示倍数设置: true,
+    },
+    2: {
         地图列表: ['沙漠绿洲', '凄凉之地', '狂风峭壁', '崎岖索道', '激光走廊'],
         显示倍数设置: false,
         绑定回城石: 1
@@ -32,11 +37,20 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     let S = `\\\\\\\\\\\\
             ${图标}
             ${按钮}
-    {S=地图挑战等级 = 地图固定星级 * 挑战倍数;X=50;Y=390}`
+    {S=圣耀地图说明;HINT=圣耀地图会有更多的BOSS和更高的难度,同时进入圣耀地图还会增加相应倍数的爆率#92例如:设置100倍,生物难度提高100倍的同时,也会增加玩家100%爆率.#92圣耀地图持续时间24小时,只有创建者和同队伍玩家可进入!!;AC=251,249,222,210;X=50;Y=390}`
 
     // 根据配置显示倍数设置
     if (配置.显示倍数设置) {
-        S += `\n    {S=当前倍数: ${Player.V.挑战倍数} 倍;X=50;Y=360}          <{S=倍数设置;X=220;Y=360}/@@InPutString11(输入准备挑战的倍数。}>`
+        S += `\n    {S=当前圣耀倍数: ${Player.R.圣耀地图爆率加成} 倍;X=50;Y=360}          <{S=倍数设置;X=220;Y=360}/@@InPutString11(输入倍数。}>`
+    }
+    // 根据配置显示地图信息
+    if (配置.显示地图信息) {
+        S += `{S=地图介绍:除新手地图外,其他均可掉落主神宝物.;C=9;X=50;Y=150}`
+        S += `{S=难度越高的怪,掉落的几率越高.;C=9;X=50;Y=175}`
+        S += `{S=橙色BOSS随地图小怪刷新;C=9;X=50;Y=200}`
+        S += `{S=红色BOSS为固定时间刷新;C=9;X=50;Y=225}`
+        S += `{S=金色BOSS为当前地图杀怪数达到指定数量刷新;C=9;X=50;Y=250}`
+        S += `{S=圣耀地图BOSS数量翻倍,还有爆率加成;C=9;X=50;Y=275}`
     }
 
     // 根据配置显示绑定回城石
@@ -47,17 +61,6 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     Npc.SayEx(Player, '传送', S)
 }
 
-
-export function 最高(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 最高倍数 = Args.Int[0];
-    if (Player.V.最高挑战倍数 >= 最高倍数) {
-        Player.V.挑战倍数 = 最高倍数;
-    } else {
-        Player.V.挑战倍数 = Player.V.最高挑战倍数;
-    }
-    console.log(`玩家:${Player.GetName()} , 最高倍数:${最高倍数} , 当前倍数:${Player.V.挑战倍数}`);
-    Main(Npc, Player, Args);
-}
 
 export function InPutString11(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let 最高倍数 = Args.Int[0];
@@ -170,10 +173,10 @@ export function 固定传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         Player.MessageBox(`您的等级不足，无法进入${地图名}。`);
         return;
     }
-    if (Player.V.地图成就 + 1 < 地图配置.固定星级) {
-        Player.MessageBox(`您的地图成就不足，无法进入${地图名}。`);
-        return;
-    }
+    // if (Player.V.地图成就 + 1 < 地图配置.固定星级) {
+    //     Player.MessageBox(`您的地图成就不足，无法进入${地图名}。`);
+    //     return;
+    // }
     Player.RandomMove(地图.取地图ID(下标))
 
 }

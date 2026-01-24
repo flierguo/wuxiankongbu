@@ -1,21 +1,16 @@
 // import * as XXXX from "../功能脚本组/[XX]/XXXX"
 import * as 登录触发 from "../_核心部分/_玩家/登录触发"
 import { Refresh as 新刷怪属性 } from "../_核心部分/_生物/生物属性"
-import { 仓库总格子数, 仓库第一页, 关闭仓库, 特效 } from "../_核心部分/基础常量"
+import { 仓库总格子数, 仓库第一页, 关闭仓库, 技能ID, 特效 } from "../_核心部分/基础常量"
 import { Main } from "../_核心部分/_装备/装备回收"
-// import { 交易市场 } from "../_核心部分/_服务/交易中心"
-// import { 杀怪鞭尸 } from "../_核心部分/_玩家/杀怪触发"
 import * as 交易中心 from "../_核心部分/_服务/交易中心"
-// import { 计算伤害 } from "../大数值版本/攻击计算"
-// import { 计算伤害 } from '../应用智能优化版';
-// import { 计算伤害 } from '../性能优化/攻击计算_极致优化';
 import { 计算伤害 } from '../_核心部分/攻击计算';
-import { 属性下一页, 装备属性统计 } from "../_核心部分/_装备/属性统计"
+import { 属性下一页, 装备属性统计, 自动设置, 提示设置 } from "../_核心部分/_装备/属性统计"
 import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
-import { js_war } from "../全局脚本[公共单元]/utils/计算方法"
+import { js_war, 智能计算 } from "../_大数值/核心计算方法"
 import * as 地图1 from '../_核心部分/_地图/地图';
 import { 记录充值数据 } from "../_核心部分/充值属性"
-
+import * as 基础常量 from "../_核心部分/基础常量"
 
 import { 地图配置 } from "../_核心部分/世界配置"
 import { 测试功能 } from "../_核心部分/测试功能"
@@ -66,8 +61,56 @@ GameLib.onMonitorDamageEx = (ActorObject: TActor, ADamageSource: TActor, Tag: nu
     if (ADamageSource.Handle == ActorObject.Handle) { return 0 }//判断攻击者和被攻击者都不是自己
 
     计算伤害(ADamageSource, ActorObject, SkillID, 1)
+
     if (SkillID == 170) {
         ADamageSource.DamageDelay(ActorObject, 1, 300, 10170)
+    }
+
+    // 爆裂火冢：20%几率造成3格范围300%伤害,每级提高30%
+    // 注意：必须检查当前技能不是爆裂火冢本身，避免无限递归
+    if (ADamageSource.IsPlayer() && !ActorObject.IsPlayer() && SkillID !== 技能ID.烈焰.爆裂火冢) {
+        let Player = ADamageSource as TPlayObject
+        if (random(100) < 20 && Player.V.职业 === '烈焰') {
+            Player.MagicAttack(ActorObject, 技能ID.烈焰.爆裂火冢)
+        }
+    }
+
+    // ========== 正义职业被动技能：审判和神罚 ==========
+    // 这些是直接对怪物血量进行操作的最终伤害，不经过技能加成流程
+    if (ADamageSource.IsPlayer() && !ActorObject.IsPlayer()) {
+        let Player = ADamageSource as TPlayObject
+        if (Player.V.职业 === '正义') {
+            const 敌人当前血量 = ActorObject.GetSVar(91);
+            const 敌人最大血量 = ActorObject.GetSVar(92);
+
+            // 审判：对满血目标造成血量切割
+            // 切割比例：2% + 等级/200（上限20%）
+            if (敌人当前血量 === 敌人最大血量) {
+                const 等级 = Player.V.审判等级 || 1;
+                const 切割比例 = Math.min(2 + Math.floor(等级 / 200), 20) / 100;
+                // 直接扣除怪物血量
+                const 切割伤害 = 智能计算(敌人最大血量, String(切割比例), 3);
+                const 剩余血量 = 智能计算(敌人当前血量, 切割伤害, 2);
+                ActorObject.ShowEffectEx2(基础常量.特效.审判, -10, 20, true, 1);
+                ActorObject.SetSVar(91, js_war(剩余血量, '0') < 0 ? '0' : 剩余血量);
+                血量显示(ActorObject);
+                Player.SendCountDownMessage(`【审判】触发！切割${(切割比例 * 100).toFixed(0)}%最大血量`, 0);
+            }
+
+            // 神罚：1%几率造成敌人当前生命百分比伤害
+            // 比例：1% + 等级/200（上限20%）
+            if (random(200) < 1) {
+                const 等级 = Player.V.神罚等级 || 1;
+                const 比例 = Math.min(1 + Math.floor(等级 / 200), 20) / 1000;
+                // 直接扣除怪物血量
+                const 神罚伤害 = 智能计算(敌人当前血量, String(比例), 3);
+                const 剩余血量 = 智能计算(敌人当前血量, 神罚伤害, 2);
+                ActorObject.ShowEffectEx2(基础常量.特效.神罚, 0, 0, true, 1);
+                ActorObject.SetSVar(91, js_war(剩余血量, '0') < 0 ? '0' : 剩余血量);
+                血量显示(ActorObject);
+                Player.SendCountDownMessage(`【神罚】触发！造成${(比例 * 1000).toFixed(1)}‰当前血量伤害`, 0);
+            }
+        }
     }
 
     return 1
@@ -123,9 +166,11 @@ GameLib.onScriptButtonClick = (Player: TPlayObject, params: string): void => {
         case '装备回收': Main(GameLib.QFunctionNpc, Player); break
         case '随身仓库': Player.DelayCallMethod('可视仓库.Main', 10, true); break
         case '综合服务': Player.DelayCallMethod('_YXFW_Anniukg.Main', 10, true); break
+        case '关闭提示': 提示设置(GameLib.QFunctionNpc, Player); break
+        case '自动': 自动设置(GameLib.QFunctionNpc, Player); break
         // case '天赋': 天赋(GameLib.QFunctionNpc, Player); break
         case '交易市场': 交易中心.Main(Player); break
-        case '属性下一页': 属性下一页(Player);
+        case '属性下一页': 属性下一页(Player); break
     }
 }
 
@@ -137,9 +182,6 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
     ////  自己     雪儿     
     if ((Player.MachineCode == 'F70F-128D-002F-62BE') || Player.MachineCode == '187F-34BE-F98F-D037' || Player.MachineCode == '8D6B-B1EC-D7C6-E809') {
         Player.SetPermission(10)
-        // Player.IsAdminMode = true
-        // Player.SuperManMode = false
-        // Player.ObserverMode = true
     }
 
     // Player.SetPermission(10)
@@ -176,18 +218,12 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
     Player.SetPCMax(999)
     Player.SetWCMin(999)
     Player.SetWCMax(999)
-
-
-    Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
-    Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
-
-    Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
-    Player.SetSVar(92, Player.V.自定属性[1052])    //当前最大血量
     Player.SetAlwaysShowHP(true)
     登录触发.自定义变量(Player)
     装备属性统计(Player)
     血量显示(Player)
     实时回血(Player, Player.GetSVar(92))
+
     if (Player.V.自定属性[999] === '死亡') {
         Player.V.自定属性[999] = '复活'
         Player.SetSVar(91, Player.GetSVar(92))  //当前血量

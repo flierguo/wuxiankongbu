@@ -14,10 +14,10 @@
  */
 
 import { 取地图 } from '../_地图/地图'
-import { 
-    TAG刷怪比例, 
-    大陆配置表, 
-    取生物名字, 
+import {
+    TAG刷怪比例,
+    大陆配置表,
+    取生物名字,
     取特殊BOSS名字,
     智能计算刷怪数量,
     计算锚点,
@@ -76,13 +76,13 @@ function 设置刷怪状态(地图ID: string, 状态: Partial<地图刷怪状态
 /** 刷新指定TAG的怪物 - 使用地图中心点和智能范围 */
 function 刷新怪物(map: TEnvirnoment, 怪物名字: string, TAG: number, 数量: number): void {
     if (!map || 数量 <= 0 || !怪物名字) return
-    
+
     const 地图宽度 = map.GetMapWidth() || 100
     const 地图高度 = map.GetMapHeight() || 100
     const 中心X = Math.floor(地图宽度 / 2)
     const 中心Y = Math.floor(地图高度 / 2)
     const 刷怪范围 = Math.floor(Math.max(地图宽度, 地图高度) / 2)
-    
+
     GameLib.MonGenEx(map, 怪物名字, 数量, 中心X, 中心Y, 刷怪范围, 0, 0, TAG, true, true, true, true)
 }
 
@@ -98,7 +98,7 @@ function 首次刷全怪(map: TEnvirnoment, 地图名: string): void {
     const 总怪物数 = 智能计算刷怪数量(map)
     状态.目标怪物数 = 总怪物数
     状态.地图名 = 地图名
-    
+
     const 地图配置 = 取地图配置(地图名)
     if (地图配置) {
         状态.锚点信息 = 计算锚点(地图配置.地图等级, 地图配置.固定星级)
@@ -120,7 +120,7 @@ function 首次刷全怪(map: TEnvirnoment, 地图名: string): void {
 function 补怪(map: TEnvirnoment, 地图名: string): void {
     const 状态 = 获取刷怪状态(map.MapName)
     const 当前怪物数 = map.GetMonCount() || 0
-    
+
     // 使用缓存的目标数量，或重新计算
     let 目标怪物数 = 状态.目标怪物数
     if (目标怪物数 <= 0) {
@@ -157,6 +157,16 @@ export function 大陆BOSS刷新检测(): void {
     GameLib.R.大陆BOSS上次刷新时间 = 当前时间
     const 副本池 = 取地图()
 
+    // 难度对应BOSS数量：简单=1, 普通=2, 困难=3, 精英=4, 炼狱=5
+    const 难度BOSS数量映射: { [key: string]: number } = {
+        '简单': 1,
+        '普通': 2,
+        '困难': 3,
+        '精英': 4,
+        '炼狱': 5,
+        '圣耀': 10  // 圣耀副本统一10个
+    }
+
     for (const 大陆 of 大陆配置表) {
         for (const 地图名 of 大陆.地图列表) {
             for (const 副本 of 副本池) {
@@ -166,22 +176,21 @@ export function 大陆BOSS刷新检测(): void {
                 if (!map) continue
 
                 const 状态 = 获取刷怪状态(副本.地图ID)
-                
+
                 // 如果大陆BOSS存活，跳过
                 if (状态.大陆BOSS存活) continue
 
-                // 智能计算数量
-                let 目标数量 = 状态.目标怪物数
-                if (目标数量 <= 0) {
-                    目标数量 = 智能计算刷怪数量(map)
+                // 根据难度或圣耀副本确定BOSS数量
+                let BOSS数量 = 1
+                if (副本.是圣耀副本) {
+                    BOSS数量 = 10
+                } else {
+                    BOSS数量 = 难度BOSS数量映射[副本.难度] || 1
                 }
-                
-                // 按TAG6比例计算BOSS数量
-                const BOSS数量 = Math.max(1, Math.floor(目标数量 * TAG刷怪比例[6]))
-                
+
                 刷新怪物(map, 大陆.大陆BOSS名字, 6, BOSS数量)
                 状态.大陆BOSS存活 = true
-                
+
                 GameLib.BroadcastCountDownMessage(`{s=【大陆BOSS】;c=249}${大陆.大陆BOSS名字} x${BOSS数量} 出现在 ${map.DisplayName || 地图名}! 显示时间:<$Time:20$>…`)
             }
         }
@@ -230,6 +239,16 @@ export function 特殊BOSS死亡(地图ID: string): void {
 /** 大陆BOSS死亡回调 */
 export function 大陆BOSS死亡(地图ID: string): void {
     获取刷怪状态(地图ID).大陆BOSS存活 = false
+}
+
+/** 获取地图击杀进度（用于玩家界面显示） */
+export function 获取击杀进度(地图ID: string): { 当前击杀: number, 需要击杀: number, 特殊BOSS存活: boolean } {
+    const 状态 = 获取刷怪状态(地图ID)
+    return {
+        当前击杀: 状态.击杀计数,
+        需要击杀: 默认配置.特殊BOSS击杀触发,
+        特殊BOSS存活: 状态.特殊BOSS存活
+    }
 }
 
 // ==================== 锚点系统接口 ====================

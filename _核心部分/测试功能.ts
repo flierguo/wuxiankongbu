@@ -41,6 +41,8 @@ export function 测试功能(Npc: TNormNpc, Player: TPlayObject): void {
     <{S=给玩家刷属性;X=220;Y=60}/@@测试功能.InPutString4(玩家-属性-类型1（积分）、2（元宝）、3（回收比例）、4（爆率）、5（等级）)>
     <{S=属性测试输出;X=320;Y=60}/@测试功能.属性测试输出>
 
+    <{S=学习技能;X=20;Y=90}/@@测试功能.InPutString5(玩家-技能名称)> 
+
     
     `
 
@@ -49,7 +51,8 @@ export function 测试功能(Npc: TNormNpc, Player: TPlayObject): void {
 }
 
 export function 属性测试输出(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Player.SendMessage(`最终爆率加成:${Player.R.最终爆率加成}`)
+    Player.V.泰山等级 += 1
+    装备属性统计(Player)
 }
 export function 清空背包(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let item: TUserItem
@@ -86,21 +89,16 @@ export function 刷练功师(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     Actor.SetTriggerSelectMagicBeforeAttack(true)
     let 宝宝血量原始 = '5e200'
     let 宝宝血量 = 转大数值(宝宝血量原始)  // 将 '5e200' 转换为 '5' + '0'.repeat(200)
-    let 宝宝攻击小 = '1000'
-    let 宝宝攻击大 = '1000'
-    let 宝宝防御小 = '1'
-    let 宝宝防御大 = '10'
+    let 宝宝攻击 = '1000'
+    let 宝宝防御 = '0'
+
     Actor.SetSVar(原始名字, '弓箭护卫')
-    Actor.SetSVar(92, String(宝宝血量))
-    // Actor.SetSVar(91, Actor.GetSVar(92))
     Actor.SetSVar(91, 宝宝血量)
-    // let 攻击计算 = 整数相乘(整数相乘(整数相乘(怪怪星星.toString(), 攻击大), 乘以倍数.toString()), 循环.翻倍.toString())
-    Actor.SetSVar(93, String(宝宝攻击小))
-    Actor.SetSVar(94, String(宝宝攻击大))
-    // let 物理防御 = 整数相乘(整数相乘(整数相乘(怪怪星星.toString(), 怪物防御), 乘以倍数.toString()), 循环.翻倍.toString())
-    Actor.SetSVar(95, String(宝宝防御小))
-    Actor.SetSVar(96, String(宝宝防御大))
-    let 新字符 = { 怪物名字: Actor.Name, 怪物等级: String(Actor.Level), 血量: 宝宝血量, 攻击: 宝宝攻击大, 防御: 宝宝防御大, 怪物颜色: '', 怪物标志: 1, }
+    Actor.SetSVar(92, 宝宝血量)
+    Actor.SetSVar(93, 宝宝攻击)
+    Actor.SetSVar(94, 宝宝防御)
+
+    let 新字符 = { 怪物名字: Actor.Name, 怪物等级: String(Actor.Level), 血量: 宝宝血量, 攻击: 宝宝攻击, 防御: 宝宝防御, 怪物颜色: '', 怪物标志: 1, }
     GameLib.R.怪物信息 = GameLib.R.怪物信息 || {};
     GameLib.R.怪物信息[`${Actor.Handle}`] = JSON.stringify(新字符)
     Actor.SetSVar(98, JSON.stringify(新字符))
@@ -240,5 +238,51 @@ export function InPutString4(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         default:
             Player.MessageBox('类型错误，请输入1（积分）、2（元宝）、3（回收比例）、4（爆率）、5（等级）');
             return;
+    }
+}
+
+export function InPutString5(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  // 学习技能
+    // 验证用户是否输入了内容
+    if (!Args.Str || !Args.Str[0]) {
+        Player.SendMessage('请输入参数，格式：玩家名称-技能名称');
+        return;
+    }
+
+    const str: string = Args.Str[0];
+    const 分割: string[] = str.split('-');
+
+    if (分割.length !== 2) {
+        Player.SendMessage('参数格式错误，正确格式：玩家名称-技能名称');
+        return;
+    }
+
+    const 玩家名称 = 分割[0].trim();
+    const 技能名称 = 分割[1].trim();
+
+    // 使用 GameLib.FindPlayer 查找玩家（91m2说明书推荐方式）
+    const 目标玩家: TPlayObject = GameLib.FindPlayer(玩家名称);
+    if (!目标玩家) {
+        Player.SendMessage(`未找到在线玩家：${玩家名称}`);
+        return;
+    }
+
+    // 检查技能是否已经存在（使用 FindSkill）
+    const 已有技能 = 目标玩家.FindSkill(技能名称);
+    if (已有技能) {
+        Player.SendMessage(`玩家【${玩家名称}】已经学习过技能【${技能名称}】，当前等级：${已有技能.Level}`);
+        return;
+    }
+
+    // 使用 AddSkill 添加技能（91M2正确API）
+    // 参数1：技能名称，参数2：技能等级（可选，默认1级）
+    目标玩家.AddSkill(技能名称, 1);
+
+    // 验证技能是否添加成功
+    const 添加后技能 = 目标玩家.FindSkill(技能名称);
+    if (添加后技能) {
+        Player.SendMessage(`成功为玩家【${玩家名称}】学习技能【${技能名称}】`);
+        目标玩家.SendMessage(`管理员 ${Player.Name} 给你学习了技能【${技能名称}】`);
+    } else {
+        Player.SendMessage(`技能【${技能名称}】不存在于技能数据库中，请检查技能名称是否正确`);
     }
 }
