@@ -1,5 +1,6 @@
 
 import * as 功能 from '../_功能';
+import { TAG } from '../基础常量';
 
 /**
  * 爆率系统 - 基于分组的物品掉落机制
@@ -63,14 +64,15 @@ const 掉落配置表: 掉落分组[] = [
 // ==================== 核心掉落函数 ====================
 
 /**
- * 计算并执行物品掉落
+ * 计算并执行物品掉落（简化版，自动获取地图和TAG）
  * @param Player 玩家对象
  * @param Monster 被击杀的怪物
- * @param 地图名 当前地图名称
- * @param 怪物TAG 怪物TAG尾数(1-7)
  */
-export function 执行掉落(Player: TPlayObject, Monster: TActor, 地图名: string, 怪物TAG: number): void {
-    const 玩家爆率 = Player.AddedAbility.ItemRate / 100 || 100
+export function 执行掉落(Player: TPlayObject, Monster: TActor): void {
+    // 自动获取地图名和怪物TAG
+    const 地图名 = Monster.Map?.MapName || ''
+    const 怪物TAG = Monster.GetNVar(TAG) % 10
+    const 玩家爆率 = (Player.AddedAbility.ItemRate / 100) || 1
     
     for (const 分组 of 掉落配置表) {
         // 检查地图限制
@@ -86,29 +88,26 @@ export function 执行掉落(Player: TPlayObject, Monster: TActor, 地图名: st
         // 检查等级限制
         if (分组.最低等级 && Monster.Level < 分组.最低等级) continue
         
-        // 计算掉落几率: 玩家爆率 / 基础几率 * 10000 (万分比)
-        const 掉落几率 = Math.floor((玩家爆率 / 分组.基础几率) * 10000)
-        
-        // 随机判定
+        // 随机判定: random(基础几率) < 玩家爆率
         if (random(分组.基础几率) < 玩家爆率) {
             // 从物品列表随机选一个
             const 随机索引 = random(分组.物品列表.length)
             const 物品名 = 分组.物品列表[随机索引]
             
-            // 在怪物位置掉落物品
-            掉落物品(Monster, 物品名, Player)
+            // 给予玩家物品
+            掉落物品(Player, 物品名)
         }
     }
 }
 
 /**
- * 在指定位置掉落物品（直接给予玩家）
+ * 给予玩家掉落物品
  */
-function 掉落物品(Monster: TActor, 物品名: string, Player: TPlayObject): void {
+function 掉落物品(Player: TPlayObject, 物品名: string): void {
     // 直接给予玩家叠加物品
     功能.背包.给叠加物品(Player, 物品名, 1)
     // 发送掉落提示
-    Player.SendMessage(`{S=【掉落】;C=250}获得 {S=${物品名};C=251}`, 1)
+    GameLib.Broadcast(`{S=【掉落】;C=250}恭喜玩家 {S=${Player.GetName()};C=249} 运气爆发,获得主神物品 {S=${物品名};C=249}`)
 }
 
 // ==================== 辅助函数 ====================

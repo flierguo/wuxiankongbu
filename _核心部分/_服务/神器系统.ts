@@ -261,7 +261,7 @@ export function 选择组件(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     if (套装索引 >= 0 && 套装索引 < 神器套装配置.length) {
         const 套装 = 神器套装配置[套装索引];
         if (组件索引 >= 0 && 组件索引 < 套装.组件列表.length) {
-            显示主界面(Npc, Player, 套装索引, 组件索引);
+            显示主界面(Npc, Player, 套装索引 + 1, 组件索引);
         }
     }
 }

@@ -8,8 +8,8 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const S = `\\\\\\\\\\
         {S=勇士,你已经达到了最佳状态值了,请问还需要其他服务吗?;C=250}\\\\
         {S=[改变性别];C=242}  <男/@性别男>    <女/@性别女>      {S=[清洗红名];C=249}  <{S=我要清洗;HINT=需要10点礼卷}/@清洗红名>\\\\
-        {s=[行会管理];c=253}  <[比奇皇宫]/@比奇皇宫>    {S=[货币兑换];C=243}  <{S=货币兑换;HINT=目前为${GameLib.V.判断新区 == false ? 2 : 1}倍兑换}/@货币兑换>\\\\
-        {S=[人物转职];C=254}  <{S=付费转职;HINT=转移至职业选择NPC进行}/@转职>      [摧毁物品]  <销毁物品/@@Question(摧毁的装备将无法恢复请谨慎使用!,@销毁物品,1)>\\\\
+        {S=[货币兑换];C=243}  <{S=货币兑换;}/@货币兑换>      [摧毁物品]  <销毁物品/@@Question(摧毁的装备将无法恢复请谨慎使用!,@销毁物品,1)>\\\\\\
+                  {S=[神器回收];C=254}      <{S=神器回收;HINT=点击这里可回收主神点数#92每天最多可回收 1000 点#92今日已回收 ${Player.V.今日神器回收} 点;C=22}/@神器回收>      \\\\
 
     `
     Npc.SayEx(Player, '综合功能带框', S)
@@ -184,140 +184,161 @@ export function 销毁物品(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     Player.SendMessage('摧毁完毕!')
 }
 
+export function 神器回收(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let 装备 = Player.GetCustomItem(0)
+    if (装备 == null) { Player.MessageBox('请将要回收的神器放入下方框内!'); return }
+    
+    // 检查是否为神器
+    const 是否神器 = 装备.DisplayName?.includes('[神器]') || false
+    if (!是否神器) {
+        Player.MessageBox('这不是神器,无法回收!')
+        return
+    }
+    
+    // 解析神器倍数
+    const match = 装备.DisplayName?.match(/\[神器\](\d+)倍/)
+    const 神器倍数 = match ? parseInt(match[1]) : 0
+    
+    if (神器倍数 <= 0) {
+        Player.MessageBox('神器倍数异常,无法回收!')
+        return
+    }
+    
+    // 初始化每日回收记录
+    Player.V.今日神器回收 ??= 0
+    
+    // 检查每日上限
+    const 今日已回收 = Player.V.今日神器回收 || 0
+    if (今日已回收 >= 1000) {
+        Player.MessageBox('今日神器回收已达上限(1000点),请明天再来!')
+        return
+    }
+    
+    // 计算本次可回收的点数
+    let 实际回收点数 = 神器倍数
+    if (今日已回收 + 神器倍数 > 1000) {
+        实际回收点数 = 1000 - 今日已回收
+        Player.MessageBox(`本次只能回收${实际回收点数}点(今日剩余额度),神器将被完全摧毁!`)
+    }
+    
+    // 回收神器,获得GamePoint
+    Player.SetGamePoint(Player.GetGamePoint() + 实际回收点数)
+    Player.V.今日神器回收 = 今日已回收 + 实际回收点数
+    Player.DeleteItem(装备)
+    Player.GoldChanged()
+    Player.SendMessage(`成功回收神器,获得${实际回收点数}点主神点数! 今日已回收:${Player.V.今日神器回收}/1000`, 1)
+}
+
+
 export function 比奇皇宫(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     Player.MapMove('比奇皇宫', 39, 34)
 }
 
 export function 货币兑换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const 服务器类型 = GameLib.ServerName.includes('包区') || GameLib.V.判断新区 ? '老区' : '新区'
-    const 今日兑换礼卷 = Player.V.今日兑换礼卷 || 0
     const 元宝兑换比例 = 1200
     const 礼卷兑换比例 = 120
     const 反向兑换比例 = 100
 
-
     const S = `\\\\
-        {S=当前服务器: ${服务器类型};C=253;X=25;Y=38}\\{S=货币兑换中心;C=254;X=185;Y=38}        {S=今日已兑换礼卷: ${今日兑换礼卷}/1000000;C=249;X=290;Y=38}\\
+        {S=货币兑换中心;C=254;X=150;Y=5}\\\\
 
-        {S=当前金币:${Player.GetGold()};C=227;X=25}          {S=当前元宝:${Player.GetGameGold()};C=227}          {S=当前礼卷:${Player.GetGamePoint()};C=227}\\\\
+        {S=当前金币:${Player.GetGold()};C=227;X=30;Y=30}  {S=当前元宝:${Player.GetGameGold()};C=227;X=160;Y=30}  {S=当前主神点:${Player.GetGamePoint()};C=227;X=280;Y=30}\\\\
         
-        <{S=兑换100   元宝;HINT=需要${元宝兑换比例 * 100}金币;X=30;Y=95}/@执行金币兑换(100)>
-        <{S=兑换500   元宝;HINT=需要${元宝兑换比例 * 500}金币;X=30;Y=125}/@执行金币兑换(500)>
-        <{S=兑换1000  元宝;HINT=需要${元宝兑换比例 * 1000}金币;X=30;Y=155}/@执行金币兑换(1000)>
-        <{S=兑换5000  元宝;HINT=需要${元宝兑换比例 * 5000}金币;X=30;Y=185}/@执行金币兑换(5000)>
-        <{S=兑换10000 元宝;HINT=需要${元宝兑换比例 * 10000}金币;X=30;Y=215}/@执行金币兑换(10000)>
-        <{S=兑换100000元宝;HINT=需要${元宝兑换比例 * 100000}金币;X=30;Y=245}/@执行金币兑换(100000)>
+        <{S=金币兑换元宝;HINT=比例: ${元宝兑换比例}金币 = 1元宝;X=30;Y=60}/@@InPutString01(请输入要兑换的元宝数量,金币兑换)>
+        <{S=元宝兑换主神点;HINT=比例: ${礼卷兑换比例}元宝 = 1主神点;X=160;Y=60}/@@InPutString01(请输入要兑换的主神点数量,元宝兑换)>
+        <{S=主神点兑换元宝;HINT=比例: 1主神点 = ${反向兑换比例}元宝 (含手续费);X=30;Y=100}/@@InPutString01(请输入要兑换的主神点数量,反向兑换)>
 
-        <{S=兑换10    礼卷;HINT=需要${礼卷兑换比例 * 10}元宝;X=185;Y=95}/@开始兑换礼卷(10)>
-        <{S=兑换100   礼卷;HINT=需要${礼卷兑换比例 * 100}元宝;X=185;Y=125}/@开始兑换礼卷(100)>
-        <{S=兑换500   礼卷;HINT=需要${礼卷兑换比例 * 500}元宝;X=185;Y=155}/@开始兑换礼卷(500)>
-        <{S=兑换1000  礼卷;HINT=需要${礼卷兑换比例 * 1000}元宝;X=185;Y=185}/@开始兑换礼卷(1000)>
-        <{S=兑换5000  礼卷;HINT=需要${礼卷兑换比例 * 5000}元宝;X=185;Y=215}/@开始兑换礼卷(5000)>
-        <{S=兑换50000 礼卷;HINT=需要${礼卷兑换比例 * 50000}元宝;X=185;Y=245}/@开始兑换礼卷(50000)>
-
-        <{S=兑换${反向兑换比例 * 10}     元宝;HINT=需要10礼卷;X=330;Y=95}/@反向兑换(10)>
-        <{S=兑换${反向兑换比例 * 100}    元宝;HINT=需要100礼卷;X=330;Y=125}/@反向兑换(100)>
-        <{S=兑换${反向兑换比例 * 1000}   元宝;HINT=需要1000礼卷;X=330;Y=155}/@反向兑换(1000)>
-        <{S=兑换${反向兑换比例 * 10000}  元宝;HINT=需要10000礼卷;X=330;Y=185}/@反向兑换(10000)>
-        <{S=兑换${反向兑换比例 * 100000} 元宝;HINT=需要100000礼卷;X=330;Y=215}/@反向兑换(100000)>
-        <{S=兑换${反向兑换比例 * 1000000}元宝;HINT=需要1000000礼卷;X=330;Y=245}/@反向兑换(1000000)>
-
-        {S=兑换说明: 「${元宝兑换比例}金币 = 1元宝」 「${礼卷兑换比例}元宝 = 1礼卷」 「1礼卷 = ${反向兑换比例}元宝」;C=249;X=25;Y=275}
-        {S=注意:金币超过20E会自动兑换为160W元宝(老区为120W,专区为200W);C=249;X=25;Y=300}
+        {S=兑换说明:;C=249;X=25;Y=150}
+        {S=1. 金币→元宝: ${元宝兑换比例}金币 = 1元宝;C=250;X=25;Y=175}
+        {S=2. 元宝→主神点: ${礼卷兑换比例}元宝 = 1主神点;C=250;X=25;Y=200}
+        {S=3. 主神点→元宝: 1主神点 = ${反向兑换比例}元宝 (含手续费);C=250;X=25;Y=225}
 
         `
 
-    Npc.SayEx(Player, 'NPC中窗口', S)
+    Npc.SayEx(Player, 'NPC小窗口', S)
 }
 
-export function 执行金币兑换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const 兑换数量 = Args.Int[0]
+// 金币兑换元宝处理函数
+export function InPutString01(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    // Args.Str[0] = 提示文字
+    // Args.Str[1] = 兑换类型 (金币兑换/元宝兑换/反向兑换)
+    // Args.Str[2] = 玩家输入的数量
+    
+    const 兑换类型 = Args.Str[0]
+    const 输入数量 = parseInt(Args.Str[1])
 
-    // 根据服务器类型确定兑换比例
-    const 兑换比例 = 1200
-
-
-    // 计算所需金币
-    const 所需金币 = 兑换数量 * 兑换比例
-
-    // 检查金币是否足够
-    if (Player.GetGold() < 所需金币) {
-        Player.MessageBox(`金币不足！需要${所需金币}金币，你只有${Player.GetGold()}金币`)
+    // 验证输入
+    if (isNaN(输入数量) || 输入数量 <= 0) {
+        Player.MessageBox('请输入有效的数量！')
+        货币兑换(Npc, Player, Args)
         return
     }
 
-    // 执行兑换
+    // 根据兑换类型执行不同的兑换逻辑
+    if (兑换类型 === '金币兑换') {
+        执行金币兑换元宝(Npc, Player, 输入数量)
+    } else if (兑换类型 === '元宝兑换') {
+        执行元宝兑换主神点(Npc, Player, 输入数量)
+    } else if (兑换类型 === '反向兑换') {
+        执行主神点兑换元宝(Npc, Player, 输入数量)
+    }
+}
+
+// 金币兑换元宝
+function 执行金币兑换元宝(Npc: TNormNpc, Player: TPlayObject, 兑换数量: number): void {
+    const 兑换比例 = 1200
+    const 所需金币 = 兑换数量 * 兑换比例
+
+    if (Player.GetGold() < 所需金币) {
+        Player.MessageBox(`金币不足！需要${所需金币}金币，你只有${Player.GetGold()}金币`)
+        货币兑换(Npc, Player, {} as TArgs)
+        return
+    }
+
     Player.SetGold(Player.GetGold() - 所需金币)
     Player.SetGameGold(Player.GetGameGold() + 兑换数量)
     Player.GoldChanged()
     Player.SendMessage(`使用{S=${所需金币}金币;C=154}成功兑换了{S=${兑换数量}元宝;C=154}`, 1)
     Player.MessageBox(`兑换成功！获得${兑换数量}元宝`)
-    货币兑换(Npc, Player, Args)
+    货币兑换(Npc, Player, {} as TArgs)
 }
 
-export function 开始兑换礼卷(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 兑换数量 = Args.Int[0]
-    // 根据服务器类型确定兑换比例
+// 元宝兑换主神点
+function 执行元宝兑换主神点(Npc: TNormNpc, Player: TPlayObject, 兑换数量: number): void {
     const 兑换比例 = 120
-
-    const 今日兑换礼卷 = Player.V.今日兑换礼卷 || 0
-
-    // 检查每日限额
-    // if (今日兑换礼卷 + 兑换数量 > 1000000) {
-    //     Player.MessageBox(`超出每日兑换限额！还可兑换${1000000 - 今日兑换礼卷}礼卷`)
-    //     return
-    // }
-    // 计算所需金币
     const 所需元宝 = 兑换数量 * 兑换比例
 
-    // if (Player.GetGamePoint() < 兑换数量) { Player.MessageBox(`礼卷不足${兑换数量},兑换失败!`); return }
-    if (Player.GetGameGold() < 所需元宝) { Player.MessageBox(`元宝不足${所需元宝},兑换失败!`); return }
-    Player.SetGamePoint(Player.GetGamePoint() + 兑换数量)   // 兑换礼卷
-    Player.SetGameGold(Player.GetGameGold() - 所需元宝)
-    Player.V.今日兑换礼卷 = 今日兑换礼卷 + 兑换数量
-    Player.GoldChanged()
-    Player.SendMessage(`使用{S=${所需元宝}元宝;C=154}成功兑换了{S=${兑换数量}点礼卷;C=154}`, 1)
-    Player.MessageBox(`兑换成功！获得${兑换数量}点礼卷`)
-    货币兑换(Npc, Player, Args)
-}
-
-export function 反向兑换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const 兑换数量 = Args.Int[0]
-
-    // 根据服务器类型确定兑换比例
-    const 兑换比例 = 100
-
-    // 计算所需元宝
-    const 兑换元宝 = 兑换数量 * 兑换比例
-
-    // 检查元宝是否足够
-    if (Player.GetGamePoint() < 兑换数量) {
-        Player.MessageBox(`礼卷不足！需要${兑换数量}礼卷，你只有${Player.GetGamePoint()}礼卷`)
+    if (Player.GetGameGold() < 所需元宝) {
+        Player.MessageBox(`元宝不足！需要${所需元宝}元宝，你只有${Player.GetGameGold()}元宝`)
+        货币兑换(Npc, Player, {} as TArgs)
         return
     }
 
-    // 执行兑换
+    Player.SetGamePoint(Player.GetGamePoint() + 兑换数量)
+    Player.SetGameGold(Player.GetGameGold() - 所需元宝)
+    Player.V.今日兑换礼卷 = (Player.V.今日兑换礼卷 || 0) + 兑换数量
+    Player.GoldChanged()
+    Player.SendMessage(`使用{S=${所需元宝}元宝;C=154}成功兑换了{S=${兑换数量}点主神点;C=154}`, 1)
+    Player.MessageBox(`兑换成功！获得${兑换数量}点主神点`)
+    货币兑换(Npc, Player, {} as TArgs)
+}
+
+// 主神点兑换元宝（反向兑换，含手续费）
+function 执行主神点兑换元宝(Npc: TNormNpc, Player: TPlayObject, 兑换数量: number): void {
+    const 兑换比例 = 100
+    const 兑换元宝 = 兑换数量 * 兑换比例
+
+    if (Player.GetGamePoint() < 兑换数量) {
+        Player.MessageBox(`主神点不足！需要${兑换数量}主神点，你只有${Player.GetGamePoint()}主神点`)
+        货币兑换(Npc, Player, {} as TArgs)
+        return
+    }
+
     Player.SetGameGold(Player.GetGameGold() + 兑换元宝)
     Player.SetGamePoint(Player.GetGamePoint() - 兑换数量)
-
     Player.GoldChanged()
-    Player.SendMessage(`使用{S=${兑换数量}礼;C=154}成功兑换了{S=${兑换元宝}元宝;C=154}`, 1)
+    Player.SendMessage(`使用{S=${兑换数量}主神点;C=154}成功兑换了{S=${兑换元宝}元宝;C=154}`, 1)
     Player.MessageBox(`兑换成功！获得${兑换元宝}元宝`)
-    货币兑换(Npc, Player, Args)
+    货币兑换(Npc, Player, {} as TArgs)
 }
 
-export function 转职(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //格式：玩家名字-职业  转职
-
-    Player.SendMessage('请去职业选择NPC!'); return
-    if (Player.GetGameGold() < 5000) { Player.SendMessage('元宝不足5000,无法转职!'); return }
-    Player.SetGameGold(Player.GetGameGold() - 5000)
-    Player.GoldChanged()
-
-    Player.V.职业 = []
-    Player.ClearSkill()
-    Player.RecalcAbilitys()
-    Player.MapMove('边界村', 69, 119)
-    装备属性统计(Player);
-    // a.Kick()
-
-}

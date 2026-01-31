@@ -1,5 +1,5 @@
-import { 装备属性统计 } from "./_装备/属性统计";
-import { 特效 } from "./基础常量";
+import { 装备属性统计 } from "../_装备/属性统计";
+import { 特效 } from "../基础常量";
 
 /*充值使者*/
 const myDate = new Date();
@@ -20,10 +20,10 @@ export function setG_GoldLocked(val: boolean) {
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     Player.V.宣传累充 ??= 0
     let S = ``
-    S = `\\\\\\\\
+    S = `\\\\\\
     {S=${Player.GetName()};C=251}你好\\\\
     欢迎来到{S=无限恐怖系列版本;C=251},很高兴为您服务!\\\\
-    当前服务器状态为: ${GameLib.V.判断新区 === false ? '{S=新区;C=254}' : '{S=老区;C=251}'}\\\\
+    当前服务器状态为: ${GameLib.V.是新区 === true ? '{S=新区;C=254}' : '{S=老区;C=251}'}\\\\
     每次宣传可累计宣传次数,宣传次数可兑换多种赞助物品!!!\\\\
     群礼包码可获得  {S=『1级』经验勋章;AC=251,249,222,210}\\\\
 
@@ -85,13 +85,13 @@ export function InputInteger1(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): 
     Player.V.宣传奖励 ??= false
     if (Args.Str[0] == 'TXJ666888' && Player.V.宣传奖励 == false) {
 
-        let 勋章 = Player.GiveItem('经验勋章');
+        let 勋章 = Player.GiveItem('坐骑令牌');
 
-        勋章.SetOutWay1(0, 1);
-        勋章.SetOutWay2(0, 0);
-        勋章.SetOutWay3(0, 500);
+        勋章.SetOutWay1(40, 4);
+        勋章.SetOutWay2(40, 0);
+        勋章.SetOutWay3(40, 500);
 
-        勋章.Rename(`『1级』经验勋章`);
+        勋章.Rename(`『0阶』坐骑令牌`);
         勋章.SetBind(true);
         勋章.SetNeverDrop(true);
         勋章.State.SetNoDrop(true);
@@ -237,7 +237,7 @@ export function 次数(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 //     let S = ``
 //         S = `\\\\\\\\
 //     {S=${Player.GetName()};C=251}你好,欢迎来到{S=${GameLib.ServerName};C=251},很高兴为您服务!\\
-//     当前服务器状态为: ${GameLib.V.判断新区 === false ? '{S=新区;C=254}' : '{S=老区;C=251}'}\\
+//     当前服务器状态为: ${GameLib.V.是新区 === false ? '{S=新区;C=254}' : '{S=老区;C=251}'}\\
 //     ------------注意充值事项------------\\
 //     ①本服捐增比例为:1元=1点充值+100点礼券(新区享双倍福利)\\
 //     ②申明:本服捐赠渠道只有联系群客服,具体事宜都可咨询客服解决!!\\\\\\\\

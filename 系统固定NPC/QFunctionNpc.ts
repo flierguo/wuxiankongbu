@@ -9,6 +9,7 @@ import { 使用物品 } from "../_核心部分/_装备/物品使用"
 import { 取两点距离 } from "./RobotManageNpc"
 
 import { 装备属性统计 } from "../_核心部分/_装备/属性统计"
+import { 更新套装显示 as 玩家更新套装显示, 应用套装加成 } from "../_核心部分/_装备/随机套装"
 
 import { Main } from "../后台管理"
 import * as 地图 from '../_核心部分/_地图/地图';
@@ -152,12 +153,12 @@ GameLib.onGetExpEx = (Player: TPlayObject, ExpActor: TActor, Exp: number, Result
     // if (Exp >= 1000000000) { Exp = 1; console.log('怪物名字=' + ExpActor + '玩家名字=' + Player.GetName()) }
     if (ResultExp >= 1000000) { ResultExp = 1000000 }
 
-    // 获取玩家所在地图等级
+    // 获取玩家所在地图强度
     const 玩家地图ID = Player.GetMap().MapName;
-    const 玩家地图等级 = 地图.地图ID取固定星级(玩家地图ID);
+    const 玩家地图强度 = 地图.地图ID取固定星级(玩家地图ID);
 
-    // 如果地图等级低于10，1%的几率获得额外经验值
-    if (玩家地图等级 < 10) {
+    // 如果地图强度低于10，1%的几率获得额外经验值
+    if (玩家地图强度 < 10) {
         const 随机几率 = Math.random() * 50; // 生成0-100的随机数
         if (随机几率 < 3) { // 1%的几率
             const 随机索引 = Math.floor(Math.random() * 随机15经验.length);
@@ -290,6 +291,19 @@ GameLib.onTakeOffItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TI
 }
 //脱下装备且属性属性变化后触发
 GameLib.onAfterTakeOffItem = (Player: TPlayObject, TakeOffItem: TUserItem, ItemWhere: number) => {
+    // 如果脱下的是套装装备，清零该装备的穿戴数并设为未激活状态
+    if (TakeOffItem.GetStdMode() === 68 && TakeOffItem.GetOutWay3(16) !== 0) {
+        const 基础索引 = TakeOffItem.GetOutWay1(16)
+        TakeOffItem.SetOutWay1(17, 基础索引 + 1)
+        TakeOffItem.SetOutWay2(17, 0)
+        TakeOffItem.SetOutWay1(18, 基础索引 + 3)
+        TakeOffItem.SetOutWay2(18, 0)
+        TakeOffItem.SetOutWay1(19, 基础索引 + 5)
+        TakeOffItem.SetOutWay2(19, 0)
+    }
+    
+    玩家更新套装显示(Player)
+    应用套装加成(Player)
     装备属性统计(Player)
     Player.UpdateItem(TakeOffItem);
 }
@@ -335,6 +349,8 @@ GameLib.onTakeOnItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TIt
 }
 //穿戴装备且属性变化后触发，与OnTakeOnItem不同是 OnTakeOnItem 触发执行的时候装备附加的属性没有加到人身上。OnAfterTakeOnItem是属性已经附加到人物身上了。
 GameLib.onAfterTakeOnItem = (Player: TPlayObject, TakeOnUserItem: TUserItem, TakeOffItem: TUserItem, ItemWhere: number) => {
+    玩家更新套装显示(Player)
+    应用套装加成(Player)
     装备属性统计(Player)
 }
 
@@ -461,16 +477,13 @@ GameLib.onCustomBuffAct = function (Actor: TActor, Buff: TBuff): void {
 
 //移除Buff时触发
 GameLib.onRemoveBuff = function (Actor: TActor, Buff: TBuff): void {
-    let Player: TPlayObject = Actor as TPlayObject
-    装备属性统计(Player)
+    // 🚀 性能优化：移除高频BUFF事件中的装备属性统计，避免每秒多次重复计算
+    // 装备属性统计会在穿脱装备、升级等关键时机自动触发
 }
 //添加BUFF触发
 GameLib.onAddBuff = (Actor: TActor, Buff: TBuff, Accept: boolean): boolean => {
-    // 装备属性统计(player)
-    // if (Actor instanceof TPlayObject) {
-    let Player: TPlayObject = Actor as TPlayObject
-    装备属性统计(Player)
-    // }
+    // 🚀 性能优化：移除高频BUFF事件中的装备属性统计，避免每秒多次重复计算
+    // 装备属性统计会在穿脱装备、升级等关键时机自动触发
     return true
 }
 //点击背包物品触发 
@@ -491,20 +504,18 @@ GameLib.onUIActivedBagItemEvent = (Player: TPlayObject, UIName: string, ClientIt
 
 //开始挂机
 GameLib.onStartAutoFight = function (Player: TPlayObject): void {
-    Player.V.自动随机 ??= false
-    Player.V.自动随机秒数 ??= 0
-    Player.V.开启挂机 ?? false
+    Player.R.开启挂机 ??= false
     // Player.V.自动随机 =true
-    Player.V.开启挂机 = true
-    if (Player.V.自动随机秒数 > 0 && Player.V.自动随机) {
-        Player.SendMessage(`开始挂机,每${Player.V.自动随机秒数}秒将自动随机一次!`, 1)
+    Player.R.开启挂机 = true
+    if (Player.V.随机读秒 > 0 && Player.V.自动随机) {
+        Player.SendMessage(`开始挂机,每${Player.V.随机读秒}秒将自动随机一次!`, 1)
     } else {
         Player.SendMessage(`开始挂机,当前未开启自动随机功能或未设置随机秒数将正常挂机!`, 1)
     }
 }
 //结束挂机
 GameLib.onStopAutoFight = function (Player: TPlayObject): void {
-    Player.V.开启挂机 = false
+    Player.R.开启挂机 = false
     Player.SendMessage(`你关闭了挂机功能,自动随机功能也将关闭!`)
 }
 

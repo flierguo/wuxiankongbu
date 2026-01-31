@@ -9,15 +9,13 @@ import {
     难度列表,
     固定副本数量,
     最大副本数,
-    地图名称,
-    地图配置,
-    计算锚点,
     圣耀难度配置,
-    计算圣耀强度倍数
+    完整地图配置,
+    取完整地图配置
 } from '../世界配置'
 
 // 重新导出供其他模块使用
-export { 难度等级, 难度列表, 固定副本数量, 地图名称, 地图配置, 圣耀难度配置 }
+export { 难度等级, 难度列表, 固定副本数量, 圣耀难度配置, 完整地图配置 }
 
 // ==================== 副本信息接口 ====================
 interface 副本信息 {
@@ -28,7 +26,7 @@ interface 副本信息 {
     需求等级: number
     下标: number
     关闭计时器?: number
-    地图等级: number
+    地图强度: number
     难度: string
     // 圣耀副本专属属性
     创建者ID?: string
@@ -44,10 +42,9 @@ interface 副本信息 {
 // ==================== 初始化函数 ====================
 export function 初始化副本池() {
     // 存储配置到 GameLib.R（供其他模块访问）
-    GameLib.R.地图名称 = 地图名称
     GameLib.R.难度等级 = 难度等级
     GameLib.R.难度列表 = 难度列表
-    GameLib.R.地图配置 = 地图配置
+    GameLib.R.完整地图配置 = 完整地图配置
 
     // 检查是否已初始化
     let 现有副本池 = GameLib.R.地图池 as 副本信息[]
@@ -64,7 +61,7 @@ export function 初始化副本池() {
 
     // 初始化副本池数组
     let 副本池: 副本信息[] = []
-    for (let i = 0; i < 最大副本数 * 地图配置.length; i++) {
+    for (let i = 0; i < 最大副本数 * 完整地图配置.length; i++) {
         副本池[i] = {
             地图名: '',
             地图ID: '',
@@ -72,7 +69,7 @@ export function 初始化副本池() {
             固定星级: 0,
             需求等级: 0,
             下标: i,
-            地图等级: 0,
+            地图强度: 0,
             难度: ''
         }
     }
@@ -80,18 +77,18 @@ export function 初始化副本池() {
     GameLib.R.地图池 = 副本池
 
     // 为每个地图创建5个固定难度副本
-    地图配置.forEach((配置, 索引) => {
+    完整地图配置.forEach((配置, 索引) => {
         let 起始下标 = 索引 * 最大副本数
         难度列表.forEach((难度名, 难度索引) => {
             let 下标 = 起始下标 + 难度索引 + 1
             let 难度配置 = 难度等级[难度名]
             let 实际星级 = 配置.固定星级 * 难度配置.倍数
-            创建固定副本(配置.地图名, 下标, 实际星级, 配置.需求等级, 配置.地图等级, 难度名)
+            创建固定副本(配置.地图名, 下标, 实际星级, 配置.需求等级, 配置.地图强度, 难度名)
         })
     })
 }
 
-function 创建固定副本(地图名: string, 下标: number, 固定星级: number, 需求等级: number, 地图等级: number, 难度: string) {
+function 创建固定副本(地图名: string, 下标: number, 固定星级: number, 需求等级: number, 地图强度: number, 难度: string) {
     let 副本池 = GameLib.R.地图池 as 副本信息[]
 
     if (!副本池 || 下标 < 0 || 下标 >= 副本池.length) return
@@ -107,7 +104,7 @@ function 创建固定副本(地图名: string, 下标: number, 固定星级: num
             固定星级: 固定星级,
             需求等级: 需求等级,
             下标: 下标,
-            地图等级: 地图等级,
+            地图强度: 地图强度,
             难度: 难度
         }
         map.DisplayName = 显示名
@@ -182,7 +179,7 @@ export function ID取地图名(副本ID: string): string {
 
 export function 创建圣耀副本(地图名: string, Player: TPlayObject): number {
     let 副本池 = GameLib.R.地图池 as 副本信息[]
-    let 配置 = 地图配置.find(c => c.地图名 === 地图名)
+    let 配置 = 完整地图配置.find(c => c.地图名 === 地图名)
 
     if (!配置) {
         Player.MessageBox(`错误：找不到地图配置 ${地图名}`)
@@ -207,7 +204,7 @@ export function 创建圣耀副本(地图名: string, Player: TPlayObject): numb
         }
     }
 
-    let 地图索引 = 地图配置.findIndex(c => c.地图名 === 地图名)
+    let 地图索引 = 完整地图配置.findIndex(c => c.地图名 === 地图名)
     if (地图索引 === -1) return -1
 
     let 起始下标 = 地图索引 * 最大副本数
@@ -239,7 +236,7 @@ export function 创建圣耀副本(地图名: string, Player: TPlayObject): numb
             固定星级: 配置.固定星级 * 圣耀倍率,
             需求等级: 配置.需求等级,
             下标: 可用下标,
-            地图等级: 配置.地图等级,
+            地图强度: 配置.地图强度,
             难度: '圣耀',
             创建者ID: 玩家ID,
             创建者名字: Player.GetName(),
@@ -329,7 +326,7 @@ export function 关闭圣耀副本(下标: number): void {
 
     副本池[下标] = {
         地图名: '', 地图ID: '', 显示名: '', 固定星级: 0, 需求等级: 0,
-        下标: 下标, 地图等级: 0, 难度: ''
+        下标: 下标, 地图强度: 0, 难度: ''
     }
 }
 
@@ -381,7 +378,7 @@ export function 圣耀副本清理(): void {
             GameLib.CloseDuplicateMap(副本.地图ID)
             副本池[i] = {
                 地图名: '', 地图ID: '', 显示名: '', 固定星级: 0, 需求等级: 0,
-                下标: i, 地图等级: 0, 难度: ''
+                下标: i, 地图强度: 0, 难度: ''
             }
         }
     }
@@ -425,7 +422,7 @@ export function 副本清理(): void {
                     副本池[i].显示名 = ''
                     副本池[i].固定星级 = 0
                     副本池[i].需求等级 = 0
-                    副本池[i].地图等级 = 0
+                    副本池[i].地图强度 = 0
                     副本池[i].难度 = ''
                 }
                 console.log(`副本 ${map.DisplayName} 已重置`)
@@ -441,4 +438,4 @@ export function 初始化单个副本() {
 }
 
 // ==================== 工具函数（从世界配置导入） ====================
-export { 取地图配置, 取难度配置, 取所有地图名 } from '../世界配置'
+export { 取完整地图配置, 取难度配置, 取所有地图名 } from '../世界配置'

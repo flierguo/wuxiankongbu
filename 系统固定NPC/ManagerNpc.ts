@@ -9,15 +9,15 @@ import { 属性下一页, 装备属性统计, 自动设置, 提示设置 } from 
 import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
 import { js_war, 智能计算 } from "../_大数值/核心计算方法"
 import * as 地图1 from '../_核心部分/_地图/地图';
-import { 记录充值数据 } from "../_核心部分/充值属性"
+import { 记录充值数据 } from "../_核心部分/_服务/充值属性"
 import * as 基础常量 from "../_核心部分/基础常量"
 
-import { 地图配置 } from "../_核心部分/世界配置"
+import { 完整地图配置 } from "../_核心部分/世界配置"
 import { 测试功能 } from "../_核心部分/测试功能"
 
 // 判断是否使用新刷怪系统的地图
 function 是新刷怪系统地图(地图名: string): boolean {
-    return 地图配置.some(c => 地图名.includes(c.地图名))
+    return 完整地图配置.some(c => 地图名.includes(c.地图名))
 }
 
 // 统一刷怪属性函数
@@ -185,24 +185,19 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
     }
 
     // Player.SetPermission(10)
+    // 新玩家初始化
     if (Player.IsNewHuman) {
         Player.V.自定属性 ??= {}
-        Player.V.自定属性[1051] = '100'
-        Player.V.自定属性[1052] = '100'
-        Player.V.自定属性[1055] = '50'
-        Player.SetSVar(91, Player.V.自定属性[1051])  //当前血量
-        Player.SetSVar(92, Player.V.自定属性[1052])  //当前最大血量
-        Player.SetSVar(95, Player.V.自定属性[1055])  //当前魔法
-        Player.SetSVar(158, '玩家')
+        Player.V.自定属性[1051] = '100'  // 初始当前血量
+        Player.V.自定属性[1055] = '50'   // 初始魔法
     }
 
+    // 确保变量存在
     Player.V.自定属性 ??= {}
-    Player.V.自定属性[1051] = '100'
-    Player.V.自定属性[1052] = '100'
-    Player.V.自定属性[1055] = '50'
-    Player.SetSVar(91, Player.V.自定属性[1051])
-    Player.SetSVar(92, Player.V.自定属性[1052])
-    Player.SetSVar(95, Player.V.自定属性[1055])
+    Player.V.自定属性[1051] ??= '100'
+    Player.V.自定属性[1055] ??= '50'
+    
+    // 标识为玩家
     Player.SetSVar(158, '玩家')
     Player.MaxHP = 10000000000
     Player.HP = Player.MaxHP
@@ -226,7 +221,9 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
 
     if (Player.V.自定属性[999] === '死亡') {
         Player.V.自定属性[999] = '复活'
-        Player.SetSVar(91, Player.GetSVar(92))  //当前血量
+        // 复活时恢复满血
+        Player.SetSVar(91, Player.GetSVar(92))  // 当前血量 = 最大血量
+        Player.V.自定属性[1051] = Player.GetSVar(91)  // 同步到V变量
         Player.MapMove('主城', 105, 120)
     }
 

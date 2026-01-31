@@ -1,6 +1,7 @@
+import { 文本 } from '../_功能';
 import * as 地图 from './地图';
 
-const 地图声明 = 地图.地图配置
+const 地图声明 = 地图.完整地图配置
 
 // 传送阵地图配置表 - 根据 Npc.Tag 配置不同地图列表
 const 传送阵配置: Record<number, { 地图列表: string[], 显示倍数设置?: boolean, 显示地图信息?: boolean, 绑定回城石?: number }> = {
@@ -22,11 +23,12 @@ const 传送阵配置: Record<number, { 地图列表: string[], 显示倍数设�
     // 可继续添加更多Tag配置...
     // 2: { 地图列表: ['地图A', '地图B', '地图C'], 显示倍数设置: true },
 }
-
+const 圣耀比例 = 50
 export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     const 配置 = 传送阵配置[Npc.Tag] || 传送阵配置[0]
     const 地图列表 = 配置.地图列表
     const Y坐标 = [80, 120, 160, 200, 240, 280]
+    const HINT = 文本.转义(`{S=圣耀地图的难度是炼狱级的100倍, 并且拥有更多的BOSS;C=8}\\{S=进入圣耀地图会增加相应倍数的爆率;C=9}\\{S=例如: 设置100倍,爆率增加 100%;C=7}\\{S=圣耀地图持续时间为24小时, 并且只有创建者和同队伍玩家可进入!!;C=6}\\{S=每${圣耀比例}点主神点可提高1倍圣耀倍数;C=21}`)
 
     // 生成图标和按钮
     let 图标 = 地图列表.map((_, i) => `{I=317;F=ASD.DATA;X=47;Y=${Y坐标[i]}}`).join(' ')
@@ -37,11 +39,12 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     let S = `\\\\\\\\\\\\
             ${图标}
             ${按钮}
-    {S=圣耀地图说明;HINT=圣耀地图会有更多的BOSS和更高的难度,同时进入圣耀地图还会增加相应倍数的爆率#92例如:设置100倍,生物难度提高100倍的同时,也会增加玩家100%爆率.#92圣耀地图持续时间24小时,只有创建者和同队伍玩家可进入!!;AC=251,249,222,210;X=50;Y=390}`
+`
 
     // 根据配置显示倍数设置
     if (配置.显示倍数设置) {
-        S += `\n    {S=当前圣耀倍数: ${Player.R.圣耀地图爆率加成} 倍;X=50;Y=360}          <{S=倍数设置;X=220;Y=360}/@@InPutString11(输入倍数。}>`
+        S += `{S=圣耀地图说明;HINT=${HINT};AC=251,249,222,210;X=50;Y=330}`
+        S += `{S=当前圣耀倍数: ${Player.R.圣耀地图爆率加成} 倍;X=50;Y=360}          <{S=倍数设置;X=220;Y=360}/@@InPutString11(请输入倍数。}>`
     }
     // 根据配置显示地图信息
     if (配置.显示地图信息) {
@@ -62,20 +65,23 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
 }
 
 
-export function InPutString11(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    let 最高倍数 = Args.Int[0];
-    let 设置倍数 = Args.Int[1];
-    if (设置倍数 > 最高倍数) {
-        Player.MessageBox(`请输入小于${最高倍数}的数值`);
-        return;
-    }
-    if (设置倍数 >= 2 && 设置倍数 <= Player.V.最高挑战倍数) {
-        Player.V.挑战倍数 = 设置倍数;
-    }
-    else {
-        Player.MessageBox(`请输入小于${Player.V.最高挑战倍数}的数值`);
-    }
-    Main(Npc, Player, Args);
+
+export function 圣耀积分兑换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const S = `\\\\
+                       {S=圣耀积分兑换;C=251} \\\\
+    {S=升级幸运可以增加人物的属性下限!;C=254}\\\\
+    {S=假如幸运值为0 ;c=253},\\
+    {S=那么输出伤害就是: 属性下线 到 属性上线 的随机值;c=241}\\
+    {S=假如幸运值为50 ;c=253},\\
+    {s=那么输出伤害就是:(属性上线*50% + 属性下线) 到 属性上线的随机值;C=241}\\\\
+    {S=您当前的幸运值为:${Player.V.幸运值};C=23}\\\\
+    {S=下一级需要材料:${Player.V.幸运值 + 100}幸运精魄+${Player.V.幸运值 + 100}元宝;C=253}\\\\
+                                                    <升级幸运/@升级幸运>\\
+
+      
+
+    `
+    Npc.SayEx(Player, 'Npc小窗口', S)
 }
 
 export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -188,11 +194,23 @@ export function 固定传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
  */
 export function 创建圣耀副本(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 地图名 = Args.Str[0];
+    if (Player.R.圣耀地图爆率加成 < 100) {
+        Player.MessageBox(`请先设置圣耀地图倍数!!!`)
+        return
+    }
 
     // 检查玩家是否设置了圣耀地图爆率加成
     if (!Player.R.圣耀地图爆率加成 || Player.R.圣耀地图爆率加成 < 1) {
         Player.R.圣耀地图爆率加成 = 1
     }
+
+    const 需要主神点 = Player.R.圣耀地图爆率加成 * 圣耀比例
+    if (Player.GamePoint < 需要主神点) {
+        Player.MessageBox(`主神点不足，需要 ${需要主神点} 主神点`)
+        return
+    }
+
+    Player.GamePoint -= 需要主神点
 
     地图.创建圣耀副本(地图名, Player)
 }
@@ -204,11 +222,10 @@ export function 设置圣耀倍率(Npc: TNormNpc, Player: TPlayObject, Args: TAr
     const 倍率 = Args.Int[0];
     const 最大倍率 = Args.Int[1] || 1000;
 
-    if (倍率 < 1 || 倍率 > 最大倍率) {
-        Player.MessageBox(`请输入1-${最大倍率}之间的倍率`)
+    if (倍率 < 100 || 倍率 > 最大倍率) {
+        Player.MessageBox(`请输入100-${最大倍率}之间的倍率`)
         return
     }
-
     Player.R.圣耀地图爆率加成 = 倍率
     Player.MessageBox(`{S=【圣耀副本】;C=250}圣耀倍率已设置为 {S=${倍率};C=253} 倍`)
 }

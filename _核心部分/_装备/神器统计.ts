@@ -105,7 +105,8 @@ function 统计套装属性(Player: TPlayObject, 套装: 神器套装数据): vo
         const 后续次数 = 有效次数 - 1;
 
         const 总加成 = 首次加成 + 后续加成 * 后续次数;
-        Player.R.全体魔次 = 智能计算(Player.R.全体魔次, String(总加成), 1);
+        // 🚀 性能优化：添加空值检查，避免undefined导致的错误
+        Player.R.全体魔次 = 智能计算(Player.R.全体魔次 || '0', String(总加成), 1);
     }
 
     // 检查套装是否完整激活（所有组件至少使用1次）
@@ -135,7 +136,8 @@ function 统计特殊单件属性(Player: TPlayObject, 单件: 特殊单件数�
     const 后续次数 = 有效次数 - 1;
 
     const 总加成 = 首次加成 + 后续加成 * 后续次数;
-    Player.R.全体魔次 = 智能计算(Player.R.全体魔次, String(总加成), 1);
+    // 🚀 性能优化：添加空值检查，避免undefined导致的错误
+    Player.R.全体魔次 = 智能计算(Player.R.全体魔次 || '0', String(总加成), 1);
 }
 
 /**
@@ -162,8 +164,9 @@ function 应用套装效果(Player: TPlayObject, 套装: 神器套装数据): vo
                 Player.R.基因锁等级 = 1;
             }
             // 对2大陆及以上怪物增伤
+            // 🚀 性能优化：添加空值检查，避免undefined导致的错误
             Player.R.神器增伤加成 = 智能计算(
-                Player.R.神器增伤加成,
+                Player.R.神器增伤加成 || '0',
                 String(套装.套装属性值),
                 1
             );

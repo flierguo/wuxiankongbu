@@ -1,5 +1,5 @@
 
-const 选项 = ['武器', '衣服', '头盔','项链', '手镯', '戒指', '腰带', '靴子', '生肖', '材料',]
+const 选项 = ['装备', '材料']
 const 选中 = 239
 const 取消 = 238
 
@@ -51,7 +51,8 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     初始化(Player)
     let V = 取V(Player)
     const 当前页码 = Args.Int[0] == 0 ? 1 : Args.Int[0]
-    let str = `<{s=全选;x=580;y=60}/@可视仓库.设置(${Args.Int[0]},全选)>    <{s=全消;y=60}/@可视仓库.设置(${Args.Int[0]},全消)>    <{s=反选;y=60}/@可视仓库.设置(${Args.Int[0]},反选)>`
+    // let str = `<{s=全选;x=580;y=60}/@可视仓库.设置(${Args.Int[0]},全选)>    <{s=全消;y=60}/@可视仓库.设置(${Args.Int[0]},全消)>    <{s=反选;y=60}/@可视仓库.设置(${Args.Int[0]},反选)>`
+    let str = ``
     //遍历到项链以后,在起一行
     for (let i = 0; i < 选项.length; i++) {
         //i到14以后, x=30
@@ -145,23 +146,13 @@ export function 筛选物品(Player: TPlayObject): number[] {
 function 是否加入(Player: TPlayObject, item: TUserItem): boolean {
     let V = 取V(Player)
     for (let i = 0; i < 选项.length; i++) {
-        //['战士', '法师', '道士', '通用', '战刃', '法杖', '道扇', '战甲', '战衣', '法袍', '法衣', '道袍', '道衣', '头盔',
-        //      '项链', '手镯', '戒指', '腰带', '靴子', '材料']  
         let 是否选中 = V.选项[i] == true
         if (是否选中 == false) {
             continue
         }
         let 是否为装备 = 是否为装备啊(item)
         switch (true) {
-            case 选项[i] == '武器' && 是否为装备 &&(item.StdMode == 5||item.StdMode == 6): return true
-            case 选项[i] == '衣服' && 是否为装备 &&(item.StdMode == 10||item.StdMode == 11): return true
-            case 选项[i] == '头盔' && 是否为装备 &&( item.StdMode == 15||item.StdMode == 16): return true
-            case 选项[i] == '项链' && 是否为装备 &&(item.StdMode == 19||item.StdMode == 20||item.StdMode == 21): return true
-            case 选项[i] == '手镯' && 是否为装备 && (item.StdMode == 24||item.StdMode == 26): return true
-            case 选项[i] == '戒指' && 是否为装备 && (item.StdMode == 22||item.StdMode == 23): return true
-            case 选项[i] == '腰带' && 是否为装备 && item.StdMode == 27: return true
-            case 选项[i] == '靴子' && 是否为装备 && item.StdMode == 28: return true
-            case 选项[i] == '生肖' && 是否为装备 && item.StdMode == 68: return true
+            case 选项[i] == '装备' && 是否为装备: return true
             case 选项[i] == '材料' && !是否为装备: return true
         }
     }

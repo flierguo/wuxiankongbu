@@ -443,7 +443,6 @@ export function 神罚(Source: TActor, Target: TActor): void {
 // 如山: 开启后,每秒对周围5码内造成400%伤害,每级提高40%
 export function 如山(Source: TActor, _Target: TActor): void {
     const Player = Source as TPlayObject;
-    console.log(`如山${Player.R.如山}`)
     if (!Player.R.如山) {
         Player.R.如山 = true;
         Player.SetCustomEffect(_P_Base.永久特效.如山, _P_Base.特效.如山);

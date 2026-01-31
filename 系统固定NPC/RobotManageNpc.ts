@@ -1,6 +1,7 @@
 /*机器人*/
 import { 获取玩家范围内目标, 获取目标范围内目标 } from "./MagicNpc"
 
+
 import {
     _P_N_监狱计时, _P_N_可复活次数, 技能ID
 } from "../_核心部分/基础常量"
@@ -19,7 +20,9 @@ import * as 地图 from '../_核心部分/_地图/地图'
 
 import { 一键存入所有材料 } from "../_核心部分/_服务/材料仓库"
 import { RobotPlugIn } from "../_核心部分/_服务/_GN_Monitoring";
+import { 检查津贴状态, 津贴时间扣除 } from "../_核心部分/_服务/主神津贴"
 import { 装备属性统计 } from "../_核心部分/_装备/属性统计"
+import { 自动回收提示 } from "../_核心部分/_装备/装备回收"
 
 
 
@@ -51,10 +54,6 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
         Player.SetBuffIcon(击杀进度Buff.Handle, 'magicon.wzl', 2330, 2330, ``, '', 进度提示, false, false)
     }
 
-    // 🚀 性能优化：自动回收改为每5秒执行一次，而非每秒
-    if (Player.V.自动回收 && Player.R.性能计数器 % 5 === 0) {
-        // 回收装备(Npc, Player, Args)
-    }
     if (Player.V.开启挂机 && Player.R.性能计数器 % 5 === 0) {
         Player.ReloadBag()
     }
@@ -75,19 +74,19 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
     if (Player.GetGold() >= 2000000000) {
         if (GameLib.ServerName.includes('包区')) {
             Player.SetGold(Player.GetGold() - 2000000000)
-            Player.SetGameGold(Player.GetGameGold() + 2000000)
+            Player.SetGameGold(Player.GetGameGold() + 1800000)
             Player.GoldChanged()
-            Player.SendMessage(`使用{S=2000000000金币;C=154}成功兑换了{S=2000000元宝;C=154}`, 1)
-        } else if (GameLib.V.判断新区 == true) {
-            Player.SetGold(Player.GetGold() - 2000000000)
-            Player.SetGameGold(Player.GetGameGold() + 1200000)
-            Player.GoldChanged()
-            Player.SendMessage(`使用{S=2000000000金币;C=154}成功兑换了{S=1200000元宝;C=154}`, 1)
-        } else {
+            Player.SendMessage(`使用{S=2000000000金币;C=154}成功兑换了{S=1800000元宝;C=154}`, 1)
+        } else if (GameLib.V.是新区 == true) {
             Player.SetGold(Player.GetGold() - 2000000000)
             Player.SetGameGold(Player.GetGameGold() + 1600000)
             Player.GoldChanged()
             Player.SendMessage(`使用{S=2000000000金币;C=154}成功兑换了{S=1600000元宝;C=154}`, 1)
+        } else {
+            Player.SetGold(Player.GetGold() - 2000000000)
+            Player.SetGameGold(Player.GetGameGold() + 1200000)
+            Player.GoldChanged()
+            Player.SendMessage(`使用{S=2000000000金币;C=154}成功兑换了{S=1200000元宝;C=154}`, 1)
         }
     }
 
@@ -115,26 +114,12 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
     //测试用
 
 
-    if (Player.R.被攻击状态) {
-        Player.R.被攻击不允许随机 = Player.R.被攻击不允许随机 + 1
-        if (Player.R.被攻击不允许随机 >= 5) {
-            Player.R.被攻击状态 = false
-            if (js_war(Player.GetSVar(91), 智能计算(Player.GetSVar(92), `0.5`, 3)) < 0) {
-                实时回血(Player, 智能计算(Player.GetSVar(92), `0.5`, 3))
-                Player.SendCountDownMessage(`退出战斗血量低于50%自动恢复至50%`, 0);
-            }
-        }
-    }
-
-    if (Player.V.开启挂机 && Player.V.自动随机 && Player.V.自动随机秒数 > 0) {
+    if (Player.R.开启挂机 && Player.V.自动随机 && Player.V.随机读秒 > 0) {
         Player.R.随机秒数 ??= 0
         Player.R.随机秒数++
-        if (Player.R.随机秒数 >= Player.V.自动随机秒数) {
+        if (Player.R.随机秒数 >= Player.V.随机读秒) {
             Player.R.随机秒数 = 0
-            if (Player.R.被攻击状态 == false) {
-                Player.RandomMove(Player.GetMapName())
-            }
-
+            Player.RandomMove(Player.GetMapName())
         }
     }
 
@@ -179,15 +164,6 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
             Player.R.回血2秒 = 0
         }
     }
-
-    if (!Player.Death && Player.V.自动拾取) {
-        // if (Player.V.总捐献礼卷数量 < 50) {
-        // Player.MagicAttack(Player, 10078)//范围4
-        // } else {
-        Player.MagicAttack(Player, 10079)//范围12
-        // }
-    }
-
 }
 
 
@@ -224,8 +200,17 @@ export function 全局1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 /*十秒执行*/
 export function 个人10秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 
+    // 装备属性统计(Player);
     /*监控外挂*/
     RobotPlugIn(Player);
+
+    // 检查主神津贴状态
+    检查津贴状态(Player);
+
+    // 自动回收提示（累计10秒内的回收数据）
+    if (Player.R.累计回收金币 > 0) {
+        自动回收提示(Player);
+    }
     if (Player.V.开启挂机) {
         Player.ReloadBag()
     }
@@ -234,8 +219,15 @@ export function 个人10秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): vo
     }
 
 }
+
+/*每分钟执行（个人）*/
+export function 个人1分钟(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    // 扣除主神津贴时间（每分钟-1）
+    津贴时间扣除(Player);
+
+}
 /*每30S检测一次*/
-export function 刷怪30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+export function 全局30秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // 新刷怪系统：定时补怪检测
     生物刷新.定时补怪检测()
     // 新刷怪系统：特殊BOSS刷新检测(击杀2000怪触发)
@@ -277,6 +269,22 @@ export function 全局1分钟(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): 
         GameLib.R.定期加载 = 0
     }
 
+    // ==================== 新区状态检测（每分钟执行一次） ====================
+    // 使用分钟计数器，7天 = 7 * 24 * 60 = 10080 分钟
+    GameLib.V.是新区 ??= true
+
+    if (GameLib.V.是新区 === true) {
+        // 初始化开区分钟计数器
+        GameLib.V.开区分钟数 ??= 0
+        GameLib.V.开区分钟数++
+
+        // 7天 = 10080分钟
+        if (GameLib.V.开区分钟数 >= 1440 * 7) {
+            GameLib.V.是新区 = false
+            GameLib.BroadcastTopMessage(`服务器已开区满7天，新区状态已取消！`)
+            console.log(`[系统] 服务器开区${Math.floor(GameLib.V.开区分钟数 / 1440)}天，新区状态已取消`)
+        }
+    }
 
 }
 
@@ -308,17 +316,17 @@ export function 复活触发(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     // Player.AddExtendButton('复活', '{S=当前可复活次数:;C=254}' + '{S=[;C=243}' + Player.GetNVar(_P_N_可复活次数) + '{S=];C=243}', '', 186, 1, -600)
 
 }
+
 export function 全局每日清理(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     delete GameLib.V.每日回收神器次数
     delete GameLib.V.每日宣传兑换次数
-    Player.V.今日兑换礼卷 = 0
-    Player.V.每日宣传兑换次数 = 0
+
 }
 
 export function 个人每日清理(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Player.V.今日回收神器 = 0
-    Player.V.今日兑换礼卷 = 0
+
     Player.V.每日宣传兑换次数 = 0
+    Player.V.今日神器回收 = 0
 }
 
 
@@ -421,8 +429,6 @@ export function 自动吃元宝优化版(Npc: TNormNpc, Player: TPlayObject, Arg
 export function 自动吃元宝(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     自动吃元宝优化版(Npc, Player, Args)
 }
-
-const 装备类型 = [4, 5, 6, 10, 11, 15, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 68, 35, 17, 18]
 
 
 export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -706,8 +712,10 @@ export function 自动施法(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     // ==================== 不动职业 ====================
     // ============================================================
     if (V.职业 === '不动' && !Player.InSafeZone) {
+        // 🚀 性能优化：添加空值检查，避免undefined导致的错误
+        const 护盾值 = Player.R.人王盾护盾值 || '0'
         let 暗影猎取 = Player.AddIntervalBuff(1, TBuffIntervalType.biNone, 0, 0, 0, 0)
-        Player.SetBuffIcon(暗影猎取.Handle, 'magicon.wzl', 2201, 2201, ``, '', `{S=当前人王盾: }{S=${大数值整数简写(Player.R.人王盾护盾值)};C=21}{S= 点}`, true, true)
+        Player.SetBuffIcon(暗影猎取.Handle, 'magicon.wzl', 2201, 2201, ``, '', `{S=当前人王盾: }{S=${大数值整数简写(护盾值)};C=21}{S= 点}`, true, true)
         // ---------- 人王盾：自动释放 ----------
         // 条件：开启自动施法 且 护盾值为0时自动释放
         if (R.人王盾自动施法 && !Player.R.人王盾开启) {

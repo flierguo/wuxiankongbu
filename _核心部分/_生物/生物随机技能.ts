@@ -21,7 +21,7 @@ function 获取技能配置(技能名称: string): { 距离: number; 技能几�
     let 距离 = 1
     let 技能几率 = 0
     let 技能ID = 0
-    
+
     switch (技能名称) {
         case '火球术': 距离 = 5; 技能几率 = 100; 技能ID = 10030; break
         case '疾光电影': 距离 = 5; 技能几率 = 80; 技能ID = 10031; break
@@ -46,7 +46,7 @@ function 获取技能配置(技能名称: string): { 距离: number; 技能几�
         case '彻地钉': 距离 = 5; 技能几率 = 20; 技能ID = 10050; break
         case '群体雷电术': 距离 = 5; 技能几率 = 20; 技能ID = 10051; break
     }
-    
+
     return { 距离, 技能几率, 技能ID }
 }
 
@@ -73,15 +73,15 @@ export function 生成怪物随机技能(取尾数: number): 怪物技能信息 
         '流星火雨', '灵魂火符', '飓风破', '冰咆哮', '倚天辟地', '彻地钉', '群体雷电术', '万箭齐发']
     let 被动技能 = ['高速', '急速', '神速', '健体', '强身', '强壮', '肉盾', '抗体', '不催', '勇猛', '强攻', '穿透']
     let 被动技能无用 = ['静态', '腐败', '震撼', '光荣', '腐烂', '腐蚀', '寒冬', '维持', '瘟疫', '残忍', '野蛮', '崇高', '颤抖', '发光', '雪王', '恶毒', '残酷', '剧毒', '翁叫', '结实', '稳重', '海蛇', '龙', '巴哈姆', '神圣', '弯曲', '诅咒']
-    
+
     let 技能1 = ''
     let 技能2 = ''
     let 技能3 = ''
     let 技能4 = ''
-    
+
     let 怪物技能1 = 技能名字[random(技能名字.length)]
     技能名字 = 技能名字.filter(where => where != 怪物技能1)
-    
+
     // 根据取尾数随机选择技能
     if (取尾数 == 15 || 取尾数 == 16 || 取尾数 == 17 || 取尾数 == 18 || 取尾数 == 19 || 取尾数 == 10 || 取尾数 == 21) {
         技能1 = 怪物技能1
@@ -105,7 +105,7 @@ export function 生成怪物随机技能(取尾数: number): 怪物技能信息 
     } else if (random(100) < 40) {
         技能1 = 技能名字[random(技能名字.length)]
     }
-    
+
     // 获取技能配置（优先使用技能4，如果没有则使用技能1）
     let 技能配置 = { 距离: 1, 技能几率: 0, 技能ID: 0 }
     if (技能4 != '') {
@@ -113,10 +113,10 @@ export function 生成怪物随机技能(取尾数: number): 怪物技能信息 
     } else if (技能1 != '') {
         技能配置 = 获取技能配置(技能1)
     }
-    
+
     // 获取攻速移速
     let 攻速移速 = 获取攻速移速(技能2)
-    
+
     return {
         技能1,
         技能2,
@@ -136,10 +136,10 @@ export function 生成怪物随机技能(取尾数: number): 怪物技能信息 
  */
 export function 获取技能2血量倍数(技能2: string): number {
     switch (技能2) {
-        case '健体': return 120
-        case '强身': return 150
-        case '强壮': return 200
-        default: return 100
+        case '健体': return 1.2
+        case '强身': return 1.5
+        case '强壮': return 2
+        default: return 1
     }
 }
 
@@ -150,10 +150,10 @@ export function 获取技能2血量倍数(技能2: string): number {
  */
 export function 获取技能2攻击倍数(技能2: string): number {
     switch (技能2) {
-        case '勇猛': return 120
-        case '强攻': return 150
-        case '穿透': return 200
-        default: return 100
+        case '勇猛': return 1.2
+        case '强攻': return 1.5
+        case '穿透': return 2
+        default: return 1
     }
 }
 
@@ -164,10 +164,10 @@ export function 获取技能2攻击倍数(技能2: string): number {
  */
 export function 获取技能2防御倍数(技能2: string): number {
     switch (技能2) {
-        case '肉盾': return 120
-        case '抗体': return 150
-        case '不催': return 200
-        default: return 100
+        case '肉盾': return 1.2
+        case '抗体': return 1.5
+        case '不催': return 2
+        default: return 1
     }
 }
 
@@ -181,7 +181,7 @@ export function 设置怪物技能变量(Monster: TActor, 技能信息: 怪物�
     Monster.SetNVar(怪物技能1ID, 技能信息.技能ID)
     Monster.SetNVar(怪物技能4ID, 技能信息.技能ID)
     Monster.SetNVar(怪物技能4几率, 技能信息.技能几率)
-    
+
     // 设置BOSS技能变量
     if (技能信息.技能1 != '') {
         Monster.SetSVar(BOSS技能1, 技能信息.技能1)
@@ -205,7 +205,7 @@ export function 设置怪物技能变量(Monster: TActor, 技能信息: 怪物�
  * @param 星数简写 星数简写字符串
  * @returns 怪物名字后缀（例如："火球术★高速★僵尸[100]阶\\魔化10星"）
  */
-export function 生成怪物技能名字(技能信息: 怪物技能信息, 原始名字: string, ): string {
+export function 生成怪物技能名字(技能信息: 怪物技能信息, 原始名字: string,): string {
     if (技能信息.技能4 != '') {
         return `${技能信息.技能1}★${技能信息.技能2}★${技能信息.技能3}★${技能信息.技能4}★${原始名字}`
     } else if (技能信息.技能3 != '') {

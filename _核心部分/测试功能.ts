@@ -5,6 +5,7 @@ import { 神器套装配置 } from "./_装备/神器统计"
 import { 原始名字 } from "./基础常量"
 import { 血量显示 } from "./字符计算"
 import { 转大数值 } from "../_大数值/核心计算方法"
+import { 测试套装 } from "./_装备/随机套装"
 
 
 
@@ -39,9 +40,11 @@ export function 测试功能(Npc: TNormNpc, Player: TPlayObject): void {
     <{S=地图传送(下标);X=20;Y=60}/@@测试功能.InPutString2(输入下标)> 
     <{S=地图传送(名称);X=120;Y=60}/@@测试功能.InPutString3(输入名字)> \\
     <{S=给玩家刷属性;X=220;Y=60}/@@测试功能.InPutString4(玩家-属性-类型1（积分）、2（元宝）、3（回收比例）、4（爆率）、5（等级）)>
-    <{S=属性测试输出;X=320;Y=60}/@测试功能.属性测试输出>
-
-    <{S=学习技能;X=20;Y=90}/@@测试功能.InPutString5(玩家-技能名称)> 
+    <{S=给玩家刷物品;X=320;Y=60}/@@测试功能.InPutString6(玩家-物品-数量)>
+    
+    <{S=属性测试输出;X=20;Y=90}/@测试功能.属性测试输出>
+    <{S=学习技能;X=120;Y=90}/@@测试功能.InPutString5(玩家-技能名称)> 
+    <{S=刷套装装备;X=220;Y=90}/@@测试功能.InPutString7(玩家-套装名-装备名)>
 
     
     `
@@ -51,8 +54,10 @@ export function 测试功能(Npc: TNormNpc, Player: TPlayObject): void {
 }
 
 export function 属性测试输出(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Player.V.泰山等级 += 1
+    Player.R.极品率加成 = 1000
     装备属性统计(Player)
+    console.log(`测试输出: ${Player.R.极品率加成}---${Player.R.鞭尸几率}`)
+
 }
 export function 清空背包(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let item: TUserItem
@@ -132,8 +137,8 @@ export function InPutString1(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): b
     // 查找套装配置
     const 套装 = 神器套装配置.find(s => s.套装名称 === 套装名称);
     if (!套装) {
-        Player.SendMessage(`未找到套装：${套装名称}`);
-        Player.SendMessage(`可用套装：${神器套装配置.map(s => s.套装名称).join('、')}`);
+        Player.MessageBox(`未找到套装：${套装名称}`);
+        Player.MessageBox(`可用套装：${神器套装配置.map(s => s.套装名称).join('、')}`);
         return false;
     }
 
@@ -154,11 +159,11 @@ export function InPutString1(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): b
     }
 
     if (成功数量 > 0) {
-        目标玩家.SendMessage(`获得 ${套装名称} 全套组件(${成功数量}/${套装.组件列表.length})`, 1);
-        Player.SendMessage(`成功给予 ${玩家名称} ${套装名称} 全套组件(${成功数量}/${套装.组件列表.length})`);
+        目标玩家.MessageBox(`获得 ${套装名称} 全套组件(${成功数量}/${套装.组件列表.length})`);
+        Player.MessageBox(`成功给予 ${玩家名称} ${套装名称} 全套组件(${成功数量}/${套装.组件列表.length})`);
         return true;
     } else {
-        Player.SendMessage(`给予失败，可能是背包已满或物品不存在`);
+        Player.MessageBox(`给予失败，可能是背包已满或物品不存在`);
         return false;
     }
 }
@@ -239,6 +244,7 @@ export function InPutString4(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             Player.MessageBox('类型错误，请输入1（积分）、2（元宝）、3（回收比例）、4（爆率）、5（等级）');
             return;
     }
+    装备属性统计(Player)
 }
 
 export function InPutString5(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  // 学习技能
@@ -285,4 +291,47 @@ export function InPutString5(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     } else {
         Player.SendMessage(`技能【${技能名称}】不存在于技能数据库中，请检查技能名称是否正确`);
     }
+}
+
+
+export function InPutString6(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  //格式: 玩家名字-物品-数量  
+    const str: string = Args.Str[0];
+    const list: string[] = str.split('-');   // 格式：玩家名字-数量-类型
+
+    // 参数校验
+    if (list.length < 3) {
+        Player.MessageBox('输入格式错误，请使用：玩家名字-数量-类型\\（1=积分，2=元宝，3=回收比例，4=爆率，5=等级）');
+        return;
+    }
+
+    const 玩家名称 = list[0].trim();
+    const 物品 = list[1].trim();
+    const 数量 = Number(list[2]);
+
+    // 数值校验
+    if (isNaN(数量) || 数量 < 0) {
+        Player.MessageBox('数量必须大于0');
+        return;
+    }
+
+    // 使用 GameLib.FindPlayer 查找玩家（91m2说明书推荐方式）
+    const 目标玩家: TPlayObject = GameLib.FindPlayer(玩家名称);
+    if (!目标玩家) {
+        Player.MessageBox(`未找到在线玩家：${玩家名称}`);
+    }
+
+    目标玩家.Give(物品, 数量)
+
+
+    Player.MessageBox(`成功给玩家【${玩家名称}】增加 ${物品} ${数量} 个`);
+    目标玩家.MessageBox(`管理员 ${Player.Name} 给你增加了 ${物品} ${数量} 个`);
+}
+
+export function InPutString7(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {  // 刷套装装备
+    // 验证用户是否输入了内容
+    if (!Args.Str || !Args.Str[0]) {
+        Player.SendMessage('请输入参数，格式：玩家名-套装名-装备名');
+        return;
+    }
+    测试套装(Player, Args.Str[0]);
 }

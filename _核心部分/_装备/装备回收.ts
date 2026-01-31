@@ -12,6 +12,7 @@
 import { 智能计算, 大于等于 } from '../../_大数值/核心计算方法'
 import { 基础词条, 装备颜色, 技能魔次, 装备需求等级 } from '../基础常量'
 import { 大数值整数简写 } from '../字符计算'
+import { 文本 } from '../_功能'
 
 // ==================== 类型定义 ====================
 interface 装备属性记录 {
@@ -21,15 +22,15 @@ interface 装备属性记录 {
 
 interface 回收结果 {
     应该回收: boolean
-    回收价值: string
+    回收价值: number
     货币类型: '金币' | '元宝'
     保留原因?: string
 }
 
 interface 批量回收结果 {
     回收数量: number
-    总金币: string
-    总元宝: string
+    总金币: number
+    总元宝: number
 }
 
 // 技能魔次名称映射
@@ -110,8 +111,9 @@ export function 初始化回收变量(Player: TPlayObject): void {
     // 回收倍率
     Player.R.最终回收倍率 ??= 100
 
-    // 回收屏蔽
-    Player.V.回收屏蔽 ??= false
+    // 自动随机
+    Player.V.自动随机 ??= false
+    Player.V.随机读秒 ??= 1
 }
 
 // ==================== 核心回收逻辑 ====================
@@ -209,57 +211,60 @@ function 检查词条保留(Player: TPlayObject, UserItem: TUserItem): boolean {
         const 属性ID = 装备属性.职业属性_职业[i]
         const 属性值 = 装备属性.职业属性_属性[i]
 
-        // 攻击类属性检查 (100-115)
-        if (属性ID >= 100 && 属性ID <= 115) {
-            if (Player.V.攻击勾选) {
+        // 攻击类属性检查 - 根据玩家职业判断对应的攻击属性
+        // Job 0-5 分别对应: 攻击/攻击2, 魔法/魔法2, 道术/道术2, 刺术/刺术2, 箭术/箭术2, 武术/武术2
+        if (Player.V.攻击勾选) {
+            const 玩家职业 = Player.GetJob()
+            const 主攻击ID = 100 + 玩家职业  // 100-105
+            const 主攻击2ID = 108 + 玩家职业 // 108-113
+
+            if (属性ID === 主攻击ID || 属性ID === 主攻击2ID) {
                 const 阈值 = Player.V.攻击数值 || '0'
                 if (大于等于(属性值, 阈值)) {
                     return true // 达到保留标准
                 }
             }
-        }
-
-        // 血量检查
-        if (属性ID === 基础词条.血量 || 属性ID === 基础词条.血量2) {
-            if (Player.V.血量勾选) {
-                const 阈值 = Player.V.血量数值 || '0'
-                if (大于等于(属性值, 阈值)) {
-                    return true
-                }
-            }
-        }
-
-        // 防御检查
-        if (属性ID === 基础词条.防御 || 属性ID === 基础词条.防御2) {
-            if (Player.V.防御勾选) {
-                const 阈值 = Player.V.防御数值 || '0'
-                if (大于等于(属性值, 阈值)) {
-                    return true
-                }
-            }
-        }
-
-        // 技能魔次检查 (10001-10040)
-        if (属性ID >= 10001 && 属性ID <= 10040) {
-            if (Player.V.技能勾选) {
-                const 阈值 = Player.V.技能数值 || '0'
-                const 已选技能 = Player.V.已选择技能魔次 as number[] || []
-
-                // 如果选择了特定技能，只检查已选技能
-                if (已选技能.length > 0) {
-                    if (已选技能.includes(属性ID) && 大于等于(属性值, 阈值)) {
-                        return true
-                    }
-                } else {
-                    // 没有选择特定技能，检查所有技能魔次
+            // 血量检查
+            if (属性ID === 基础词条.血量 || 属性ID === 基础词条.血量2) {
+                if (Player.V.血量勾选) {
+                    const 阈值 = Player.V.血量数值 || '0'
                     if (大于等于(属性值, 阈值)) {
                         return true
                     }
                 }
             }
+
+            // 防御检查
+            if (属性ID === 基础词条.防御 || 属性ID === 基础词条.防御2) {
+                if (Player.V.防御勾选) {
+                    const 阈值 = Player.V.防御数值 || '0'
+                    if (大于等于(属性值, 阈值)) {
+                        return true
+                    }
+                }
+            }
+
+            // 技能魔次检查 (10001-10040)
+            if (属性ID >= 10001 && 属性ID <= 10040) {
+                if (Player.V.技能勾选) {
+                    const 阈值 = Player.V.技能数值 || '0'
+                    const 已选技能 = Player.V.已选择技能魔次 as number[] || []
+
+                    // 如果选择了特定技能，只检查已选技能
+                    if (已选技能.length > 0) {
+                        if (已选技能.includes(属性ID) && 大于等于(属性值, 阈值)) {
+                            return true
+                        }
+                    } else {
+                        // 没有选择特定技能，检查所有技能魔次
+                        if (大于等于(属性值, 阈值)) {
+                            return true
+                        }
+                    }
+                }
+            }
         }
     }
-
     return false // 没有达到任何保留条件
 }
 
@@ -267,19 +272,20 @@ function 检查词条保留(Player: TPlayObject, UserItem: TUserItem): boolean {
  * 计算装备回收价值
  * 回收价格 = 基础属性翻倍倍率 * Player.R.最终回收倍率
  */
-function 计算回收价值(Player: TPlayObject, UserItem: TUserItem): { 价值: string, 货币类型: '金币' | '元宝' } {
+function 计算回收价值(Player: TPlayObject, UserItem: TUserItem): { 价值: number, 货币类型: '金币' | '元宝' } {
     const 翻倍倍率 = 获取装备翻倍倍率(UserItem)
-    const 最终倍率 = Player.R.最终回收倍率 / 100 || 1
+    const 最终倍率 = (Player.R.最终回收倍率 || 100) / 100
 
     if (是否神器(UserItem)) {
         // 神器回收获得元宝
         const 神器倍数 = 解析神器倍数(UserItem.DisplayName || '')
-        const 元宝价值 = 智能计算(String(神器倍数), String(最终倍率), 3)
+        const 元宝价值 = Math.floor(神器倍数 * 最终倍率)
         return { 价值: 元宝价值, 货币类型: '元宝' }
     } else {
         // 普通装备回收获得金币
-        const 金币价值 = 智能计算(String(翻倍倍率), String(最终倍率), 3)
-        return { 价值: String(翻倍倍率), 货币类型: '金币' }
+        // const 金币价值 = Math.floor(翻倍倍率 * 最终倍率)
+        const 金币价值 = 翻倍倍率
+        return { 价值: 金币价值, 货币类型: '金币' }
     }
 }
 
@@ -294,12 +300,12 @@ export function 检查装备回收(Player: TPlayObject, UserItem: TUserItem): �
 
     // 检查装备类型
     if (!有效装备类型.includes(UserItem.StdMode)) {
-        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '装备类型不符' }
+        return { 应该回收: false, 回收价值: 0, 货币类型: '金币', 保留原因: '装备类型不符' }
     }
 
     // 检查是否绑定
     if (UserItem.GetState()?.GetBind()) {
-        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '绑定装备' }
+        return { 应该回收: false, 回收价值: 0, 货币类型: '金币', 保留原因: '绑定装备' }
     }
 
     // 获取品质
@@ -307,12 +313,12 @@ export function 检查装备回收(Player: TPlayObject, UserItem: TUserItem): �
 
     // 检查品质是否在回收列表
     if (!检查品质回收(Player, 品质)) {
-        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '品质不在回收列表' }
+        return { 应该回收: false, 回收价值: 0, 货币类型: '金币', 保留原因: '品质不在回收列表' }
     }
 
     // 检查词条保留
     if (检查词条保留(Player, UserItem)) {
-        return { 应该回收: false, 回收价值: '0', 货币类型: '金币', 保留原因: '词条达到保留标准' }
+        return { 应该回收: false, 回收价值: 0, 货币类型: '金币', 保留原因: '词条达到保留标准' }
     }
 
     // 计算回收价值
@@ -331,11 +337,11 @@ export function 执行装备回收(Player: TPlayObject, UserItem: TUserItem): bo
 
     // 发放奖励
     if (结果.货币类型 === '元宝') {
-        const 当前元宝 = Player.GetGamePoint() || 0
-        Player.SetGamePoint(当前元宝 + Number(结果.回收价值))
+        const 当前元宝 = Player.GetGameGold() || 0
+        Player.SetGameGold(当前元宝 + 结果.回收价值)
     } else {
         const 当前金币 = Player.GetGold() || 0
-        Player.SetGold(当前金币 + Number(结果.回收价值))
+        Player.SetGold(当前金币 + 结果.回收价值)
         Player.GoldChanged()
     }
 
@@ -352,8 +358,8 @@ export function 批量回收背包(Player: TPlayObject): 批量回收结果 {
     初始化回收变量(Player)
 
     let 回收数量 = 0
-    let 总金币 = '0'
-    let 总元宝 = '0'
+    let 总金币 = 0
+    let 总元宝 = 0
 
     // 倒序遍历避免索引问题
     for (let i = Player.GetItemSize() - 1; i >= 0; i--) {
@@ -365,9 +371,9 @@ export function 批量回收背包(Player: TPlayObject): 批量回收结果 {
 
         // 累计价值
         if (结果.货币类型 === '元宝') {
-            总元宝 = 智能计算(总元宝, 结果.回收价值, 1)
+            总元宝 += 结果.回收价值
         } else {
-            总金币 = 智能计算(总金币, 结果.回收价值, 1)
+            总金币 += 结果.回收价值
         }
 
         Player.DeleteItem(item)
@@ -375,12 +381,12 @@ export function 批量回收背包(Player: TPlayObject): 批量回收结果 {
     }
 
     // 发放奖励
-    if (总金币 !== '0') {
-        Player.SetGold(Player.GetGold() + Number(总金币))
+    if (总金币 > 0) {
+        Player.SetGold(Player.GetGold() + 总金币)
         Player.GoldChanged()
     }
-    if (总元宝 !== '0') {
-        Player.SetGamePoint(Player.GetGamePoint() + Number(总元宝))
+    if (总元宝 > 0) {
+        Player.SetGamePoint(Player.GetGamePoint() + 总元宝)
     }
 
     return { 回收数量, 总金币, 总元宝 }
@@ -397,7 +403,59 @@ export function 掉落自动回收(Player: TPlayObject, UserItem: TUserItem): bo
     // 未开启自动回收
     if (!Player.V.自动回收) return false
 
-    return 执行装备回收(Player, UserItem)
+    const 结果 = 检查装备回收(Player, UserItem)
+    if (!结果.应该回收) return false
+
+    // 累计回收货币（用于10秒提示）
+    Player.R.累计回收金币 ??= 0
+    Player.R.累计回收元宝 ??= 0
+    Player.R.累计回收数量 ??= 0
+
+    // 发放奖励并累计
+    if (结果.货币类型 === '元宝') {
+        const 当前元宝 = Player.GetGameGold() || 0
+        Player.SetGameGold(当前元宝 + 结果.回收价值)
+        Player.R.累计回收元宝 += 结果.回收价值
+    } else {
+        const 当前金币 = Player.GetGold() || 0
+        Player.SetGold(当前金币 + 结果.回收价值)
+        Player.GoldChanged()
+        Player.R.累计回收金币 += 结果.回收价值
+    }
+
+    Player.R.累计回收数量++
+
+    // 删除装备
+    Player.DeleteItem(UserItem)
+
+    return true
+}
+
+/**
+ * 自动回收提示（每10秒调用一次，在RobotManageNpc中调用）
+ */
+export function 自动回收提示(Player: TPlayObject): void {
+    // 检查是否有累计数据
+    if (!Player.R.累计回收数量 || Player.R.累计回收数量 === 0) return
+
+    const 数量 = Player.R.累计回收数量
+    const 金币 = Player.R.累计回收金币 || 0
+    const 元宝 = Player.R.累计回收元宝 || 0
+
+    let 消息 = `【自动回收】回收了 {S=${数量};C=154} 件装备`
+    if (金币 > 0) {
+        消息 += `，获得 {S=${金币};C=253} 金币`
+    }
+    if (元宝 > 0) {
+        消息 += `，获得 {S=${元宝};C=251} 元宝`
+    }
+
+    Player.SendMessage(消息, 1)
+
+    // 清空累计数据
+    Player.R.累计回收金币 = 0
+    Player.R.累计回收元宝 = 0
+    Player.R.累计回收数量 = 0
 }
 
 
@@ -419,6 +477,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
     const 防御位数 = Player.V.防御数值?.length || 0
     const 技能位数 = Player.V.技能数值?.length || 0
 
+    const 神器说明 = 文本.转义(`HINT=勾选后神器自动回收为元宝\\{S=建议在;C=244}{S=生命水池;C=249}{S=处回收主神点数;C=244}`)
     const S = `\\
         {S=装备回收系统;C=251;X=240;Y=10}
         {S=当前回收倍率:;C=154;X=50;Y=10}{S=${最终倍率}%;C=253;OX=5;Y=10}
@@ -430,7 +489,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
         <{I=$回收史诗$;F=装备图标.DATA;X=260;Y=80}/@装备回收.勾选(回收史诗)> {S=史诗;C=254;OX=3;Y=80}
         <{I=$回收传说$;F=装备图标.DATA;X=50;Y=110}/@装备回收.勾选(回收传说)> {S=传说;C=251;OX=3;Y=110}
         <{I=$回收神话$;F=装备图标.DATA;X=120;Y=110}/@装备回收.勾选(回收神话)> {S=神话;C=244;OX=3;Y=110}
-        <{I=$回收神器$;F=装备图标.DATA;X=190;Y=110}/@装备回收.勾选(回收神器)> {S=神器;C=249;OX=3;Y=110;HINT=神器回收获得元宝}
+        <{I=$回收神器$;F=装备图标.DATA;X=190;Y=110}/@装备回收.勾选(回收神器)> {S=神器;C=249;OX=3;${神器说明};Y=110;}
 
 
         {S=词条保留设置;C=251;X=50;Y=150}{S=勾选后,高于设定数值的装备将被保留;C=154;X=150;Y=150}        
@@ -448,13 +507,16 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
         <{I=$技能勾选$;F=装备图标.DATA;X=50;Y=315}/@装备回收.勾选(技能勾选)> {S=技能魔次 ≥ ${技能显示};OX=3;Y=315}{S=${技能位数}位;X=230;Y=315}
         <{S=设置;X=300;Y=315}/@@装备回收.InPutString01(高于输入的数值将不回收#92输入格式:数值*位数 或者 数值,技能数值)@装备回收.设置数值(技能数值)>
 
-        <{S=技能选择;C=251;X=420;Y=280;HINT=选择需要保留的技能魔次}/@装备回收.技能魔次选择界面>
         
         
         {S=自动功能;C=154;X=400;Y=50}
         <{I=$自动回收$;F=装备图标.DATA;X=390;Y=85}/@装备回收.勾选(自动回收)> {S=自动回收;C=9;OX=3;Y=85}
         <{I=$自动拾取$;F=装备图标.DATA;X=390;Y=120}/@装备回收.勾选(自动拾取)> {S=自动拾取;C=9;OX=3;Y=120}
-        <{I=$回收屏蔽$;F=装备图标.DATA;X=390;Y=155}/@装备回收.勾选(回收屏蔽)> {S=屏蔽提示;C=9;OX=3;Y=155;HINT=可屏蔽回收信息提示}
+        <{I=$自动随机$;F=装备图标.DATA;X=390;Y=155}/@装备回收.勾选(自动随机)> {S=自动随机;C=9;OX=3;Y=155;HINT=请在下方设置随机秒数}
+
+        <{S=随机设置;X=420;Y=210;HINT=当前随机秒数间隔为 ${Player.V.随机读秒} 秒}/@@装备回收.InPutInteger01(请输入想要设置的随机秒数)>
+        
+        <{S=技能选择;X=420;Y=270;HINT=选择需要保留的技能魔次}/@装备回收.技能魔次选择界面>
         
 
         <{S=开始回收;C=253;X=420;Y=320}/@装备回收.开始回收>\\
@@ -478,7 +540,7 @@ function 生成UI字符串(Player: TPlayObject, 模板: string): string {
         '回收神器': Player.V.回收神器 ? '31' : '30',
         '自动回收': Player.V.自动回收 ? '31' : '30',
         '自动拾取': Player.V.自动拾取 ? '31' : '30',
-        '回收屏蔽': Player.V.回收屏蔽 ? '31' : '30',
+        '自动随机': Player.V.自动随机 ? '31' : '30',
         '本职勾选': Player.V.本职勾选 ? '31' : '30',
         '攻击勾选': Player.V.攻击勾选 ? '31' : '30',
         '血量勾选': Player.V.血量勾选 ? '31' : '30',
@@ -507,6 +569,13 @@ export function 勾选(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     Main(Npc, Player)
 }
 
+export function InPutInteger01(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let 秒数 = Args.Int[0]
+    if (秒数 < 1) 秒数 = 1
+    Player.V.随机读秒 = 秒数
+    Player.SendMessage(`自动随机秒数已设置为: ${秒数}秒`, 1)
+    Main(Npc, Player)
+}
 
 
 export function InPutString01(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
@@ -543,10 +612,10 @@ export function 开始回收(Npc: TNormNpc, Player: TPlayObject): void {
     }
 
     let 消息 = `回收了{S=${结果.回收数量};C=154}件装备`
-    if (结果.总金币 !== '0') {
-        消息 += `，获得{S=${简化数值显示(结果.总金币)};C=253}金币`
+    if (结果.总金币 > 0) {
+        消息 += `，获得{S=${结果.总金币};C=253}金币`
     }
-    if (结果.总元宝 !== '0') {
+    if (结果.总元宝 > 0) {
         消息 += `，获得{S=${结果.总元宝};C=251}元宝`
     }
 
@@ -561,8 +630,8 @@ export function 一键全部回收(Npc: TNormNpc, Player: TPlayObject): void {
     初始化回收变量(Player)
 
     let 回收数量 = 0
-    let 总金币 = '0'
-    let 总元宝 = '0'
+    let 总金币 = 0
+    let 总元宝 = 0
 
     // 倒序遍历背包避免索引问题
     for (let i = Player.GetItemSize() - 1; i >= 0; i--) {
@@ -585,9 +654,9 @@ export function 一键全部回收(Npc: TNormNpc, Player: TPlayObject): void {
 
         // 累计价值
         if (货币类型 === '元宝') {
-            总元宝 = 智能计算(总元宝, 价值, 1)
+            总元宝 += 价值
         } else {
-            总金币 = 智能计算(总金币, 价值, 1)
+            总金币 += 价值
         }
 
         Player.DeleteItem(item)
@@ -595,12 +664,12 @@ export function 一键全部回收(Npc: TNormNpc, Player: TPlayObject): void {
     }
 
     // 发放奖励
-    if (总金币 !== '0') {
-        Player.SetGold(Player.GetGold() + Number(总金币))
+    if (总金币 > 0) {
+        Player.SetGold(Player.GetGold() + 总金币)
         Player.GoldChanged()
     }
-    if (总元宝 !== '0') {
-        Player.SetGamePoint(Player.GetGamePoint() + Number(总元宝))
+    if (总元宝 > 0) {
+        Player.SetGamePoint(Player.GetGamePoint() + 总元宝)
     }
 
     if (回收数量 === 0) {
@@ -609,10 +678,10 @@ export function 一键全部回收(Npc: TNormNpc, Player: TPlayObject): void {
     }
 
     let 消息 = `一键回收了{S=${回收数量};C=154}件装备`
-    if (总金币 !== '0') {
-        消息 += `，获得{S=${简化数值显示(总金币)};C=253}金币`
+    if (总金币 > 0) {
+        消息 += `，获得{S=${总金币};C=253}金币`
     }
-    if (总元宝 !== '0') {
+    if (总元宝 > 0) {
         消息 += `，获得{S=${总元宝};C=251}元宝`
     }
 

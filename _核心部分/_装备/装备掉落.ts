@@ -5,9 +5,11 @@
 
 import { 小于等于, 智能计算, 比较 } from '../../_大数值/核心计算方法'
 import { 数字转单位2, 数字转单位3, 随机小数 } from '../字符计算'
-import { 取地图配置, 取完整地图配置, 地图配置 } from '../世界配置'
+import { 取完整地图配置, 完整地图配置 } from '../世界配置'
 import { TAG, 基础词条, 技能魔次, 装备颜色, 基础属性分割, 基础属性第一条, 基础属性第八条, 职业魔次分割, 职业第一条, 职业第六条, 装备需求等级, 基础数值 } from '../基础常量'
 import { 掉落自动回收 } from './装备回收'
+import { 计算套装倍率, 随机套装掉落 } from './随机套装'
+import { 地图ID取固定星级 } from '../_地图/地图'
 // import { TAG装备倍数 } from '../进阶系统'
 
 // ==================== 数值平衡配置（便于调整） ====================
@@ -21,8 +23,10 @@ const 数值平衡配置 = {
     魔次属性倍数最小: 0.2,   // 魔次属性随机倍数最小值（原0.3-0.5，提高到0.9-1.1）
     魔次属性倍数最大: 1.2,   // 魔次属性随机倍数最大值
     基础翻倍最小: 50,        // 基础翻倍最小值（原1）
-    基础翻倍最大: 200,       // 基础翻倍最大值（原201）
-    基础翻倍范围: 100,        // 基础翻倍范围（原200）
+    基础翻倍范围: 200,        // 基础翻倍范围（原200）
+    惊喜掉落几率: 150,       // 1/150 几率触发惊喜掉落
+    惊喜倍数最小: 2.5,       // 惊喜掉落最小倍数
+    惊喜倍数最大: 4.5,       // 惊喜掉落最大倍数
 } as const
 
 // ==================== 类型定义 ====================
@@ -33,10 +37,10 @@ interface 装备属性记录 {
 
 // ==================== TAG词条配置 ====================
 const TAG词条配置 = {
-    1: { 基础词条: { min: 1, max: 4 }, 魔次几率: 30, 魔次词条: { min: 1, max: 2 } },
-    2: { 基础词条: { min: 2, max: 5 }, 魔次几率: 30, 魔次词条: { min: 1, max: 3 } },
-    3: { 基础词条: { min: 2, max: 6 }, 魔次几率: 10, 魔次词条: { min: 1, max: 3 } },
-    4: { 基础词条: { min: 3, max: 7 }, 魔次几率: 1, 魔次词条: { min: 2, max: 4 } },  // 必获得
+    1: { 基础词条: { min: 1, max: 4 }, 魔次几率: 100, 魔次词条: { min: 1, max: 1 } },
+    2: { 基础词条: { min: 2, max: 5 }, 魔次几率: 70, 魔次词条: { min: 1, max: 2 } },
+    3: { 基础词条: { min: 2, max: 6 }, 魔次几率: 40, 魔次词条: { min: 1, max: 3 } },
+    4: { 基础词条: { min: 3, max: 7 }, 魔次几率: 10, 魔次词条: { min: 1, max: 4 } },
     5: { 基础词条: { min: 4, max: 8 }, 魔次几率: 1, 魔次词条: { min: 2, max: 5 } },  // 必获得
     6: { 基础词条: { min: 5, max: 8 }, 魔次几率: 1, 魔次词条: { min: 3, max: 6 } },  // 必获得
     7: { 基础词条: { min: 6, max: 8 }, 魔次几率: 1, 魔次词条: { min: 3, max: 6 } },  // 必获得
@@ -131,46 +135,48 @@ function 设置魔次属性(物品: TUserItem, 索引: number, 属性ID: number,
 
 /**
  * 计算属性基础值（使用进阶系统倍数）
- * @param 地图等级 地图等级
+ * @param 地图强度 地图强度
  * @param 翻倍类型 'basic' | 'extreme' | 'divine'
- * @param Player 玩家对象
  * @param 基础翻倍 外部传入的基础翻倍值
- * @param TAG倍数 TAG装备倍数
+ * @param 装备基础 装备基础值
+ * @param 地图属性倍数 地图属性倍数
+ * @param 极品倍率 统一的极品倍率（由主函数计算）
+ * @param 神器倍数 神器倍数（仅神器生效）
  */
-function 计算属性值(地图等级: number, 翻倍类型: string, Player: TPlayObject, 基础翻倍: number, 装备基础: string): string {
-    // 多重随机因素，确保每条属性值独特
-    // 1. 主随机倍数（扩大范围：0.3-5）
-    const 随机倍数 = 随机小数(0.3, 5).toFixed(4)
-    let 基础值 = 智能计算(String(地图等级), 随机倍数, 3)
-
-    // 2. 装备基础加成
-    基础值 = 智能计算(基础值, 装备基础, 3)
-
-    // 3. 使用传入的基础翻倍
+function 计算属性值(地图强度: number, 翻倍类型: string, 基础翻倍: number, 装备基础: string, 地图属性倍数: number, 极品倍率: number, 神器倍数: number): string {
+    // 1. 计算基础值（保持稳定）
+    let 基础值 = 智能计算(String(地图强度), 装备基础, 3)
     基础值 = 智能计算(基础值, String(基础翻倍), 3)
 
-    // 4. 额外随机加成（0.8-1.5倍，增加差异性）
-    const 额外随机 = 随机小数(0.8, 1.5).toFixed(4)
-    基础值 = 智能计算(基础值, 额外随机, 3)
+    // 2. 应用地图配置的装备属性倍数
+    if (地图属性倍数 > 1) {
+        基础值 = 智能计算(基础值, String(地图属性倍数), 3)
+    }
 
-    // 5. 随机偏移量（增加或减少1-20%，防止完全相同的数值）
-    const 偏移方向 = random(2) === 0 ? 1 : -1
-    const 偏移百分比 = 1 + 偏移方向 * (random(20) + 1) / 100
-    基础值 = 智能计算(基础值, String(偏移百分比.toFixed(4)), 3)
+    // 3. 小范围随机波动（±5%，让装备有细微差异但保持在水平线附近）
+    const 小波动 = 随机小数(2, 5).toFixed(4)
+    基础值 = 智能计算(基础值, 小波动, 3)
 
-    // 极品倍率 = 1-(Player.R.极品率/100 + 20)  1/(2000-Player.R.极品率)几率
-    const 极品率 = Player.R?.极品率 || 0
-    const 极品几率分母 = Math.max(100, 1500 - 极品率)
-    if (random(极品几率分母) < 1) {
-        const 极品倍率 = 1 + random(Math.floor(极品率 / 100) + 20)
+    // 4. 惊喜掉落（1/150几率，属性提升2.5-4.5倍，用于跨难度挑战）
+    if (random(数值平衡配置.惊喜掉落几率) === 0) {
+        const 惊喜倍率 = 随机小数(数值平衡配置.惊喜倍数最小, 数值平衡配置.惊喜倍数最大).toFixed(4)
+        基础值 = 智能计算(基础值, 惊喜倍率, 3)
+    }
+
+    // 4.1 稀有高属性装备（1/200几率，保留原有逻辑但改为较小提升，作为惊喜的补充）
+    if (random(200) === 0) {
+        const 稀有倍率 = 随机小数(1.5, 2.5).toFixed(4)
+        基础值 = 智能计算(基础值, 稀有倍率, 3)
+    }
+
+    // 5. 应用统一的极品倍率（由装备掉落主函数统一计算）
+    if (极品倍率 > 1) {
         基础值 = 智能计算(基础值, String(极品倍率), 3)
     }
 
-    // 神品倍率 = 1-10  1/1000几率
-    let 神品倍数 = 0
-    if (翻倍类型 === 'divine' && random(1000) < 1) {
-        神品倍数 = 1 + random(10)
-        基础值 = 智能计算(基础值, String(神品倍数), 3)
+    // 6. 神品倍率（仅神器生效）
+    if (翻倍类型 === 'divine' && 神器倍数 > 1) {
+        基础值 = 智能计算(基础值, String(神器倍数), 3)
     }
 
     return 基础值
@@ -178,11 +184,16 @@ function 计算属性值(地图等级: number, 翻倍类型: string, Player: TPl
 
 /**
  * 计算魔次属性值（使用进阶系统倍数）
+ * @param 地图强度 地图强度
+ * @param 分组 技能分组
+ * @param 装备基础 装备基础值
+ * @param 极品倍率 统一的极品倍率（由主函数计算）
+ * @param 神器倍数 神器倍数（仅神器生效）
  */
-function 计算魔次属性值(地图等级: number, 分组: number, Player: TPlayObject, 装备基础: string): string {
-    // 魔次基础值 = 地图等级 * 随机倍数 * TAG倍数（每件装备独立随机）
-    const 随机倍数 = 随机小数(0.2, 2).toFixed(4)
-    let 基础值 = 智能计算(String(地图等级), 随机倍数, 3)
+function 计算魔次属性值(地图强度: number, 分组: number, 装备基础: string, 极品倍率: number, 神器倍数: number): string {
+    // 魔次基础值 = 地图强度 * 随机倍数 * TAG倍数（每件装备独立随机）
+    const 随机倍数 = 随机小数(0.2, 1).toFixed(4)
+    let 基础值 = 智能计算(String(地图强度), 随机倍数, 3)
 
     // 基础翻倍
     const 基础翻倍 = 1 + random(5)
@@ -194,19 +205,18 @@ function 计算魔次属性值(地图等级: number, 分组: number, Player: TPl
     } else {
         基础值 = 智能计算(基础值, '0.01', 3)
     }
-    // 极品倍率 = 1-(Player.R.极品率/100 + 20)  1/(2000-Player.R.极品率)几率
-    const 极品率 = Player.R?.极品率 || 0
-    const 极品几率分母 = Math.max(100, 2000 - 极品率)
-    if (random(极品几率分母) < 1) {
-        const 极品倍率 = 1 + random(Math.floor(极品率 / 100) + 20)
+
+    // 应用统一的极品倍率（由装备掉落主函数统一计算）
+    if (极品倍率 > 1) {
         基础值 = 智能计算(基础值, String(极品倍率), 3)
     }
-    // 神品倍率
-    if (random(1000) < 1) {
-        const 神品倍数 = 1 + random(Math.floor(极品率 / 200) + 5)
-        基础值 = 智能计算(基础值, String(神品倍数), 3)
+
+    // 神品倍率（仅神器生效）
+    if (神器倍数 > 1) {
+        基础值 = 智能计算(基础值, String(神器倍数), 3)
     }
-    if (小于等于(基础值, '0')) { 基础值 = String(1 + random(20)) }
+
+    if (小于等于(基础值, '0')) { 基础值 = String(1 + random(10)) }
 
     return 基础值
 }
@@ -237,13 +247,14 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     const 配置 = TAG词条配置[怪物TAG as keyof typeof TAG词条配置]
     if (!配置) return
 
-    // 获取地图等级和TAG装备倍数
+    // 获取地图强度和TAG装备倍数
+
     const 地图名 = Monster.Map?.DisplayName || ''
-    const 当前地图配置 = 取地图配置(地图名)
-    const 完整配置 = 取完整地图配置(地图名)
+    const 地图等级 = 地图ID取固定星级(地图名)
+    const 当前地图配置 = 取完整地图配置(地图名)
     const 需求等级 = 当前地图配置?.需求等级 || 1
-    const 地图等级 = 当前地图配置?.地图等级 || 100
-    const 装备属性倍数 = 完整配置?.装备属性倍数 || 1
+    const 地图强度 = 当前地图配置?.地图强度 || 1
+    const 装备属性倍数 = 当前地图配置?.装备属性倍数 || 1
     const 装备基础 = Monster.GetSVar(基础数值)
 
     // 初始化记录
@@ -256,9 +267,12 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     const 基础词条数 = 随机范围(配置.基础词条.min, 配置.基础词条.max)
 
     // 计算魔次词条数（根据几率）
+    // StdMode 68 的装备不赋予魔次词条（套装装备专用）
     let 魔次词条数 = 0
-    if (配置.魔次几率 === 1 || random(配置.魔次几率) < 1) {
-        魔次词条数 = 随机范围(配置.魔次词条.min, 配置.魔次词条.max)
+    if (UserItem.StdMode !== 68) {
+        if (配置.魔次几率 === 1 || random(配置.魔次几率) < 1) {
+            魔次词条数 = 随机范围(配置.魔次词条.min, 配置.魔次词条.max)
+        }
     }
 
     const 总词条数 = 基础词条数 + 魔次词条数
@@ -273,7 +287,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
         基础极品倍率 = 1 + random(Math.floor(极品率 / 100) + 20)
     }
     if (random(极品几率分母) < 1) {
-        技能极品倍率 = 1 + random(Math.floor(极品率 / 100) + 10)
+        技能极品倍率 = 1 + random(Math.floor(极品率 / 300) + 5)
     }
 
     // 神品判定
@@ -286,12 +300,15 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
 
     // 生成基础翻倍值（用于装备价值计算）
     const 基础翻倍 = (数值平衡配置.基础翻倍最小 + random(数值平衡配置.基础翻倍范围))
-    const 装备价值 = 基础翻倍 * Player.R.最终回收倍率 / 10
-    // 设置装备需求及价值（OutWay3存储基础翻倍作为装备价值）
+    let 装备价值 = 基础翻倍 * Player.R.最终回收倍率 / 20
+    const 生肖价值倍率 = 计算套装倍率(地图等级)
+    // 设置装备需求及价值（StdMode 68 由套装系统单独设置）
+    if (UserItem.StdMode == 68) {
+        装备价值 = 5000 * 生肖价值倍率
+    }
     UserItem.SetOutWay1(装备需求等级, 3)
     UserItem.SetOutWay2(装备需求等级, 需求等级)
     UserItem.SetOutWay3(装备需求等级, 装备价值)
-
     // 设置基础属性分割
     UserItem.SetOutWay1(基础属性分割, 1)
     UserItem.SetOutWay2(基础属性分割, 基础极品倍率)
@@ -300,10 +317,13 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     const 已用基础词条: number[] = []
     const 已用基础词条2: number[] = []
     let 当前索引 = 基础属性第一条
+    
+    const 装备基础属性 = 智能计算(装备基础, String(随机范围(3, 10)), 3)
 
     for (let i = 0; i < 基础词条数 && 当前索引 <= 基础属性第八条; i++) {
         // 随机选择词条类型（0-7对应8种属性）
         let 词条类型 = random(8)
+
 
         // 检查是否已有该类型词条
         if (已用基础词条.includes(词条类型)) {
@@ -311,7 +331,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
             if (!已用基础词条2.includes(词条类型)) {
                 已用基础词条2.push(词条类型)
                 const 属性ID = 基础词条池2[词条类型]
-                const 属性值 = 计算属性值(地图等级, 是否神器 ? 'divine' : 'basic', Player, 基础翻倍, 装备基础)
+                const 属性值 = 计算属性值(地图强度, 是否神器 ? 'divine' : 'basic', 基础翻倍, 装备基础属性, 装备属性倍数, 基础极品倍率, 神器倍数)
                 设置基础属性(UserItem, 当前索引, 属性ID, 属性值, 装备属性记录)
                 当前索引++
             }
@@ -321,7 +341,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
 
         已用基础词条.push(词条类型)
         const 属性ID = 基础词条池[词条类型]
-        const 属性值 = 计算属性值(地图等级, 是否神器 ? 'divine' : 'basic', Player, 基础翻倍, 装备基础)
+        const 属性值 = 计算属性值(地图强度, 是否神器 ? 'divine' : 'basic', 基础翻倍, 装备基础属性, 装备属性倍数, 基础极品倍率, 神器倍数)
         设置基础属性(UserItem, 当前索引, 属性ID, 属性值, 装备属性记录)
         当前索引++
     }
@@ -361,7 +381,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
             已用新职业技能.push(属性ID)
         }
 
-        const 属性值 = 计算魔次属性值(地图等级, 分组, Player, 装备基础)
+        const 属性值 = 计算魔次属性值(地图强度, 分组, 装备基础, 技能极品倍率, 神器倍数)
         设置魔次属性(UserItem, 魔次索引, 属性ID, 属性值, 装备属性记录, 分组)
         魔次索引++
     }
@@ -387,9 +407,34 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     UserItem.SetCustomDesc(JSON.stringify(装备属性记录))
     Player.UpdateItem(UserItem)
 
+    // ==================== 随机套装处理 ====================
+    // 如果是 StdMode 68 的装备，有 1/100 几率获得随机套装属性
+    if (UserItem.GetStdMode() === 68) {
+        const 地图ID = Monster.Map?.MapName || ''
+        const 获得套装 = 随机套装掉落(UserItem, 地图ID)
+        if (获得套装) {
+            Player.UpdateItem(UserItem)
+            // // 套装装备提示
+            // Player.SendMessage(`{S=恭喜获得套装装备！;C=254}`, 1)
+        }
+    }
+
     // 自动回收检查 - 如果开启自动回收且符合回收条件则回收
     if (掉落自动回收(Player, UserItem)) {
         return // 已回收，不入包
+    }
+
+    // 装备掉落提示
+    const 装备名称 = UserItem.GetName()
+    const 怪物名称 = Monster.GetName() || '未知生物'
+    const 玩家名称 = Player.GetName()
+
+    if (是否神器) {
+        // 神器全服提示
+        GameLib.Broadcast(`恭喜 {S=${玩家名称};C=250} 击杀 {S=${怪物名称};C=251} 获得 {S=${装备名称};C=254}!`)
+    } else if (Player.V.掉落提示 !== false) {
+        // 普通装备个人提示（1=绿色消息）
+        Player.SendMessage(`恭喜 {S=${玩家名称};C=250} 击杀 {S=${怪物名称};C=251} 获得 {S=${装备名称};C=249}!`, 1)
     }
 
     // 装备入包逻辑

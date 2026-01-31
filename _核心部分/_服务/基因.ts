@@ -44,7 +44,7 @@ const 基因数据 = {
         效果: { 爆率提高: 20, 主属性提高: 10 }
     },
     协作: {
-        图标: 310,
+        图标: 311,
         描述: '极品率提高10%,主属性提高10%',
         效果: { 极品率提高: 10, 主属性提高: 10 }
     }
@@ -97,7 +97,9 @@ export function 选择基因(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         return
     }
 
-    const 当前基因 = Player.V.基因 || ''
+    // 确保基因变量已初始化
+    Player.V.基因 = Player.V.基因 || ''
+    const 当前基因 = Player.V.基因
 
     // 如果已选择同一个基因，不做任何操作
     if (当前基因 === 基因名) {
@@ -107,7 +109,7 @@ export function 选择基因(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     }
 
     // 如果已有其他基因，提示需要先重置
-    if (当前基因 && 当前基因 !== 基因名) {
+    if (当前基因 !== '' && 当前基因 !== 基因名) {
         Player.MessageBox(`你已选择基因【${当前基因}】，如需更换请先重置！`)
         显示基因界面(Npc, Player)
         return

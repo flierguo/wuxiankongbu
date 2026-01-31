@@ -29,11 +29,13 @@ import * as 捐献排名 from "./_核心部分/_服务/捐献排名"
 import * as 材料仓库 from "./_核心部分/_服务/材料仓库"
 import * as 可视仓库 from "./_核心部分/_服务/可视仓库"
 import * as 交易中心 from "./_核心部分/_服务/交易中心"
+import * as 血统选择 from "./_核心部分/_服务/血统选择"
 import * as 基因 from "./_核心部分/_服务/基因"
+import * as 主神津贴 from "./_核心部分/_服务/主神津贴"
 
 import * as 测试功能 from "./_核心部分/测试功能"
-import * as 充值属性 from "./_核心部分/充值属性"
-import * as 宣传使者 from "./_核心部分/宣传使者"
+import * as 充值属性 from "./_核心部分/_服务/充值属性"
+import * as 宣传使者 from "./_核心部分/_服务/宣传使者"
 
 import * as 后台管理 from "./后台管理"
 //=======================自制=======================================
@@ -67,7 +69,8 @@ UnitMap.set("延时触发", 延时触发)
 UnitMap.set("测试功能", 测试功能)
 UnitMap.set("宣传使者", 宣传使者)
 UnitMap.set("属性统计", 属性统计)
-
+UnitMap.set("血统选择", 血统选择)
+UnitMap.set("主神津贴", 主神津贴)
 
 
 

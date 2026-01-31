@@ -4,6 +4,7 @@ import { 装备属性统计 } from '../../_核心部分/_装备/属性统计';
 import { GetSameIPPlayerCount } from "../_功能"
 import { 新人职业技能 } from '../_服务/职业选择';
 import { 设置基础属性 } from '../_装备/装备掉落';
+import { 检查津贴状态 } from '../_服务/主神津贴';
 
 ///////////////登陆///////////////
 
@@ -42,6 +43,7 @@ export function PlayerRegister(Player: TPlayObject): void {
 	Player.V.自动回收 = false //清空自动回收开关,防止某些玩家上限忘记开关结果回收了好装备BB
 	Player.SetSuperManMode(false)
 	Player.SetDenyAutoAddHP(false)
+	检查津贴状态(Player); // 检查主神津贴是否过期
 	装备属性统计(Player);/*重新计算玩家身上的装备*/
 	人物登录BUFF(Player)
 }
@@ -77,6 +79,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	const vAny = Player.V as any;
 	const rAny = Player.R as any;
 
+	// ==================== 基础属性初始化 ====================
 	Player.R.生命 ??= '0'
 	Player.R.防御 ??= '0'
 	Player.R.攻击 ??= '0'
@@ -86,30 +89,31 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.刺术 ??= '0'
 	Player.R.武术 ??= '0'
 
-
 	// 基础属性倍数
-	Player.R.生命百分比 = 100;
-	Player.R.防御百分比 = 100;
-	Player.R.攻击百分比 = 100;
-	Player.R.魔法百分比 = 100;
-	Player.R.道术百分比 = 100;
-	Player.R.刺术百分比 = 100;
-	Player.R.射术百分比 = 100;
-	Player.R.武术百分比 = 100;
-	Player.R.天枢职业百分比 = 100;
-	Player.R.血神职业百分比 = 100;
-	Player.R.暗影职业百分比 = 100;
-	Player.R.烈焰职业百分比 = 100;
-	Player.R.正义职业百分比 = 100;
-	Player.R.不动职业百分比 = 100;
-	Player.R.全体职业百分比 = 100;
+	Player.R.生命百分比 ??= 100;
+	Player.R.防御百分比 ??= 100;
+	Player.R.攻击百分比 ??= 100;
+	Player.R.魔法百分比 ??= 100;
+	Player.R.道术百分比 ??= 100;
+	Player.R.刺术百分比 ??= 100;
+	Player.R.射术百分比 ??= 100;
+	Player.R.武术百分比 ??= 100;
+	Player.R.天枢职业百分比 ??= 100;
+	Player.R.血神职业百分比 ??= 100;
+	Player.R.暗影职业百分比 ??= 100;
+	Player.R.烈焰职业百分比 ??= 100;
+	Player.R.正义职业百分比 ??= 100;
+	Player.R.不动职业百分比 ??= 100;
+	Player.R.全体职业百分比 ??= 100;
 
+	// ==================== 自定属性数组初始化 ====================
+	// 初始化自定属性数组（161-168为基础属性）
+	for (let i = 161; i <= 168; i++) {
+		Player.R.自定属性 ??= {}
+		Player.R.自定属性[i] ??= '0'
+	}
 
-
-
-
-	//=========================================技能部分=================================================
-	// 批量初始化：技能属性（等级、倍攻、范围）
+	// ==================== 技能部分初始化 ====================
 	// 六大职业技能列表
 	const 技能列表 = [
 		'怒斩', '人之怒', '地之怒', '天之怒', '神之怒',
@@ -137,7 +141,8 @@ export function 自定义变量(Player: TPlayObject): void {
 		// 初始化冷却时间
 		rAny[`${技能名}CD`] ??= 1;
 	}
-	//开启状态
+
+	// 技能开启状态
 	Player.R.血气燃烧 ??= false
 	Player.R.血魔临身 ??= false
 	Player.R.暗影剔骨 ??= false
@@ -149,32 +154,17 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.暗影值 ??= 0
 
 	// 职业魔次加成（各职业专属魔次）
-	Player.R.天枢魔次 ??= '0';    // 天枢职业所有技能魔次加成
-	Player.R.血神魔次 ??= '0';    // 血神职业所有技能魔次加成
-	Player.R.暗影魔次 ??= '0';    // 暗影职业所有技能魔次加成
-	Player.R.烈焰魔次 ??= '0';    // 烈焰职业所有技能魔次加成
-	Player.R.正义魔次 ??= '0';    // 正义职业所有技能魔次加成
-	Player.R.不动魔次 ??= '0';    // 不动职业所有技能魔次加成
+	Player.R.天枢魔次 ??= '0';
+	Player.R.血神魔次 ??= '0';
+	Player.R.暗影魔次 ??= '0';
+	Player.R.烈焰魔次 ??= '0';
+	Player.R.正义魔次 ??= '0';
+	Player.R.不动魔次 ??= '0';
 
 	// 全体魔次加成（对所有技能生效）
-	Player.R.全体魔次 ??= '0';    // 所有技能的魔次加成
+	Player.R.全体魔次 ??= '0';
 
-	//=========================================技能部分=================================================
-
-	Player.R.暴击倍率 ??= '0'
-
-
-
-	Player.V.暴怒 ??= false
-	Player.V.血神 ??= false
-	Player.V.暗影 ??= false
-	Player.V.烈焰 ??= false
-	Player.V.正义 ??= false
-	Player.V.不动 ??= false
-
-
-
-	Player.V.基因 ??= []
+	// ==================== 神器相关初始化 ====================
 	Player.R.狂化阶数 ??= 0
 	Player.R.迅疾阶数 ??= 0
 	Player.R.甲壳阶数 ??= 0
@@ -187,30 +177,57 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.无视防御 ??= 0
 	Player.R.基因增加伤害 ??= 0
 
-
-	Player.R.圣耀地图爆率加成 ??= 0
-	Player.R.圣耀副本倍率 ??= 0
-
 	Player.R.神器爆率加成 ??= 0;
 	Player.R.神器回收加成 ??= 0;
 	Player.R.神器增伤加成 ??= '0';
 	Player.R.基因锁等级 ??= 0;
 
+	// ==================== 战斗相关初始化 ====================
+	Player.R.暴击倍率 ??= '0'
+	Player.R.伤害吸收 ??= 0
+	Player.R.人王盾护盾值 ??= '0'
+	Player.R.人王盾开启 ??= false
 
-
+	// ==================== 爆率回收相关初始化 ====================
+	Player.R.爆率加成 ??= 0
+	Player.R.经验加成 ??= 0
+	Player.R.鞭尸几率 ??= 0
+	Player.R.鞭尸次数 ??= 0
+	Player.R.极品倍率 ??= 0
+	Player.R.最终极品倍率 ??= 0
+	Player.R.回收倍率 ??= 100
+	Player.R.最终回收倍率 ??= 100
+	Player.R.最终爆率加成 ??= 0
+	Player.R.最终鞭尸次数 ??= 0
 	Player.R.本职装备几率 ??= 0
+
+	// ==================== 圣耀副本相关初始化 ====================
+	Player.R.圣耀地图爆率加成 ??= 0
+	Player.R.圣耀副本倍率 ??= 0
+	Player.R.圣耀副本爆率加成 ??= false
+
+	// ==================== 玩家状态初始化 ====================
+	Player.V.暴怒 ??= false
+	Player.V.血神 ??= false
+	Player.V.暗影 ??= false
+	Player.V.烈焰 ??= false
+	Player.V.正义 ??= false
+	Player.V.不动 ??= false
+
+	Player.V.血统 ??= ''
+	Player.V.血统等级 ??= 0
+
+	Player.V.基因 ??= ''
+
+	Player.V.今日神器回收 ??= 0
+
+	Player.V.主神津贴 ??= false
 
 	Player.V.捐献点数 ??= '0'
 
-	Player.R.极品倍率 ??= 0
-	Player.R.最终极品倍率 ??= 0
-
-
 	Player.V.回收屏蔽 ??= false
-	Player.R.回收倍率 ??= 0
-	Player.R.最终回收倍率 ??= 100
 
-
+	// ==================== 宣传赞助相关初始化 ====================
 	Player.V.宣传爆率 ??= 0
 	Player.V.宣传回收 ??= 0
 	Player.V.宣传极品率 ??= 0
@@ -222,25 +239,36 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.赞助鞭尸 ??= 0
 	Player.V.赞助极品率 ??= 0
 
+	// ==================== 其他功能初始化 ====================
+	Player.V.幸运值 ??= 1
 
 	Player.V.全屏拾取 ??= false
-	Player.R.爆率加成 ??= 0
-	Player.R.经验加成 ??= 0
-	Player.R.鞭尸几率 ??= 0
 	Player.V.自动拾取 ??= true
 	Player.V.自动回收 ??= false
-	Player.V.开通回收 ??= false
 	Player.V.自动存材料 ??= false
 
-	Player.V.时装 ??= false
+	Player.V.伤害提示 ??= true
+	Player.V.护盾提示 ??= true
+	Player.V.掉落提示 ??= true
+	Player.V.鞭尸提示 ??= true
+	Player.V.回收屏蔽 ??= true
+
 	Player.V.种族 ??= ''
 	Player.V.职业 ??= ''
 	Player.V.我要秒怪 ??= false
 
-
+	Player.V.圣耀积分 ??= 0
 	Player.V.经验等级 ??= 0
 	Player.V.杀怪数量 ??= 0
 
+	// 累计回收货币（用于10秒提示）
+	Player.R.累计回收金币 ??= 0
+	Player.R.累计回收元宝 ??= 0
+	Player.R.累计回收数量 ??= 0
+
+
+	// ==================== 性能计数器初始化 ====================
+	Player.R.性能计数器 ??= 0
 }
 
 
