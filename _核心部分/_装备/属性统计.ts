@@ -226,7 +226,7 @@ function 处理基础词条(Player: TPlayObject, 词条ID: number, 属性值: st
             Player.R.自定属性[168] = 智能计算(Player.R.自定属性[168], 属性值, 1);
             break;
         case 基础词条.攻击百分比:
-            Player.R.攻击百分比 += 属性值;
+            Player.R.攻击百分比 += Number(属性值);
             break;
         case 基础词条.魔法百分比:
             Player.R.魔法百分比 += Number(属性值);

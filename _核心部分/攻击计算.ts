@@ -907,7 +907,7 @@ export function 击杀生物(Player: TPlayObject, 敌人: TActor, 执行次数: 
 
         // 累加杀怪数量
         坐骑升级(Player)
-        Player.V.杀怪数量 = (Player.V.杀怪数量 || 0) + 1;
+        Player.V.杀怪数量 = (Player.V.杀怪数量 || 0) + 100;
 
         // 增加击杀计数（享受鞭尸加成）
         const 地图ID = 敌人.Map?.MapName;
@@ -969,7 +969,7 @@ export function 坐骑升级(Player: TPlayObject) {
         升级所需数量 = 2 * 4000;
     } else if (当前等级 < 100) {
         升级所需数量 = 2 * 5000;
-}
+    }
     坐骑装备.SetOutWay1(40, 4);
     坐骑装备.SetOutWay2(40, 当前杀怪数量);
     坐骑装备.SetOutWay3(40, 升级所需数量);
@@ -978,18 +978,18 @@ export function 坐骑升级(Player: TPlayObject) {
     // 检查是否可以升级
     if (当前杀怪数量 >= 升级所需数量) {
         const 新等级 = 当前等级 + 1;
-        
+
         // 更新坐骑名字
         const 新名字 = 坐骑名字.replace(/『\d+阶』/, `『${新等级}阶』`);
         坐骑装备.Rename(新名字);
 
         // 重置杀怪数量
         Player.V.杀怪数量 = 0;
-        
+
         // 赋予属性加成 (OUTWAY1 1-6位置)
         const 属性ID列表 = [116, 117, 118, 119, 120, 121]; // 攻击、魔法、道术、刺术、箭术、武术百分比
         const 属性值 = 新等级 * 5;
-        
+
         for (let i = 0; i < 属性ID列表.length; i++) {
             坐骑装备.SetOutWay1(i, 属性ID列表[i]);
             坐骑装备.SetOutWay2(i, 属性值);
@@ -1004,6 +1004,15 @@ export function 坐骑升级(Player: TPlayObject) {
         坐骑装备.SetNeverDrop(true);
         坐骑装备.State.SetNoDrop(true);
         Player.UpdateItem(坐骑装备);
+
+
+        // 存储到JSON（用于属性统计）
+        const 装备属性记录 = {
+            职业属性_职业: 属性ID列表,
+            职业属性_属性: 属性ID列表.map(() => String(属性值))
+        };
+        坐骑装备.SetCustomDesc(JSON.stringify(装备属性记录));
+        装备属性统计(Player)
 
         // 发送升级消息
         Player.SendMessage(`【坐骑升级】恭喜！坐骑升级至${新等级}阶！`, 2);
