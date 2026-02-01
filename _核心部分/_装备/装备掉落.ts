@@ -5,7 +5,7 @@
 
 import { 小于等于, 智能计算, 比较 } from '../../_大数值/核心计算方法'
 import { 数字转单位2, 数字转单位3, 随机小数 } from '../字符计算'
-import { 取完整地图配置, 完整地图配置 } from '../世界配置'
+import { 取完整地图配置, 完整地图配置, 计算锚点 } from '../世界配置'
 import { TAG, 基础词条, 技能魔次, 装备颜色, 基础属性分割, 基础属性第一条, 基础属性第八条, 职业魔次分割, 职业第一条, 职业第六条, 装备需求等级, 基础数值 } from '../基础常量'
 import { 掉落自动回收 } from './装备回收'
 import { 计算套装倍率, 随机套装掉落 } from './随机套装'
@@ -134,18 +134,18 @@ function 设置魔次属性(物品: TUserItem, 索引: number, 属性ID: number,
 
 
 /**
- * 计算属性基础值（使用进阶系统倍数）
- * @param 地图强度 地图强度
+ * 计算属性基础值（使用锚点系统）
+ * @param 生物强度倍数 锚点计算的生物强度倍数（大数值字符串）
  * @param 翻倍类型 'basic' | 'extreme' | 'divine'
  * @param 基础翻倍 外部传入的基础翻倍值
- * @param 装备基础 装备基础值
+ * @param 装备基础 装备基础值（来自怪物配置）
  * @param 地图属性倍数 地图属性倍数
  * @param 极品倍率 统一的极品倍率（由主函数计算）
  * @param 神器倍数 神器倍数（仅神器生效）
  */
-function 计算属性值(地图强度: number, 翻倍类型: string, 基础翻倍: number, 装备基础: string, 地图属性倍数: number, 极品倍率: number, 神器倍数: number): string {
-    // 1. 计算基础值（保持稳定）
-    let 基础值 = 智能计算(String(地图强度), 装备基础, 3)
+function 计算属性值(生物强度倍数: string, 翻倍类型: string, 基础翻倍: number, 装备基础: string, 地图属性倍数: number, 极品倍率: number, 神器倍数: number): string {
+    // 1. 计算基础值：装备基础 * 生物强度倍数（锚点核心）
+    let 基础值 = 智能计算(装备基础, 生物强度倍数, 3)
     基础值 = 智能计算(基础值, String(基础翻倍), 3)
 
     // 2. 应用地图配置的装备属性倍数
@@ -154,7 +154,7 @@ function 计算属性值(地图强度: number, 翻倍类型: string, 基础翻�
     }
 
     // 3. 小范围随机波动（±5%，让装备有细微差异但保持在水平线附近）
-    const 小波动 = 随机小数(2, 5).toFixed(4)
+    const 小波动 = 随机小数(0.5, 2).toFixed(4)
     基础值 = 智能计算(基础值, 小波动, 3)
 
     // 4. 惊喜掉落（1/150几率，属性提升2.5-4.5倍，用于跨难度挑战）
@@ -247,15 +247,19 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     const 配置 = TAG词条配置[怪物TAG as keyof typeof TAG词条配置]
     if (!配置) return
 
-    // 获取地图强度和TAG装备倍数
-
+    // 获取地图强度和锚点信息
     const 地图名 = Monster.Map?.DisplayName || ''
     const 地图等级 = 地图ID取固定星级(地图名)
     const 当前地图配置 = 取完整地图配置(地图名)
     const 需求等级 = 当前地图配置?.需求等级 || 1
     const 地图强度 = 当前地图配置?.地图强度 || 1
     const 装备属性倍数 = 当前地图配置?.装备属性倍数 || 1
-    const 装备基础 = Monster.GetSVar(基础数值)
+    const 装备基础 = Monster.GetSVar(基础数值) || '1'
+
+    // 计算锚点信息（核心：生物强度与装备属性的桥梁）
+    // 使用地图配置中的生物强度倍数，确保装备属性与生物强度成正比
+    const 锚点信息 = 计算锚点(地图强度, 1, 当前地图配置?.生物强度倍数)
+    const 生物强度倍数 = 锚点信息.生物强度倍数
 
     // 初始化记录
     const 装备属性记录: 装备属性记录 = {
@@ -318,7 +322,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     const 已用基础词条2: number[] = []
     let 当前索引 = 基础属性第一条
     
-    const 装备基础属性 = 智能计算(装备基础, String(随机范围(3, 10)), 3)
+    // const 装备基础属性 = 智能计算(装备基础, String(随机范围(1, 5)), 3)
 
     for (let i = 0; i < 基础词条数 && 当前索引 <= 基础属性第八条; i++) {
         // 随机选择词条类型（0-7对应8种属性）
@@ -331,7 +335,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
             if (!已用基础词条2.includes(词条类型)) {
                 已用基础词条2.push(词条类型)
                 const 属性ID = 基础词条池2[词条类型]
-                const 属性值 = 计算属性值(地图强度, 是否神器 ? 'divine' : 'basic', 基础翻倍, 装备基础属性, 装备属性倍数, 基础极品倍率, 神器倍数)
+                const 属性值 = 计算属性值(生物强度倍数, 是否神器 ? 'divine' : 'basic', 基础翻倍, 装备基础, 装备属性倍数, 基础极品倍率, 神器倍数)
                 设置基础属性(UserItem, 当前索引, 属性ID, 属性值, 装备属性记录)
                 当前索引++
             }
@@ -341,7 +345,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
 
         已用基础词条.push(词条类型)
         const 属性ID = 基础词条池[词条类型]
-        const 属性值 = 计算属性值(地图强度, 是否神器 ? 'divine' : 'basic', 基础翻倍, 装备基础属性, 装备属性倍数, 基础极品倍率, 神器倍数)
+        const 属性值 = 计算属性值(生物强度倍数, 是否神器 ? 'divine' : 'basic', 基础翻倍, 装备基础, 装备属性倍数, 基础极品倍率, 神器倍数)
         设置基础属性(UserItem, 当前索引, 属性ID, 属性值, 装备属性记录)
         当前索引++
     }

@@ -907,7 +907,7 @@ export function 击杀生物(Player: TPlayObject, 敌人: TActor, 执行次数: 
 
         // 累加杀怪数量
         坐骑升级(Player)
-        Player.V.杀怪数量 = (Player.V.杀怪数量 || 0) + 100;
+        Player.V.杀怪数量 = (Player.V.杀怪数量 || 0) + 1;
 
         // 增加击杀计数（享受鞭尸加成）
         const 地图ID = 敌人.Map?.MapName;
