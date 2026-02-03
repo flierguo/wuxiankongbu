@@ -1,7 +1,6 @@
 /*机器人*/
 import { 获取玩家范围内目标, 获取目标范围内目标 } from "./MagicNpc"
 
-
 import {
     _P_N_监狱计时, _P_N_可复活次数, 技能ID
 } from "../_核心部分/基础常量"
@@ -54,12 +53,6 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
         Player.SetBuffIcon(击杀进度Buff.Handle, 'magicon.wzl', 2330, 2330, ``, '', 进度提示, false, false)
     }
 
-    if (Player.V.开启挂机 && Player.R.性能计数器 % 5 === 0) {
-        Player.ReloadBag()
-    }
-    if (Player.V.自动吃圣墟点数 && Player.R.性能计数器 % 60 === 0) {
-        自动吃圣墟点数(Npc, Player, Args)
-    }
     // 🚀 性能优化：自动吃道具改为每2秒执行一次
     if (Player.R.性能计数器 % 2 === 0) {
         if (Player.V.自动吃元宝) {
@@ -113,6 +106,11 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 
     //测试用
 
+//============================间隔保护===================================
+
+    // if (Player.V.开启挂机 && Player.R.性能计数器 % 5 === 0) {
+    //     Player.ReloadBag()
+    // }
 
     if (Player.R.开启挂机 && Player.V.自动随机 && Player.V.随机读秒 > 0) {
         Player.R.随机秒数 ??= 0
@@ -123,6 +121,35 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
         }
     }
 
+    if (Player.V.血量保护 && !Player.GetDeath() && !Player.InSafeZone) {
+        Player.R.血量保护间隔执行 += 1
+        if (Player.R.血量保护间隔执行 >= Player.V.血量保护间隔) {
+            Player.R.血量保护间隔执行 = 0
+            const 回血量 = 智能计算(Player.GetSVar(92), '0.01', 3)
+            实时回血(Player, 回血量)
+        }
+    }
+
+    let AActorList: TActorList;
+    if (Player.V.随机保护 && !Player.GetDeath() && !Player.InSafeZone) {
+        Player.R.随机保护间隔执行 += 1
+        const 保护血量 = 智能计算(Player.GetSVar(92), String(Player.V.随机保护百分比 / 100), 3)
+        if (Player.R.随机保护间隔执行 >= Player.V.随机保护间隔 && 小于等于(Player.GetSVar(91) , 保护血量 )) {
+            AActorList = Player.Map.GetActorListInRange(Player.GetMapX(), Player.GetMapY(), 8, '');
+            for (let i = 0; i < AActorList.Count; i++) {
+                let Actor = AActorList.Actor(i);
+                if (Actor && !Actor.GetDeath() && !Actor.IsNPC() && Actor.GetHandle() != Player.GetHandle() && Actor.IsPlayer()) {
+                    return
+                }
+            }
+            Player.R.随机保护间隔执行 = 0
+            Player.RandomMove(Player.GetMapName())
+            console.log(`保护血量${保护血量}  ,当前血量 ${Player.GetSVar(91) }`)
+        }
+    }
+
+
+//============================间隔保护===================================
     let Magic: TUserMagic
     Magic = Player.FindSkill('隐身开关');
     if (Player.GetJewelrys(4) != null && Player.GetJewelrys(4).GetName() == '甘道夫之戒') {
@@ -136,34 +163,6 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
         }
     }
 
-    if (Player.R.恢复点数 > 0 && js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0) {
-        let 恢复血量 = 0
-        Player.V.恢复专精激活 ? 恢复血量 = Player.R.恢复点数 / 1000 * 2 : 恢复血量 = Player.R.恢复点数 / 1000
-        let 血量加成 = 智能计算(Player.GetSVar(92), String(恢复血量), 3)
-        实时回血(Player, 血量加成)
-    }
-
-
-    if (Player.Charm != null && js_war(Player.GetSVar(91), Player.GetSVar(92)) < 0) {
-        let a = 0
-        switch (Player.Charm.GetName()) {
-            case '荣誉血石': a = 0.01; break
-            case '列兵血石': a = 0.02; break
-            case '军士血石': a = 0.03; break
-            case '士官血石': a = 0.04; break
-            case '骑士血石': a = 0.05; break
-            case '校尉血石': a = 0.06; break
-            case '将军血石': a = 0.07; break
-            case '元帅血石': a = 0.08; break
-        }
-        Player.R.回血2秒 ??= 0
-        Player.R.回血2秒 = Player.R.回血2秒 + 1
-        let 回血 = 智能计算(Player.GetSVar(92), String(a), 3)
-        if (Player.R.回血2秒 >= 2) {
-            实时回血(Player, 回血)
-            Player.R.回血2秒 = 0
-        }
-    }
 }
 
 
@@ -176,7 +175,7 @@ export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
         // // Player.SetSVar(91 , '1e100') 
         // 实时回血(Player, '1e100')
         // 血量显示(Player);
-        const Magic = Player.FindSkill('暗影附体');
+        // const Magic = Player.FindSkill('暗影附体');
         // console.log(`cd:${Magic.GetUseTime()}ssssss${Magic.CDTime}`)
         // // Magic.SetUseTime(0)
         // Magic.GetKey

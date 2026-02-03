@@ -518,12 +518,8 @@ function 计算玩家伤害(自己: TPlayObject, 敌人: TActor, 技能序号: n
             }
             case '血神': {
                 // 血气迸发：吸血
-                const 等级 = V.血气迸发等级 || 1;
-                const 吸血千分比 = Math.min(1 + 等级, 2000);
-                const 吸血量 = 智能计算(技能攻击, String(吸血千分比 / 1000), 3);
-                if (js_war(自己.GetSVar(91), 自己.GetSVar(92)) < 0) {
-                    实时回血(自己, 吸血量);
-                }
+                // const 等级 = V.血气迸发等级 || 1;
+
                 // 血魔临身：回血效果在RobotManageNpc中处理，不再提供攻击加成
                 break;
             }
@@ -734,6 +730,11 @@ function 计算玩家伤害(自己: TPlayObject, 敌人: TActor, 技能序号: n
     }
     // if (自己.IsAdmin && 技能序号 == 10000) { return 转大数值('1e2') }
 
+    const 吸血千分比 = 自己.R.吸血千分比;
+    const 吸血量 = 智能计算(技能攻击, String(吸血千分比 / 1000), 3);
+    if (js_war(自己.GetSVar(91), 自己.GetSVar(92)) < 0) {
+        实时回血(自己, 吸血量);
+    }
 
     return 技能攻击;
 }
@@ -770,6 +771,7 @@ function 处理怪物对玩家伤害(自己: TActor, 敌人: TPlayObject): strin
         字符最终攻击 = 智能计算(字符最终攻击, String(1 - 转生减伤), 3);
     }
 
+    
     // 确保最小伤害
     if (js_war(字符最终攻击, '1') < 0) {
         字符最终攻击 = '1';
@@ -960,15 +962,15 @@ export function 坐骑升级(Player: TPlayObject) {
     if (当前等级 < 10) {
         升级所需数量 = 2 * 500;
     } else if (当前等级 < 30) {
-        升级所需数量 = 2 * 1000;
-    } else if (当前等级 < 50) {
         升级所需数量 = 2 * 2000;
-    } else if (当前等级 < 70) {
-        升级所需数量 = 2 * 3000;
-    } else if (当前等级 < 90) {
+    } else if (当前等级 < 50) {
         升级所需数量 = 2 * 4000;
+    } else if (当前等级 < 70) {
+        升级所需数量 = 2 * 6000;
+    } else if (当前等级 < 90) {
+        升级所需数量 = 2 * 8000;
     } else if (当前等级 < 100) {
-        升级所需数量 = 2 * 5000;
+        升级所需数量 = 2 * 10000;
     }
     坐骑装备.SetOutWay1(40, 4);
     坐骑装备.SetOutWay2(40, 当前杀怪数量);

@@ -1,6 +1,8 @@
 import { 使用神器组件 } from "./神器统计"
 import { 组件套装映射, 特殊单件映射 } from "../_服务/神器配置"
 import { 装备属性统计 } from "./属性统计"
+import { 小于, 智能计算 } from "../../_大数值/核心计算方法";
+import { 实时回血 } from "../字符计算";
 
 export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUserItem): void {
     const X = random(10)
@@ -21,6 +23,12 @@ export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUser
             // if (Player.V.职业 == '') { Player.MessageBox('请先选择职业!'); return }
             // if (Player.V.种族 == '') { Player.MessageBox('请先选择种族!'); Player.MapMove('边界村', 69, 119); return }
             Player.MapMove('主城', random(10) + 105, random(10) + 120)
+            return
+        case 101: //血瓶
+            if (小于(Player.GetSVar(91), Player.GetSVar(92))) {
+                const 回血量 = 智能计算(Player.GetSVar(92), '0.05', 3);
+                实时回血(Player, 回血量);
+            }
             return
         case 103: //修复神水
             Player.RepairAll()

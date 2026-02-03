@@ -7,7 +7,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     {S=假如幸运值为50 ;c=253},\\
     {s=那么输出伤害就是:(属性上线*50% + 属性下线) 到 属性上线的随机值;C=241}\\\\
     {S=您当前的幸运值为:${Player.V.幸运值};C=23}\\\\
-    {S=下一级需要材料:${Player.V.幸运值 + 100}幸运精魄+${Player.V.幸运值 + 100}元宝;C=253}\\\\
+    {S=下一级需要材料:${Player.V.幸运值 + 100}幸运石+${Player.V.幸运值 + 100}元宝;C=253}\\\\
                                                     <升级幸运/@升级幸运>\\
 
       
@@ -19,9 +19,9 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 export function 升级幸运(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let 数量 = Player.V.幸运值 + 100
     if (Player.V.幸运值 >= 99) { Player.MessageBox(`你幸运值已经达到了99,并且发挥了最大值!`); return }
-    if (Player.GetItemCount('幸运精魄') < 数量) { Player.MessageBox(`幸运精魄数量不足${数量}个,无法升级!`); return }
+    if (Player.GetItemCount('幸运石') < 数量) { Player.MessageBox(`幸运石数量不足${数量}个,无法升级!`); return }
     if (Player.GetGameGold() < 数量) { Player.MessageBox(`元宝数量不足${数量}个,无法升级!`); return }
-    Npc.Take(Player, '幸运精魄', 数量)
+    Npc.Take(Player, '幸运石', 数量)
     Player.SetGameGold(Player.GetGameGold() - 数量)
     Player.GoldChanged()
     Player.V.幸运值 = Player.V.幸运值 + 1

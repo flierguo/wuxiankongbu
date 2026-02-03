@@ -90,21 +90,21 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.武术 ??= '0'
 
 	// 基础属性倍数
-	Player.R.生命百分比 ??= 100;
-	Player.R.防御百分比 ??= 100;
-	Player.R.攻击百分比 ??= 100;
-	Player.R.魔法百分比 ??= 100;
-	Player.R.道术百分比 ??= 100;
-	Player.R.刺术百分比 ??= 100;
-	Player.R.射术百分比 ??= 100;
-	Player.R.武术百分比 ??= 100;
-	Player.R.天枢职业百分比 ??= 100;
-	Player.R.血神职业百分比 ??= 100;
-	Player.R.暗影职业百分比 ??= 100;
-	Player.R.烈焰职业百分比 ??= 100;
-	Player.R.正义职业百分比 ??= 100;
-	Player.R.不动职业百分比 ??= 100;
-	Player.R.全体职业百分比 ??= 100;
+	Player.R.生命百分比 ??= 0;
+	Player.R.防御百分比 ??= 0;
+	Player.R.攻击百分比 ??= 0;
+	Player.R.魔法百分比 ??= 0;
+	Player.R.道术百分比 ??= 0;
+	Player.R.刺术百分比 ??= 0;
+	Player.R.射术百分比 ??= 0;
+	Player.R.武术百分比 ??= 0;
+	Player.R.天枢职业百分比 ??= 0;
+	Player.R.血神职业百分比 ??= 0;
+	Player.R.暗影职业百分比 ??= 0;
+	Player.R.烈焰职业百分比 ??= 0;
+	Player.R.正义职业百分比 ??= 0;
+	Player.R.不动职业百分比 ??= 0;
+	Player.R.全体职业百分比 ??= 0;
 
 	// ==================== 自定属性数组初始化 ====================
 	// 初始化自定属性数组（161-168为基础属性）
@@ -196,7 +196,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.极品倍率 ??= 0
 	Player.R.最终极品倍率 ??= 0
 	Player.R.回收倍率 ??= 100
-	Player.R.最终回收倍率 ??= 100
+	Player.R.最终回收倍率 ??= 0
 	Player.R.最终爆率加成 ??= 0
 	Player.R.最终鞭尸次数 ??= 0
 	Player.R.本职装备几率 ??= 0
@@ -227,6 +227,7 @@ export function 自定义变量(Player: TPlayObject): void {
 
 	Player.V.回收屏蔽 ??= false
 
+	Player.V.魂血精魄等级 ??=0
 	// ==================== 宣传赞助相关初始化 ====================
 	Player.V.宣传爆率 ??= 0
 	Player.V.宣传回收 ??= 0
@@ -239,6 +240,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.赞助鞭尸 ??= 0
 	Player.V.赞助极品率 ??= 0
 
+	Player.V.真实累充 ??= 0
 	// ==================== 其他功能初始化 ====================
 	Player.V.幸运值 ??= 1
 
@@ -266,6 +268,10 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.累计回收元宝 ??= 0
 	Player.R.累计回收数量 ??= 0
 
+	Player.V.血量保护百分比 ??= 0
+	Player.V.随机保护百分比 ??= 0
+	Player.V.血量保护间隔 ??= 10
+	Player.V.随机保护间隔 ??= 0
 
 	// ==================== 性能计数器初始化 ====================
 	Player.R.性能计数器 ??= 0

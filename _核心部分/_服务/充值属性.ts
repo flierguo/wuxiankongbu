@@ -306,6 +306,8 @@ export function setG_GoldLocked(val: boolean) {
 }
 
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.MessageBox('暂未开放,敬请期待!');
+    return;
     Player.V.领取100 ??= false
     Player.V.领取300 ??= false
     Player.V.领取600 ??= false

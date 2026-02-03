@@ -36,6 +36,10 @@ import * as 主神津贴 from "./_核心部分/_服务/主神津贴"
 import * as 测试功能 from "./_核心部分/测试功能"
 import * as 充值属性 from "./_核心部分/_服务/充值属性"
 import * as 宣传使者 from "./_核心部分/_服务/宣传使者"
+import * as 魂血精魄 from "./_核心部分/_服务/魂血精魄"
+import * as 魔次转移 from "./_核心部分/_服务/魔次转移"
+import * as 界面配置 from "./_核心部分/_服务/界面配置"
+
 
 import * as 后台管理 from "./后台管理"
 //=======================自制=======================================
@@ -71,6 +75,9 @@ UnitMap.set("宣传使者", 宣传使者)
 UnitMap.set("属性统计", 属性统计)
 UnitMap.set("血统选择", 血统选择)
 UnitMap.set("主神津贴", 主神津贴)
+UnitMap.set("魂血精魄", 魂血精魄)
+UnitMap.set("魔次转移", 魔次转移)
+UnitMap.set("界面配置", 界面配置)
 
 
 

@@ -20,6 +20,7 @@ import { 杀怪触发 } from "../_核心部分/_玩家/杀怪触发"
 
 // 导入开关类/光环类技能函数
 import { 圣光, 血气燃烧, 暗影剔骨, 烈焰护甲, 如山, 血魔临身, 暗影附体 } from "./MagicNpc"
+import { 技能ID } from "../_核心部分/基础常量"
 
 //人物杀怪
 GameLib.onKillMonster = (Player: TPlayObject, Monster: TActor): void => {
@@ -103,9 +104,18 @@ GameLib.onPlayerAttack = (Player: TPlayObject, UserMagic: TUserMagic, Target: TA
     if (Player.CheckState(2)) {   //被麻痹状态
         return false
     }
-    if (UserMagic.MagID == 209 && Player.GetHP() < Player.GetMaxHP() * 0.7) {
+    if (Player.Job == 3 && UserMagic.MagID == 0) {
+        Player.MagicAttack(Target, 技能ID.基础技能.霜月)
         return false
     }
+    if (Player.Job == 0 && UserMagic.MagID == 0) {
+        if (random(100) < 10) {
+            Player.MagicAttack(Target, 技能ID.基础技能.攻杀剑术)
+        } else
+            Player.MagicAttack(Target, 技能ID.基础技能.半月弯刀)
+        return false
+    }
+
     if (Target) {
         攻击触发(Player, UserMagic, Target)
     }

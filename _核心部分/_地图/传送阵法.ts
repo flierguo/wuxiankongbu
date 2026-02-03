@@ -8,7 +8,7 @@ const 传送阵配置: Record<number, { 地图列表: string[], 显示倍数设�
     // 默认配置 (Tag=0 或其他未定义的Tag)
     0: {
         地图列表: ['新手地图'],
-        显示倍数设置: true,
+        显示倍数设置: false,
         显示地图信息: true
     },
     1: {
@@ -31,7 +31,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     const HINT = 文本.转义(`{S=圣耀地图的难度是炼狱级的100倍, 并且拥有更多的BOSS;C=8}\\{S=进入圣耀地图会增加相应倍数的爆率;C=9}\\{S=例如: 设置100倍,爆率增加 100%;C=7}\\{S=圣耀地图持续时间为24小时, 并且只有创建者和同队伍玩家可进入!!;C=6}\\{S=每${圣耀比例}点主神点可提高1倍圣耀倍数;C=21}`)
 
     // 生成图标和按钮
-    let 图标 = 地图列表.map((_, i) => `{I=317;F=ASD.DATA;X=47;Y=${Y坐标[i]}}`).join(' ')
+    let 图标 = 地图列表.map((_, i) => `{I=330;F=新UI素材文件.DATA;X=47;Y=${Y坐标[i]}}`).join(' ')
     let 按钮 = 地图列表.map((名, i) =>
         `<&{S=${名};FS=15;C=103;CH=145;X=130;Y=${Y坐标[i]}}/@副本传送(${名})>`
     ).join('\n            ')
@@ -64,25 +64,6 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, _Args: TArgs): void {
     Npc.SayEx(Player, '传送', S)
 }
 
-
-
-export function 圣耀积分兑换(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const S = `\\\\
-                       {S=圣耀积分兑换;C=251} \\\\
-    {S=升级幸运可以增加人物的属性下限!;C=254}\\\\
-    {S=假如幸运值为0 ;c=253},\\
-    {S=那么输出伤害就是: 属性下线 到 属性上线 的随机值;c=241}\\
-    {S=假如幸运值为50 ;c=253},\\
-    {s=那么输出伤害就是:(属性上线*50% + 属性下线) 到 属性上线的随机值;C=241}\\\\
-    {S=您当前的幸运值为:${Player.V.幸运值};C=23}\\\\
-    {S=下一级需要材料:${Player.V.幸运值 + 100}幸运精魄+${Player.V.幸运值 + 100}元宝;C=253}\\\\
-                                                    <升级幸运/@升级幸运>\\
-
-      
-
-    `
-    Npc.SayEx(Player, 'Npc小窗口', S)
-}
 
 export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let 地图名 = Args.Str[0];
@@ -218,7 +199,7 @@ export function 创建圣耀副本(Npc: TNormNpc, Player: TPlayObject, Args: TAr
 /**
  * 设置圣耀倍率
  */
-export function 设置圣耀倍率(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+export function InPutString11(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 倍率 = Args.Int[0];
     const 最大倍率 = Args.Int[1] || 1000;
 

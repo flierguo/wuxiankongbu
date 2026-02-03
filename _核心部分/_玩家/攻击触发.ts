@@ -29,6 +29,7 @@ export function 释放魔法触发(Player: TPlayObject, UserMagic: TUserMagic, T
 
 export function 攻击触发(Player: TPlayObject, UserMagic: TUserMagic, Target: TActor): void {
     Randomize()
+    let Magic: TUserMagic
     // if (Player.V.职业 == '暗影') {
     // if (random(100) < 100 && (Player.R.暗影值 <= Player.V.暗影猎取等级 / 5 + 100)) {
     // Player.R.暗影值 += 1
@@ -37,22 +38,12 @@ export function 攻击触发(Player: TPlayObject, UserMagic: TUserMagic, Target:
     // Player.SetBuffIcon(暗影猎取.Handle, 'magicon.wzl', 2312, 2312, ``, '', `{S=当前暗影值: ${Player.R.暗影值} 点}`, true/*是否消失前3秒钟闪烁*/, true/*是否在图标底部显示剩余时间*/)
     // }
     // }
-    if (Player.Job == 0 && UserMagic.MagID == 0) {
-        if (random(100) < 10) {
-            Player.MagicAttack(Target, 技能ID.基础技能.攻杀剑术)
-        } else
-            Player.MagicAttack(Target, 技能ID.基础技能.半月弯刀)
-    }
-
-    // 爆裂火冢：20%几率造成3格范围300%伤害,每级提高30%
-
-    // if (random(100) < 20 && Player.V.职业 === '烈焰') {
-    //     Player.MagicAttack(Target, 技能ID.烈焰.爆裂火冢)
-    //     Player.SendCountDownMessage(`【爆裂火冢】触发！`, 0);
+    // if (Player.Job == 0 && UserMagic.MagID == 0) {
+    //     if (random(100) < 10) {
+    //         Player.MagicAttack(Target, 技能ID.基础技能.攻杀剑术)
+    //     } else
+    //         Player.MagicAttack(Target, 技能ID.基础技能.半月弯刀)
     // }
 
-    //     if (random(300) < (1 + Math.floor(Player.V.暴怒等级 / 100)) && Player.V.暴怒等级 > 0 && Player.R.暴怒状态 == false) {
-    //         Player.R.暴怒状态 = true
-    //         Player.SendMessage(`{S=【暴怒状态触发】;C=253}: 你进入了暴怒状态！`, 1)
-    //     }
+
 }

@@ -5,7 +5,8 @@ import { 仓库总格子数, 仓库第一页, 关闭仓库, 技能ID, 特效 } f
 import { Main } from "../_核心部分/_装备/装备回收"
 import * as 交易中心 from "../_核心部分/_服务/交易中心"
 import { 计算伤害 } from '../_核心部分/攻击计算';
-import { 属性下一页, 装备属性统计, 自动设置, 提示设置 } from "../_核心部分/_装备/属性统计"
+import { 属性下一页, 装备属性统计 } from "../_核心部分/_装备/属性统计"
+import { 自动设置, 提示设置 , 保护设置} from "../_核心部分/_服务/界面配置"
 import { 实时回血, 血量显示 } from "../_核心部分/字符计算"
 import { js_war, 智能计算 } from "../_大数值/核心计算方法"
 import * as 地图1 from '../_核心部分/_地图/地图';
@@ -167,7 +168,7 @@ GameLib.onScriptButtonClick = (Player: TPlayObject, params: string): void => {
         case '随身仓库': Player.DelayCallMethod('可视仓库.Main', 10, true); break
         case '综合服务': Player.DelayCallMethod('_YXFW_Anniukg.Main', 10, true); break
         case '关闭提示': 提示设置(GameLib.QFunctionNpc, Player); break
-        case '自动': 自动设置(GameLib.QFunctionNpc, Player); break
+        case '自动': 保护设置(GameLib.QFunctionNpc, Player); break
         // case '天赋': 天赋(GameLib.QFunctionNpc, Player); break
         case '交易市场': 交易中心.Main(Player); break
         case '属性下一页': 属性下一页(Player); break
