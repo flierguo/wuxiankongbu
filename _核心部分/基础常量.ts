@@ -38,6 +38,7 @@ export const 怪物星星 = 21;
 export const 怪物类型 = 22;
 export const 怪物难度系数 = 23;
 export const 怪物鞭尸不复活 = 150;
+export const 怪物装备倍数 = 151;  // 装备属性倍数怪的倍数值
 
 
 export enum 装备颜色 {
@@ -65,6 +66,7 @@ export enum 怪物颜色 {
     无双橙 = 243,
     特殊BOSS紫 = 241,
     世界BOSS粉 = 253,
+    装备倍数怪金 = 244,  // 装备倍数怪专用颜色（金色）
 }
 
 
