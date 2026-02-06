@@ -286,21 +286,19 @@ GameLib.onProcessCommand = (Player: TPlayObject, Command: string, param: string)
                 if (Play) {
                     Play.V.累计领取次数 ??= 0
                     let 礼卷 = Money * 10
-                    let 元宝 = Money * 200
                     let 真实充值 = Money
                     Play.V.真实充值 += 真实充值
                     Play.GamePoint += 礼卷
-                    Play.GameGold += 元宝
                     Play.GoldChanged()
-                    Play.SendCenterMessage(`充值成功，一共充值:${礼卷}点礼卷,${真实充值}点真实充值...`, 0)
+                    Play.SendCenterMessage(`充值成功，一共充值:${礼卷}点主神点,${真实充值}点真实充值...`, 0)
                     Play.V.累计领取次数 += 1
                     Play.AddTextList('D:\\12MIR\\充值\\已领充值.txt', '当前领取金额:' + Money + '时间:' + now + '账号：' + Play.GetAccount() + 'IP：' + Play.GetIPAddress() + '角色名' + Play.GetName() + '总共领取金额' + Play.V.真实充值 + '累计领取次数' + Play.V.累计领取次数);
-                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点礼卷,${真实充值}点真实充值`, 249, 255);
-                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点礼卷,${真实充值}点真实充值`, 249, 255);
-                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点礼卷,${真实充值}点真实充值`, 249, 255);
-                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点礼卷,${真实充值}点真实充值`, 249, 255);
+                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点主神点,${真实充值}点真实充值`, 249, 255);
+                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点主神点,${真实充值}点真实充值`, 249, 255);
+                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点主神点,${真实充值}点真实充值`, 249, 255);
+                    GameLib.BroadcastSay(`【系统】:玩家${Play.GetName()}通过网站充值领取了${礼卷}点主神点,${真实充值}点真实充值`, 249, 255);
                     // 记录充值数据（包含文件日志和数据库写入）
-                    记录充值数据(Play, 元宝, 礼卷, 真实充值)
+                    记录充值数据(Play, 礼卷, 真实充值)
                     Player.MessageBox(`提示：\\\\对方的充值已经到账。`)
                     Result = true
                 } else {

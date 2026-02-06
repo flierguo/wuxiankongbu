@@ -2,6 +2,13 @@ import { 大数值整数简写 } from "../字符计算";
 
 // 材料列表配置（变量名统一为 材料_名称）
 const 材料列表: string[] = [
+    '天枢职业技能书',
+    '血神职业技能书',
+    '暗影职业技能书',
+    '烈焰职业技能书',
+    '正义职业技能书',
+    '不动职业技能书',
+    '基础职业技能书',
     '幸运石',
     '魂血精魄',
     '粹血源核',
@@ -45,8 +52,9 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
         const Y坐标 = 40 + (i - 开始索引) * 30;
 
         界面内容 += `<{S=${名称};HINT=点击名称取出物品;C=20;X=40;Y=${Y坐标}}/@@材料仓库.InPutInteger(请输入要取出的${名称}数量:,${名称})>`;
-        界面内容 += `{S=当前库存${数量简写}个;HINT=${当前数量};C=22;X=200;Y=${Y坐标}}`;
-        界面内容 += `<{S=存入所有本材料;C=250;X=360;Y=${Y坐标}}/@材料仓库.存入本材料(${名称})>\\\\`;
+        界面内容 += `{S=当前库存${数量简写}个;HINT=${当前数量};C=22;X=180;Y=${Y坐标}}`;
+        界面内容 += `<{S=取出全部;C=249;X=310;Y=${Y坐标}}/@材料仓库.取出本材料(${名称})>`;
+        界面内容 += `<{S=存入全部;C=250;X=400;Y=${Y坐标}}/@材料仓库.存入本材料(${名称})>\\\\`;
     }
 
     // 翻页按钮
@@ -83,6 +91,37 @@ export function 一键存入所有材料(Npc: TNormNpc, Player: TPlayObject, Arg
         Player.SendMessage(`成功存入所有材料到仓库！总计: ${总存入数量}个物品`);
     }
 
+}
+
+// 取出仓库中所有指定材料到背包
+export function 取出本材料(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 材料名称 = Args.Str[0];
+
+    if (!材料列表.includes(材料名称)) {
+        Player.MessageBox(`未找到材料: ${材料名称}`);
+        Main(Npc, Player, Args);
+        return;
+    }
+
+    const 变量名 = 获取变量名(材料名称);
+    const 当前库存 = Player.V[变量名] || 0;
+
+    if (当前库存 <= 0) {
+        Player.MessageBox(`${材料名称}库存为空！`);
+        Main(Npc, Player, Args);
+        return;
+    }
+
+    // 扣除库存
+    Player.V[变量名] = 0;
+
+    // 给予材料到背包
+    Npc.Give(Player, 材料名称, 当前库存);
+
+    Player.MessageBox(`成功取出 ${当前库存}个 ${材料名称}！`);
+
+    // 返回主界面
+    Main(Npc, Player, Args);
 }
 
 // 存入背包中所有指定材料到仓库

@@ -97,6 +97,10 @@ function js_number_超大数值优化版(n1: string, n2: string, mode: number): 
     if (!n1 || n1 === '') n1 = '0';
     if (!n2 || n2 === '') n2 = '0';
 
+    // 大写E转小写e（Decimal构造函数只认小写e）
+    if (n1.indexOf('E') !== -1) n1 = n1.replace('E', 'e');
+    if (n2.indexOf('E') !== -1) n2 = n2.replace('E', 'e');
+
     // 记录使用模式
     使用模式跟踪器.记录调用(n1, n2, mode);
 

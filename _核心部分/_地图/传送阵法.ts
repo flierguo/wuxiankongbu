@@ -79,10 +79,10 @@ export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     let 副本池 = 地图.取地图()
     str += `{S=${地图名} ${地图配置.需求等级} 级;FS=11;C=154;X=80;Y=10}`;
 
-    if (Player.V.地图成就 + 1 < 地图配置.固定星级) {
-        Player.MessageBox(`您的地图成就不足，无法进入${地图名}。`);
-        return;
-    }
+    // if (Player.V.地图成就 + 1 < 地图配置.固定星级) {
+    //     Player.MessageBox(`您的地图成就不足，无法进入${地图名}。`);
+    //     return;
+    // }
 
     // Y坐标：1-5固定副本，6-10圣耀副本
     const yPositions = [22, 60, 98, 136, 174, 212, 250, 288, 326, 364, 402];

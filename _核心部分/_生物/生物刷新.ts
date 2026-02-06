@@ -28,8 +28,9 @@ const 默认配置 = {
     首次刷怪延迟: 10,        // 第一次进地图10秒后刷全怪
     补怪检测间隔: 300,       // 每5分钟检测补怪
     大陆BOSS检测间隔: 7200,  // 2小时检测大陆BOSS
-    特殊BOSS击杀触发: 4000,  // 击杀2000怪触发
+    特殊BOSS击杀触发: 4000,  // 击杀4000怪触发
     补怪阈值: 0.5,           // 怪物数量低于50%时补怪
+    无人清理延迟: 120,       // 地图无玩家2分钟（120秒）后清理
 }
 
 // ==================== 刷怪状态管理 ====================
@@ -44,6 +45,7 @@ interface 地图刷怪状态 {
     特殊BOSS存活: boolean
     目标怪物数: number       // 缓存计算后的目标数量
     锚点信息: 锚点配置 | null
+    无人开始时间: number     // 地图无玩家开始计时
 }
 
 function 获取刷怪状态(地图ID: string): 地图刷怪状态 {
@@ -59,7 +61,8 @@ function 获取刷怪状态(地图ID: string): 地图刷怪状态 {
             大陆BOSS存活: false,
             特殊BOSS存活: false,
             目标怪物数: 0,
-            锚点信息: null
+            锚点信息: null,
+            无人开始时间: 0
         }
     }
     return GameLib.R.刷怪状态[地图ID]
@@ -136,11 +139,11 @@ function 补怪(map: TEnvirnoment, 地图名: string): void {
 }
 
 
-// ==================== TAG 6 大陆BOSS刷新 ====================
+// ==================== TAG 7 大陆BOSS刷新 ====================
 
 /** 
  * 大陆BOSS刷新检测 - 每2小时检测
- * 与TAG 1-5一样按比例刷新，但只在没有时补怪
+ * TAG7 = 大陆BOSS（全大陆刷新，最强）
  */
 export function 大陆BOSS刷新检测(): void {
     GameLib.R.大陆BOSS上次刷新时间 ??= 0
@@ -183,15 +186,17 @@ export function 大陆BOSS刷新检测(): void {
                 BOSS数量 = 难度BOSS数量映射[副本.难度] || 1
             }
 
-            刷新怪物(map, 配置.大陆BOSS名字, 6, BOSS数量)
+            // TAG7 = 大陆BOSS
+            刷新怪物(map, 配置.大陆BOSS名字, 7, BOSS数量)
             状态.大陆BOSS存活 = true
 
+            GameLib.BroadcastTopMessage(`{s=【大陆BOSS】${配置.大陆BOSS名字} x${BOSS数量} 出现在 ${map.DisplayName || 地图名}!;c=249}`)
             GameLib.BroadcastCountDownMessage(`{s=【大陆BOSS】;c=249}${配置.大陆BOSS名字} x${BOSS数量} 出现在 ${map.DisplayName || 地图名}! 显示时间:<$Time:20$>…`)
         }
     }
 }
 
-// ==================== TAG 7 特殊BOSS刷新 ====================
+// ==================== TAG 6 特殊BOSS刷新 ====================
 
 /** 增加击杀计数 */
 export function 增加击杀计数(地图ID: string): void {
@@ -214,13 +219,13 @@ export function 特殊BOSS刷新检测(): void {
 
         const 配置 = 取完整地图配置(副本.地图名)
         const BOSS名字 = 配置?.特殊BOSS名字 || '特殊BOSS'
-        刷新怪物(map, BOSS名字, 7, 1)
+        // TAG6 = 特殊BOSS
+        刷新怪物(map, BOSS名字, 6, 1)
 
         状态.击杀计数 = 0
         状态.特殊BOSS存活 = true
 
-        GameLib.BroadcastTopMessage(`{s=【特殊BOSS】${BOSS名字} 出现在 ${map.DisplayName || 副本.地图名}!;c=251}`)
-        GameLib.BroadcastCountDownMessage(`{s=【特殊BOSS】;c=251}${BOSS名字} 出现在 ${map.DisplayName}! 击杀2000怪物触发! 显示时间:<$Time:20$>…`)
+        GameLib.BroadcastCountDownMessage(`{s=【特殊BOSS】;c=251}${BOSS名字} 出现在 ${map.DisplayName}! 击杀${默认配置.特殊BOSS击杀触发}怪物触发! 显示时间:<$Time:20$>…`)
     }
 }
 
@@ -328,9 +333,10 @@ export function 五分钟全面补怪(): void {
     }
 }
 
-/** 清理无人地图怪物 */
+/** 清理无人地图怪物 - 2分钟无人后清理 */
 export function 清理无人地图怪物(): void {
     const 副本池 = 取地图()
+    const 当前时间 = GameLib.TickCount
 
     for (const 副本 of 副本池) {
         if (!副本?.地图ID) continue
@@ -342,13 +348,25 @@ export function 清理无人地图怪物(): void {
         const 状态 = 获取刷怪状态(副本.地图ID)
 
         if (玩家数量 === 0 && 状态.首次刷怪完成) {
-            状态.首次刷怪完成 = false
-            状态.首次进入时间 = 0
-            状态.击杀计数 = 0
-            状态.大陆BOSS存活 = false
-            状态.目标怪物数 = 0
-            GameLib.ClearMapMon(副本.地图ID)
-            GameLib.R[副本.地图ID] = false
+            // 开始计时或检查是否超过2分钟
+            if (状态.无人开始时间 === 0) {
+                // 首次检测到无人，开始计时
+                状态.无人开始时间 = 当前时间
+            } else if (当前时间 - 状态.无人开始时间 >= 默认配置.无人清理延迟 * 1000) {
+                // 超过2分钟，清理地图
+                状态.首次刷怪完成 = false
+                状态.首次进入时间 = 0
+                状态.击杀计数 = 0
+                状态.大陆BOSS存活 = false
+                状态.特殊BOSS存活 = false
+                状态.目标怪物数 = 0
+                状态.无人开始时间 = 0
+                GameLib.ClearMapMon(副本.地图ID)
+                GameLib.R[副本.地图ID] = false
+            }
+        } else if (玩家数量 > 0) {
+            // 有玩家，重置无人计时
+            状态.无人开始时间 = 0
         }
     }
 }

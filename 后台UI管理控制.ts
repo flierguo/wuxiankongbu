@@ -1,15 +1,33 @@
-
 import * as 地图 from './_核心部分/_地图/地图';
-
-import { Decimal } from "./_大数值/big_number";
 import { 智能计算 } from "./_大数值/核心计算方法";
+import * as _P_Base from "./_核心部分/基础常量";
+import { 神器套装配置 } from "./_核心部分/_装备/神器统计";
+import { 测试套装, 套装配置表 } from "./_核心部分/_装备/随机套装";
+import { 装备属性统计 } from "./_核心部分/_装备/属性统计";
+import * as 功能 from "./_核心部分/_功能";
+import { 插入, 创建表, 获取当前时间 } from "./_核心部分/_服务/_数据库";
 
-import * as _P_Base from "./_核心部分/基础常量"
+// GM操作日志表SQL
+const GM日志表SQL = `
+CREATE TABLE IF NOT EXISTS GM操作日志 (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    操作时间 DATETIME NOT NULL,
+    服务器 VARCHAR(100) NOT NULL,
+    GM账号 VARCHAR(100) NOT NULL,
+    操作类型 VARCHAR(50) NOT NULL,
+    目标玩家 VARCHAR(100),
+    操作内容 TEXT,
+    创建时间 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_操作时间 (操作时间),
+    INDEX idx_GM账号 (GM账号)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+`;
+
+let GM日志表已初始化 = false;
 
 export function 执行性能测试(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     try {
         console.log('🧪 [定时器集成] 开始执行性能测试...');
-        // 性能优化管理器.测试优化效果();
     } catch (error) {
         console.log('❌ [定时器集成] 性能测试失败:', error);
     }
@@ -20,11 +38,19 @@ export function CreateAdminUI() {
     GameLib.AdminUI.AddPage("数据库页", 100, 30, 3)
     GameLib.AdminUI.AddButton('数据库页', '重新加载脚本')
     GameLib.AdminUI.AddButton('数据库页', '清空全服怪物')
-    GameLib.AdminUI.AddButton('数据库页', '地图刷怪')
-    GameLib.AdminUI.AddButton('数据库页', '打印性能报告')
-    GameLib.AdminUI.AddButton('数据库页', '清空所有缓存')
-    GameLib.AdminUI.AddButton('数据库页', '重置所有统计')
     GameLib.AdminUI.AddButton('数据库页', '测试功能输出')
+
+    //-------------------------------------------------------------增加一个GM管理页面----------------------------------------------------------------
+    GameLib.AdminUI.AddPage("GM管理", 180, 40, 3)
+    GameLib.AdminUI.AddEdit('GM管理', '给玩家刷物品', '玩家名-物品名-数量', '格式：玩家名-物品名-数量')
+    GameLib.AdminUI.AddEdit('GM管理', '给玩家刷属性', '玩家名-数量-类型', '类型：1充值 2元宝 3回收 4爆率 5等级')
+    GameLib.AdminUI.AddEdit('GM管理', '给与神器套装', '玩家名-套装名', '给予玩家整套神器组件')
+    GameLib.AdminUI.AddEdit('GM管理', '刷套装装备', '玩家名-套装名-装备名', '给予带套装属性的装备')
+    GameLib.AdminUI.AddEdit('GM管理', '学习技能', '玩家名-技能名', '给玩家学习技能')
+    GameLib.AdminUI.AddEdit('GM管理', '传送玩家', '玩家名-地图名', '传送玩家到指定地图')
+    GameLib.AdminUI.AddEdit('GM管理', '设置等级', '玩家名-等级', '设置玩家等级')
+    GameLib.AdminUI.AddButton('GM管理', '查看神器套装列表', '点击查看所有神器套装名称')
+    GameLib.AdminUI.AddButton('GM管理', '查看装备套装列表', '点击查看所有装备套装名称')
 
     //-------------------------------------------------------------增加一个地图控制页面----------------------------------------------------------------
     //创建一个后台管理页面 名称叫地图控制 控件像素宽度 160 高度 40 ,每4个为一列
@@ -72,14 +98,8 @@ GameLib.onAdminUIButtonClick = (controlName: string): void => {
         GameLib.ReLoadScriptEngine()
     }
 
-
-
     if (controlName == '清空全服怪物') {
         地图.副本清理()
-    }
-
-    if (controlName == '地图刷怪') {
-        // 秒钟第一次进入刷怪()
     }
 
     if (controlName == '测试功能输出') {
@@ -89,23 +109,10 @@ GameLib.onAdminUIButtonClick = (controlName: string): void => {
         console.log('副本长度:', GameLib.R.地图池.length)
         let Player = GameLib.FindPlayer('鸿福'); //查找玩家
         if (Player != null) {
-Player.R.暗影值 = 100
+            Player.R.暗影值 = 100
             // Player.SetCustomEffect(_P_Base.永久特效.血魔临身, _P_Base.特效.血魔临身);
-            console.log(`Player.R.怒斩范围:${Player.R.暗影值}`)
+            console.log(`Player.R.怒斩范围:${Player.DropItemRate}`)
         }
-    }
-
-    if (controlName == '打印性能报告') {
-
-
-    }
-
-    if (controlName == '清空所有缓存') {
-
-    }
-
-    if (controlName == '重置所有统计') {
-
     }
 
     //------------------------------------------------------------以下示范-------------------------------------------------------------
@@ -130,6 +137,24 @@ Player.R.暗影值 = 100
     if (controlName == '清空版本日志内容') {
         GameLib.AdminUI.ClearLogPage('版本日志')
     }
+
+    // 查看套装列表
+    if (controlName === '查看神器套装列表') {
+        GM_日志('========== 神器套装列表 ==========');
+        for (const 套装 of 神器套装配置) {
+            GM_日志(`【${套装.套装名称}】组件数:${套装.组件列表.length} 来源:${套装.来源}`);
+            GM_日志(`  组件: ${套装.组件列表.join('、')}`);
+        }
+        GM_日志('==================================');
+    }
+
+    if (controlName === '查看装备套装列表') {
+        GM_日志('========== 装备套装列表 ==========');
+        for (const [类型, 配置] of 套装配置表) {
+            GM_日志(`【${配置.名称}】类型ID:${类型} 3件:${配置.三件加成} 6件:${配置.六件加成} 9件:${配置.九件加成}`);
+        }
+        GM_日志('==================================');
+    }
 }
 //当复选框 勾选状态改变会触发此函数
 GameLib.onAdminUICheckBoxChange = (controlName: string, checked: boolean): void => {
@@ -142,6 +167,583 @@ GameLib.onAdminUICheckBoxChange = (controlName: string, checked: boolean): void 
 //当输入确认框点击确认后会执行此代码
 GameLib.onAdminUIEditOk = (controlName: string, inputTex: string): void => {
     console.log(`版本后台 输入框 ${controlName} 被确认, 输入内容为:` + inputTex)
+
+    // GM管理功能处理
+    if (controlName === '给玩家刷物品') {
+        GM_给玩家刷物品(inputTex);
+    }
+    if (controlName === '给玩家刷属性') {
+        GM_给玩家刷属性(inputTex);
+    }
+    if (controlName === '给与套装') {
+        GM_给与套装(inputTex);
+    }
+    if (controlName === '刷套装装备') {
+        GM_刷套装装备(inputTex);
+    }
+    if (controlName === '学习技能') {
+        GM_学习技能(inputTex);
+    }
+    if (controlName === '传送玩家') {
+        GM_传送玩家(inputTex);
+    }
+    if (controlName === '设置等级') {
+        GM_设置等级(inputTex);
+    }
+}
+
+// =================================== GM管理功能 ===================================
+
+/**
+ * 给玩家刷物品
+ * @param input 格式：玩家名-物品名-数量
+ */
+function GM_给玩家刷物品(input: string): void {
+    const list = input.split('-');
+    if (list.length < 3) {
+        GM_日志('格式错误，正确格式：玩家名-物品名-数量');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 物品名 = list[1].trim();
+    const 数量 = Number(list[2]);
+
+    if (isNaN(数量) || 数量 <= 0) {
+        GM_日志('数量必须大于0');
+        return;
+    }
+
+    const 玩家 = GameLib.FindPlayer(玩家名);
+    if (!玩家) {
+        GM_日志(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    玩家.Give(物品名, 数量);
+    玩家.MessageBox(`GM给你发放了 ${物品名} x${数量}`);
+    GM_日志(`成功给【${玩家名}】发放 ${物品名} x${数量}`, '刷物品', 玩家名);
+}
+
+/**
+ * 给玩家刷属性
+ * @param input 格式：玩家名-数量-类型(1充值 2元宝 3回收 4爆率 5等级)
+ */
+function GM_给玩家刷属性(input: string): void {
+    const list = input.split('-');
+    if (list.length < 3) {
+        GM_日志('格式错误，正确格式：玩家名-数量-类型');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 数量 = Number(list[1]);
+    const 类型 = list[2].trim();
+
+    if (isNaN(数量) || 数量 < 0) {
+        GM_日志('数量必须大于等于0');
+        return;
+    }
+
+    const 玩家 = GameLib.FindPlayer(玩家名);
+    if (!玩家) {
+        GM_日志(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    let 操作描述 = '';
+    switch (类型) {
+        case '1':
+            玩家.V.真实充值 = (玩家.V.真实充值 || 0) + 数量;
+            操作描述 = `增加真实充值 ${数量}`;
+            break;
+        case '2':
+            功能.增加.元宝(玩家, 数量, '');
+            操作描述 = `增加元宝 ${数量}`;
+            break;
+        case '3':
+            玩家.V.赞助回收 = 数量;
+            操作描述 = `设置回收比例 ${数量}`;
+            break;
+        case '4':
+            玩家.V.赞助爆率 = 数量;
+            操作描述 = `设置爆率 ${数量}`;
+            break;
+        case '5':
+            玩家.SetLevel(数量);
+            操作描述 = `设置等级 ${数量}`;
+            break;
+        default:
+            GM_日志('类型错误：1充值 2元宝 3回收 4爆率 5等级');
+            return;
+    }
+    玩家.MessageBox(`GM调整了你的属性`);
+    装备属性统计(玩家);
+    GM_日志(`给【${玩家名}】${操作描述}`, '刷属性', 玩家名);
+}
+
+/**
+ * 给与套装
+ * @param input 格式：玩家名-套装名
+ */
+function GM_给与套装(input: string): void {
+    const list = input.split('-');
+    if (list.length < 2) {
+        GM_日志('格式错误，正确格式：玩家名-套装名');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 套装名 = list[1].trim();
+
+    const 玩家 = GameLib.FindPlayer(玩家名);
+    if (!玩家) {
+        GM_日志(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    const 套装 = 神器套装配置.find(s => s.套装名称 === 套装名);
+    if (!套装) {
+        GM_日志(`未找到套装：${套装名}`);
+        GM_日志(`可用套装：${神器套装配置.map(s => s.套装名称).join('、')}`);
+        return;
+    }
+
+    let 成功数 = 0;
+    for (const 组件 of 套装.组件列表) {
+        if (玩家.GiveItem(组件)) 成功数++;
+    }
+
+    玩家.MessageBox(`获得 ${套装名} 全套(${成功数}/${套装.组件列表.length})`);
+    GM_日志(`给【${玩家名}】发放 ${套装名} 全套(${成功数}/${套装.组件列表.length})`, '神器套装', 玩家名);
+}
+
+/**
+ * 刷套装装备
+ * @param input 格式：玩家名-套装名-装备名
+ */
+function GM_刷套装装备(input: string): void {
+    const 玩家名 = input.split('-')[0]?.trim();
+    const 玩家 = GameLib.FindPlayer(玩家名);
+    if (!玩家) {
+        GM_日志(`玩家【${玩家名}】不在线`);
+        return;
+    }
+    测试套装(玩家, input);
+    GM_日志(`给【${玩家名}】刷套装装备完成`, '套装装备', 玩家名);
+}
+
+/**
+ * 学习技能
+ * @param input 格式：玩家名-技能名
+ */
+function GM_学习技能(input: string): void {
+    const list = input.split('-');
+    if (list.length < 2) {
+        GM_日志('格式错误，正确格式：玩家名-技能名');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 技能名 = list[1].trim();
+
+    const 玩家 = GameLib.FindPlayer(玩家名);
+    if (!玩家) {
+        GM_日志(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    if (玩家.FindSkill(技能名)) {
+        GM_日志(`玩家【${玩家名}】已学习【${技能名}】`);
+        return;
+    }
+
+    玩家.AddSkill(技能名, 1);
+    if (玩家.FindSkill(技能名)) {
+        玩家.MessageBox(`学习了技能【${技能名}】`);
+        GM_日志(`给【${玩家名}】学习技能【${技能名}】成功`, '学习技能', 玩家名);
+    } else {
+        GM_日志(`技能【${技能名}】不存在`);
+    }
+}
+
+/**
+ * 传送玩家
+ * @param input 格式：玩家名-地图名
+ */
+function GM_传送玩家(input: string): void {
+    const list = input.split('-');
+    if (list.length < 2) {
+        GM_日志('格式错误，正确格式：玩家名-地图名');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 地图名 = list[1].trim();
+
+    const 玩家 = GameLib.FindPlayer(玩家名);
+    if (!玩家) {
+        GM_日志(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    玩家.RandomMove(地图名);
+    玩家.MessageBox(`被传送到【${地图名}】`);
+    GM_日志(`传送【${玩家名}】到【${地图名}】`, '传送玩家', 玩家名);
+}
+
+/**
+ * 设置等级
+ * @param input 格式：玩家名-等级
+ */
+function GM_设置等级(input: string): void {
+    const list = input.split('-');
+    if (list.length < 2) {
+        GM_日志('格式错误，正确格式：玩家名-等级');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 等级 = Number(list[1]);
+
+    if (isNaN(等级) || 等级 <= 0) {
+        GM_日志('等级必须大于0');
+        return;
+    }
+
+    const 玩家 = GameLib.FindPlayer(玩家名);
+    if (!玩家) {
+        GM_日志(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    玩家.SetLevel(等级);
+    玩家.MessageBox(`等级被设置为 ${等级}`);
+    GM_日志(`设置【${玩家名}】等级为 ${等级}`, '设置等级', 玩家名);
+}
+
+/**
+ * GM日志输出并记录到数据库
+ */
+function GM_日志(msg: string, 操作类型?: string, 目标玩家?: string): void {
+    console.log(`[GM管理] ${msg}`);
+    GameLib.AdminUI.AddLog('版本日志', `[GM] ${msg}`);
+
+    // 记录到数据库
+    if (操作类型) {
+        GM_记录到数据库('后台GM', 操作类型, 目标玩家 || '', msg);
+    }
+}
+
+/**
+ * 记录GM操作到数据库
+ */
+function GM_记录到数据库(GM账号: string, 操作类型: string, 目标玩家: string, 操作内容: string): void {
+    if (!GM日志表已初始化) {
+        创建表(GM日志表SQL, () => { GM日志表已初始化 = true; });
+    }
+
+    插入('GM操作日志', {
+        操作时间: 获取当前时间(),
+        服务器: GameLib.GetServerName(),
+        GM账号: GM账号,
+        操作类型: 操作类型,
+        目标玩家: 目标玩家,
+        操作内容: 操作内容
+    });
+}
+
+// =================================== 玩家GM权限功能 ===================================
+
+/**
+ * 玩家GM功能主界面（需要权限10）
+ */
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) {
+        Player.MessageBox('你没有GM权限！');
+        return;
+    }
+
+    const S = `\\\\
+    {S=GM管理面板;C=254;X=180;Y=12}\\\\
+    <{S=给玩家刷物品;X=40;Y=50}/@@后台UI管理控制.玩家GM_刷物品(玩家名-物品名-数量)>
+    <{S=给玩家刷属性;X=180;Y=50}/@@后台UI管理控制.玩家GM_刷属性(玩家名-数量-类型 1充值2元宝3回收4爆率5等级)>
+    <{S=给与神器套装;X=320;Y=50}/@@后台UI管理控制.玩家GM_神器套装(玩家名-套装名)>\\\\
+    <{S=刷套装装备;X=40;Y=90}/@@后台UI管理控制.玩家GM_套装装备(玩家名-套装名-装备名)>
+    <{S=学习技能;X=180;Y=90}/@@后台UI管理控制.玩家GM_学习技能(玩家名-技能名)>
+    <{S=传送玩家;X=320;Y=90}/@@后台UI管理控制.玩家GM_传送(玩家名-地图名)>\\\\
+    <{S=设置等级;X=40;Y=130}/@@后台UI管理控制.玩家GM_设置等级(玩家名-等级)>\\\\
+    {S=====神器套装列表=====;C=250;X=40;Y=180}\\
+    `;
+
+    let 套装列表 = '';
+    for (let i = 0; i < 神器套装配置.length; i++) {
+        const 套装 = 神器套装配置[i];
+        套装列表 += `{S=${套装.套装名称};C=249;X=${40 + (i % 3) * 140};Y=${210 + Math.floor(i / 3) * 25}}`;
+        if ((i + 1) % 3 === 0) 套装列表 += '\\\\';
+    }
+
+    套装列表 += `\\\\{S=====装备套装列表=====;C=251;X=40;Y=320}\\\\`;
+    let idx = 0;
+    for (const [, 配置] of 套装配置表) {
+        套装列表 += `{S=${配置.名称};C=248;X=${40 + (idx % 4) * 110};Y=${350 + Math.floor(idx / 4) * 25}}`;
+        if ((idx + 1) % 4 === 0) 套装列表 += '\\\\';
+        idx++;
+    }
+
+    Npc.SayEx(Player, 'NPC大窗口', S + 套装列表);
+}
+
+/**
+ * 玩家GM - 刷物品
+ */
+export function 玩家GM_刷物品(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) return;
+
+    const input = Args.Str[0];
+    const list = input?.split('-');
+    if (!list || list.length < 3) {
+        Player.MessageBox('格式错误，正确格式：玩家名-物品名-数量');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 物品名 = list[1].trim();
+    const 数量 = Number(list[2]);
+
+    if (isNaN(数量) || 数量 <= 0) {
+        Player.MessageBox('数量必须大于0');
+        return;
+    }
+
+    const 目标 = GameLib.FindPlayer(玩家名);
+    if (!目标) {
+        Player.MessageBox(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    目标.Give(物品名, 数量);
+    目标.MessageBox(`GM【${Player.GetName()}】给你发放了 ${物品名} x${数量}`);
+    Player.MessageBox(`成功给【${玩家名}】发放 ${物品名} x${数量}`);
+
+    GM_记录到数据库(Player.GetName(), '刷物品', 玩家名, `${物品名} x${数量}`);
+}
+
+/**
+ * 玩家GM - 刷属性
+ */
+export function 玩家GM_刷属性(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) return;
+
+    const input = Args.Str[0];
+    const list = input?.split('-');
+    if (!list || list.length < 3) {
+        Player.MessageBox('格式错误，正确格式：玩家名-数量-类型');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 数量 = Number(list[1]);
+    const 类型 = list[2].trim();
+
+    const 目标 = GameLib.FindPlayer(玩家名);
+    if (!目标) {
+        Player.MessageBox(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    let 操作描述 = '';
+    switch (类型) {
+        case '1':
+            目标.V.真实充值 = (目标.V.真实充值 || 0) + 数量;
+            操作描述 = `增加真实充值 ${数量}`;
+            break;
+        case '2':
+            功能.增加.元宝(目标, 数量, '');
+            操作描述 = `增加元宝 ${数量}`;
+            break;
+        case '3':
+            目标.V.赞助回收 = 数量;
+            操作描述 = `设置回收比例 ${数量}`;
+            break;
+        case '4':
+            目标.V.赞助爆率 = 数量;
+            操作描述 = `设置爆率 ${数量}`;
+            break;
+        case '5':
+            目标.SetLevel(数量);
+            操作描述 = `设置等级 ${数量}`;
+            break;
+        default:
+            Player.MessageBox('类型错误：1充值 2元宝 3回收 4爆率 5等级');
+            return;
+    }
+
+    目标.MessageBox(`GM【${Player.GetName()}】${操作描述}`);
+    Player.MessageBox(`成功给【${玩家名}】${操作描述}`);
+    装备属性统计(目标);
+
+    GM_记录到数据库(Player.GetName(), '刷属性', 玩家名, 操作描述);
+}
+
+/**
+ * 玩家GM - 给与神器套装
+ */
+export function 玩家GM_神器套装(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) return;
+
+    const input = Args.Str[0];
+    const list = input?.split('-');
+    if (!list || list.length < 2) {
+        Player.MessageBox('格式错误，正确格式：玩家名-套装名');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 套装名 = list[1].trim();
+
+    const 目标 = GameLib.FindPlayer(玩家名);
+    if (!目标) {
+        Player.MessageBox(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    const 套装 = 神器套装配置.find(s => s.套装名称 === 套装名);
+    if (!套装) {
+        Player.MessageBox(`未找到套装：${套装名}`);
+        return;
+    }
+
+    let 成功数 = 0;
+    for (const 组件 of 套装.组件列表) {
+        if (目标.GiveItem(组件)) 成功数++;
+    }
+
+    目标.MessageBox(`GM【${Player.GetName()}】给你发放了 ${套装名} 全套`);
+    Player.MessageBox(`成功给【${玩家名}】发放 ${套装名} (${成功数}/${套装.组件列表.length})`);
+
+    GM_记录到数据库(Player.GetName(), '神器套装', 玩家名, `${套装名} (${成功数}件)`);
+}
+
+/**
+ * 玩家GM - 刷套装装备
+ */
+export function 玩家GM_套装装备(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) return;
+
+    const input = Args.Str[0];
+    const 玩家名 = input?.split('-')[0]?.trim();
+
+    const 目标 = GameLib.FindPlayer(玩家名);
+    if (!目标) {
+        Player.MessageBox(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    测试套装(目标, input);
+    Player.MessageBox(`成功给【${玩家名}】刷套装装备`);
+
+    GM_记录到数据库(Player.GetName(), '套装装备', 玩家名, input);
+}
+
+/**
+ * 玩家GM - 学习技能
+ */
+export function 玩家GM_学习技能(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) return;
+
+    const input = Args.Str[0];
+    const list = input?.split('-');
+    if (!list || list.length < 2) {
+        Player.MessageBox('格式错误，正确格式：玩家名-技能名');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 技能名 = list[1].trim();
+
+    const 目标 = GameLib.FindPlayer(玩家名);
+    if (!目标) {
+        Player.MessageBox(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    if (目标.FindSkill(技能名)) {
+        Player.MessageBox(`玩家【${玩家名}】已学习【${技能名}】`);
+        return;
+    }
+
+    目标.AddSkill(技能名, 1);
+    if (目标.FindSkill(技能名)) {
+        目标.MessageBox(`GM【${Player.GetName()}】给你学习了技能【${技能名}】`);
+        Player.MessageBox(`成功给【${玩家名}】学习技能【${技能名}】`);
+        GM_记录到数据库(Player.GetName(), '学习技能', 玩家名, 技能名);
+    } else {
+        Player.MessageBox(`技能【${技能名}】不存在`);
+    }
+}
+
+/**
+ * 玩家GM - 传送
+ */
+export function 玩家GM_传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) return;
+
+    const input = Args.Str[0];
+    const list = input?.split('-');
+    if (!list || list.length < 2) {
+        Player.MessageBox('格式错误，正确格式：玩家名-地图名');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 地图名 = list[1].trim();
+
+    const 目标 = GameLib.FindPlayer(玩家名);
+    if (!目标) {
+        Player.MessageBox(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    目标.RandomMove(地图名);
+    目标.MessageBox(`GM【${Player.GetName()}】将你传送到【${地图名}】`);
+    Player.MessageBox(`成功传送【${玩家名}】到【${地图名}】`);
+
+    GM_记录到数据库(Player.GetName(), '传送玩家', 玩家名, 地图名);
+}
+
+/**
+ * 玩家GM - 设置等级
+ */
+export function 玩家GM_设置等级(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.GetPermission() !== 10) return;
+
+    const input = Args.Str[0];
+    const list = input?.split('-');
+    if (!list || list.length < 2) {
+        Player.MessageBox('格式错误，正确格式：玩家名-等级');
+        return;
+    }
+
+    const 玩家名 = list[0].trim();
+    const 等级 = Number(list[1]);
+
+    if (isNaN(等级) || 等级 <= 0) {
+        Player.MessageBox('等级必须大于0');
+        return;
+    }
+
+    const 目标 = GameLib.FindPlayer(玩家名);
+    if (!目标) {
+        Player.MessageBox(`玩家【${玩家名}】不在线`);
+        return;
+    }
+
+    目标.SetLevel(等级);
+    目标.MessageBox(`GM【${Player.GetName()}】将你等级设置为 ${等级}`);
+    Player.MessageBox(`成功设置【${玩家名}】等级为 ${等级}`);
+
+    GM_记录到数据库(Player.GetName(), '设置等级', 玩家名, String(等级));
 }
 console.log("自定义后台UI单元被引用...")
 

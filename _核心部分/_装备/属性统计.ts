@@ -340,9 +340,9 @@ export function 人物额外属性计算(Player: TPlayObject): void {
     A.PunchHit = A.PunchHitDef = A.PunchHitAppendDamage = A.CriticalHitAppendDamage = 0
     A.HPRate = A.MPRate = A.WearWeight = 0
     
-    A.MP = Player.Level * 100
-    A.ExpRate = Player.R.经验加成 || 0
-    A.ItemRate = Player.R.最终爆率加成 || 0
+    A.MP = 5000
+    A.ExpRate = Player.R.经验加成
+    A.ItemRate = Player.R.最终爆率加成
     A.MaxWeight = 65535
 
     显示属性页面(Player, Player.R.属性页码 || 0)

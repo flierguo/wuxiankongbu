@@ -259,14 +259,46 @@ GameLib.onPlayerThrowItem = (Player: TPlayObject, Item: TUserItem, MapX: number,
 GameLib.onMonDropItem = (Actor: TActor, Monster: TActor, Item: TUserItem, Map: TEnvirnoment, X: number, Y: number, Accept: boolean): boolean => {
     let Player: TPlayObject = Actor as TPlayObject;
 
-    // 检查背包空间
-    if (Player.GetMaxBagSize() > Player.GetItemSize()) {
-        装备掉落(Player, Monster, Item)
-        return false
-    } else {
-        // 怪物掉落物品触发(Player, null, Monster, Item)
-        return false
+    // 背包满了，掉落到地上
+    if (Player.GetMaxBagSize() <= Player.GetItemSize()) {
+        return true
     }
+
+    // 先获取物品信息（防止后续被释放）
+    const 物品名 = Item.Name
+    const 物品StdMode = Item.StdMode
+    const 物品数量 = Item.Dura || 1
+
+    // 检查是否为装备类型
+    const 有效装备类型 = [5, 6, 10, 11, 15, 16, 19, 20, 21, 22, 23, 24, 26, 27, 28, 68]
+
+    if (有效装备类型.includes(物品StdMode)) {
+        // 装备类型：调用装备掉落处理
+        装备掉落(Player, Monster, Item)
+    } else {
+        // 非装备类型（材料等）：使用给叠加物品方式入包
+        // 检测背包是否有这个物品
+        if (Player.GetItemCount(物品名) > 0) {
+            // 有物品，找到它并增加数量
+            for (let i = 0; i < Player.GetItemSize(); i++) {
+                const 背包物品 = Player.GetBagItem(i);
+                if (背包物品 && 背包物品.GetName() === 物品名) {
+                    背包物品.Dura += 物品数量;
+                    Player.UpdateItem(背包物品);
+                    break;
+                }
+            }
+        } else {
+            // 没有物品，给予新物品
+            let item = Player.GiveItem(物品名);
+            if (item) {
+                item.Dura = 物品数量;
+                Player.UpdateItem(item);
+            }
+        }
+    }
+
+    return false
 }
 //根据怪物名称爆出物品触发(针对监视物品)：Owner:物品所属玩家，Monster:怪物名称,item:物品，Accept：是否允许掉落
 GameLib.onDropItemByMonName = (Owner: TPlayObject, Monster: string, Item: TUserItem): boolean => {
@@ -311,7 +343,7 @@ GameLib.onAfterTakeOffItem = (Player: TPlayObject, TakeOffItem: TUserItem, ItemW
         TakeOffItem.SetOutWay1(19, 基础索引 + 5)
         TakeOffItem.SetOutWay2(19, 0)
     }
-    
+
     玩家更新套装显示(Player)
     应用套装加成(Player)
     装备属性统计(Player)
@@ -323,21 +355,10 @@ GameLib.onTakeOnItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TIt
     try {
         // 安全获取装备名称
         const itemName = UserItem.GetName();
+        const displayName = UserItem.DisplayName || itemName;
 
-        if (itemName == '玉帝之玺') {
-            Player.TakeOnItem(UserItem, TItemWhere.wJewelry1)
-        } else if (itemName == '老君灵宝') {
-            Player.TakeOnItem(UserItem, TItemWhere.wJewelry2)
-        } else if (itemName == '女娲之泪') {
-            Player.TakeOnItem(UserItem, TItemWhere.wJewelry3)
-        } else if (itemName == '聚宝葫芦') {
-            Player.TakeOnItem(UserItem, TItemWhere.wJewelry4)
-        } else if (itemName == '甘道夫之戒') {
-            Player.TakeOnItem(UserItem, TItemWhere.wJewelry5)
-        } else if (itemName == '巫王的项链') {
-            Player.TakeOnItem(UserItem, TItemWhere.wJewelry6)
-        } else if (itemName.indexOf('麒麟神戒') >= 0) {
-            // 麒麟神戒可放入任意首饰槽位 wJewelry1-6，优先选择空闲槽位
+        if (displayName.indexOf('戒指') >= 0) {
+            // DisplayName 包含"戒指"的装备可放入首饰盒任意槽位
             const jewelrySlots = [
                 TItemWhere.wJewelry1, TItemWhere.wJewelry2, TItemWhere.wJewelry3,
                 TItemWhere.wJewelry4, TItemWhere.wJewelry5, TItemWhere.wJewelry6

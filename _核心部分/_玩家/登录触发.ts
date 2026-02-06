@@ -207,12 +207,8 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.圣耀副本爆率加成 ??= false
 
 	// ==================== 玩家状态初始化 ====================
-	Player.V.暴怒 ??= false
-	Player.V.血神 ??= false
-	Player.V.暗影 ??= false
-	Player.V.烈焰 ??= false
-	Player.V.正义 ??= false
-	Player.V.不动 ??= false
+
+	Player.V.职业 ??= ''
 
 	Player.V.血统 ??= ''
 	Player.V.血统等级 ??= 0
@@ -227,7 +223,7 @@ export function 自定义变量(Player: TPlayObject): void {
 
 	Player.V.回收屏蔽 ??= false
 
-	Player.V.魂血精魄等级 ??=0
+	Player.V.魂血精魄等级 ??= 0
 	// ==================== 宣传赞助相关初始化 ====================
 	Player.V.宣传爆率 ??= 0
 	Player.V.宣传回收 ??= 0
@@ -247,7 +243,8 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.全屏拾取 ??= false
 	Player.V.自动拾取 ??= true
 	Player.V.自动回收 ??= false
-	Player.V.自动存材料 ??= false
+	Player.V.材料入仓 ??= false
+	Player.V.自动吃元宝 ??= false
 
 	Player.V.伤害提示 ??= true
 	Player.V.护盾提示 ??= true
@@ -255,8 +252,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.鞭尸提示 ??= true
 	Player.V.回收屏蔽 ??= true
 
-	Player.V.种族 ??= ''
-	Player.V.职业 ??= ''
+
 	Player.V.我要秒怪 ??= false
 
 	Player.V.圣耀积分 ??= 0
@@ -272,6 +268,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.随机保护百分比 ??= 0
 	Player.V.血量保护间隔 ??= 10
 	Player.V.随机保护间隔 ??= 0
+
 
 	// ==================== 性能计数器初始化 ====================
 	Player.R.性能计数器 ??= 0

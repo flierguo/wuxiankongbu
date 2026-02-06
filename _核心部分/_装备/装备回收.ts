@@ -386,7 +386,7 @@ export function 批量回收背包(Player: TPlayObject): 批量回收结果 {
         Player.GoldChanged()
     }
     if (总元宝 > 0) {
-        Player.SetGamePoint(Player.GetGamePoint() + 总元宝)
+        Player.SetGameGold(Player.GetGameGold() + 总元宝)
     }
 
     return { 回收数量, 总金币, 总元宝 }
@@ -512,15 +512,17 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
         {S=自动功能;C=154;X=400;Y=50}
         <{I=$自动回收$;F=装备图标.DATA;X=390;Y=85}/@装备回收.勾选(自动回收)> {S=自动回收;C=9;OX=3;Y=85}
         <{I=$自动拾取$;F=装备图标.DATA;X=390;Y=120}/@装备回收.勾选(自动拾取)> {S=自动拾取;C=9;OX=3;Y=120}
+        <{I=$材料入仓$;F=装备图标.DATA;X=390;Y=155}/@装备回收.勾选(材料入仓)> {S=材料入仓;C=9;OX=3;Y=155}
+        <{I=$自动吃元宝$;F=装备图标.DATA;X=390;Y=190}/@装备回收.勾选(自动吃元宝)> {S=自动吃元宝;C=9;OX=3;Y=190}
 
-        <{S=材料仓库;X=420;Y=240;}/@材料仓库.main>
-        <{S=技能选择;X=420;Y=270;HINT=选择需要保留的技能魔次}/@装备回收.技能魔次选择界面>
+        <{S=材料仓库;X=420;Y=260;}/@材料仓库.main>
+        <{S=技能选择;X=420;Y=290;HINT=选择需要保留的技能魔次}/@装备回收.技能魔次选择界面>
         
 
         <{S=开始回收;C=253;X=420;Y=320}/@装备回收.开始回收>\\
         <{S=一键全部回收;C=249;X=410;Y=360;HINT=回收背包内所有符合条件的装备}/@装备回收.一键全部回收>
     `
-        // < { I=$自动随机$; F=装备图标.DATA; X=390; Y=155 } / @装备回收.勾选(自动随机) > { S=自动随机; C=9; OX=3; Y=155; HINT=请在下方设置随机秒数 }
+    // < { I=$自动随机$; F=装备图标.DATA; X=390; Y=155 } / @装备回收.勾选(自动随机) > { S=自动随机; C=9; OX=3; Y=155; HINT=请在下方设置随机秒数 }
     const M = 生成UI字符串(Player, S)
     Npc.SayEx(Player, 'NPC中大窗口', M)
 }
@@ -538,12 +540,13 @@ function 生成UI字符串(Player: TPlayObject, 模板: string): string {
         '回收神器': Player.V.回收神器 ? '31' : '30',
         '自动回收': Player.V.自动回收 ? '31' : '30',
         '自动拾取': Player.V.自动拾取 ? '31' : '30',
-        '自动随机': Player.V.自动随机 ? '31' : '30',
+        '自动吃元宝': Player.V.自动吃元宝 ? '31' : '30',
         '本职勾选': Player.V.本职勾选 ? '31' : '30',
         '攻击勾选': Player.V.攻击勾选 ? '31' : '30',
         '血量勾选': Player.V.血量勾选 ? '31' : '30',
         '防御勾选': Player.V.防御勾选 ? '31' : '30',
         '技能勾选': Player.V.技能勾选 ? '31' : '30',
+        '材料入仓': Player.V.材料入仓 ? '31' : '30',
     }
 
     let 结果 = 模板
@@ -659,7 +662,7 @@ export function 一键全部回收(Npc: TNormNpc, Player: TPlayObject): void {
         Player.GoldChanged()
     }
     if (总元宝 > 0) {
-        Player.SetGamePoint(Player.GetGamePoint() + 总元宝)
+        Player.SetGameGold(Player.GetGameGold() + 总元宝)
     }
 
     if (回收数量 === 0) {

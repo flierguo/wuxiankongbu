@@ -82,7 +82,16 @@ export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUser
             break
     }
 
-    switch (UserItem.GetDisplayName()) {
+    // 职业技能书处理
+    const 物品显示名 = UserItem.GetDisplayName()
+    if (物品显示名.endsWith('职业技能书')) {
+        if (使用职业技能书(Player, 物品显示名)) {
+            装备属性统计(Player)
+        }
+        return
+    }
+
+    switch (物品显示名) {
         case '第二章回城石':
             Player.MapMove('第二章', 39 + X, 57 + X)
             break;
@@ -127,4 +136,78 @@ export function 使用物品(Npc: TNormNpc, Player: TPlayObject, UserItem: TUser
             break;
     }
     装备属性统计(Player)
+}
+
+
+
+
+
+// 职业技能书数据
+const 职业技能书数据: { [key: string]: string[] } = {
+    '天枢职业技能书': ['怒斩', '人之怒', '地之怒', '天之怒', '神之怒'],
+    '血神职业技能书': ['血气献祭', '血气燃烧', '血气吸纳', '血气迸发', '血魔临身'],
+    '暗影职业技能书': ['暗影猎取', '暗影袭杀', '暗影剔骨', '暗影风暴', '暗影附体'],
+    '烈焰职业技能书': ['火焰追踪', '火镰狂舞', '烈焰护甲', '爆裂火冢', '烈焰突袭'],
+    '正义职业技能书': ['圣光', '行刑', '洗礼', '审判', '神罚'],
+    '不动职业技能书': ['如山', '泰山', '人王盾', '铁布衫', '金刚掌'],
+}
+
+// 本职业技能数据 (根据Job 0-5)
+const 本职业技能数据: { [key: number]: string[] } = {
+    0: ['攻杀剑术', '半月弯刀'],      // 战士
+    1: ['雷电术', '暴风雪'],          // 法师
+    2: ['灵魂火符', '飓风破'],        // 道士
+    3: ['暴击术', '霜月'],            // 刺客
+    4: ['精准箭术', '万箭齐发'],      // 弓箭
+    5: ['罗汉棍法', '天雷阵'],        // 武僧
+}
+
+// 使用职业技能书
+function 使用职业技能书(Player: TPlayObject, 技能书名称: string): boolean {
+    const vAny = Player.V as any
+
+    // 基础职业技能书 - 使用本职业技能
+    if (技能书名称 === '基础职业技能书') {
+        const jobId = Player.Job
+        const 技能列表 = 本职业技能数据[jobId]
+        if (!技能列表 || 技能列表.length === 0) {
+            Player.MessageBox('无法获取本职业技能列表!')
+            return false
+        }
+
+        // 随机选择一个技能
+        const 随机索引 = random(技能列表.length)
+        const 技能名 = 技能列表[随机索引]
+
+        // 技能等级+1
+        vAny[`${技能名}等级`] ??= 1
+        vAny[`${技能名}等级`]++
+
+        Player.SendMessage(`【${技能名}】技能等级提升1级，当前等级：${vAny[`${技能名}等级`]}`, 1)
+        return true
+    }
+
+    // 新职业技能书
+    const 技能列表 = 职业技能书数据[技能书名称]
+    if (!技能列表) {
+        return false
+    }
+
+    // 检查玩家是否选择了对应职业
+    const 职业名 = 技能书名称.replace('职业技能书', '')
+    if (Player.V.职业 !== 职业名) {
+        Player.MessageBox(`你不是${职业名}职业，无法使用此技能书!`)
+        return false
+    }
+
+    // 随机选择一个技能
+    const 随机索引 = random(技能列表.length)
+    const 技能名 = 技能列表[随机索引]
+
+    // 技能等级+1
+    vAny[`${技能名}等级`] ??= 1
+    vAny[`${技能名}等级`]++
+
+    Player.SendMessage(`【${技能名}】技能等级提升1级，当前等级：${vAny[`${技能名}等级`]}`, 1)
+    return true
 }
