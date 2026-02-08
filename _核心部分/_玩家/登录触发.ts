@@ -302,7 +302,7 @@ function 新手装备(Player: TPlayObject): void {
 	let item: TUserItem
 	let 武器名字 = ''
 	let 衣服名字 = ''
-	const 武器值 = '1000'
+	const 武器值 = '10000'
 	const 衣服值 = '100000'
 	Player.Give('回城石', 1)
 	Player.Give('随机传送石', 1)

@@ -12,22 +12,17 @@ import { 测试套装 } from "./_装备/随机套装"
 
 export function 测试功能(Npc: TNormNpc, Player: TPlayObject): void {
     Randomize()
+    if (Player.GetPermission() !== 10) {
+        Player.MessageBox('无帮助信息提示!');
+        return;
+    }
     if (Player.IsAdmin) {
-        // Player.SetMP(Player.GetMaxMP())
-        //   Player.V.真实充值 = 1000
-        //    Player.V.真实充值=10000
         let 基本属性_职业 = []
         let 基本属性_数值 = []
         let 装备属性记录 = {
             职业属性_职业: 基本属性_职业,
             职业属性_属性: 基本属性_数值,
         }
-        // Player.V.轮回次数=50
-        // let a = '100'
-        // let b = '99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999'
-
-        // let item:TUserItem
-
 
         装备属性统计(Player)
 
@@ -191,7 +186,7 @@ export function InPutString4(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 
     // 参数校验
     if (list.length < 3) {
-        Player.MessageBox('输入格式错误，请使用：玩家名字-数量-类型\\（1=积分，2=元宝，3=回收比例，4=爆率，5=等级）');
+        Player.MessageBox('输入格式错误，请使用：玩家名字-数量-类型\\（1=积分，2=元宝，3=回收比例，4=爆率，5=等级 , 6=鞭尸次数）');
         return;
     }
 
@@ -239,6 +234,12 @@ export function InPutString4(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
             a.SetLevel(数量);
             Player.MessageBox(`成功为玩家【${PlayerName}】设置等级为 ${数量}`);
             a.MessageBox(`管理员 ${Player.Name} 给你设置了等级为 ${数量}`);
+            break;
+
+        case '6': // 爆率
+            a.V.赞助鞭尸 = 数量
+            Player.MessageBox(`成功为玩家【${PlayerName}】设置爆率为 ${数量}`);
+            a.MessageBox(`管理员 ${Player.Name} 给你设置了爆率为 ${数量}`);
             break;
         default:
             Player.MessageBox('类型错误，请输入1（积分）、2（元宝）、3（回收比例）、4（爆率）、5（等级）');

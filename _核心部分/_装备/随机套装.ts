@@ -136,34 +136,19 @@ export function 随机套装掉落(UserItem: TUserItem, 地图ID: string): boole
     UserItem.SetOutWay3(OUTWAY_套装名称, 套装ID)
 
     // 3件效果：初始0件，未激活
-    // OutWay1 = 对照表索引（未激活用+1，已激活用+2）
-    // OutWay2 = 当前件数（显示为 件数/3）
-    // OutWay3 = 属性加成值
     UserItem.SetOutWay1(OUTWAY_3件状态, 配置.对照表基础索引 + 1)
     UserItem.SetOutWay2(OUTWAY_3件状态, 0)
     UserItem.SetOutWay3(OUTWAY_3件状态, 三件数值)
 
     // 6件效果：初始0件，未激活
-    // OutWay1 = 对照表索引（未激活用+3，已激活用+4）
-    // OutWay2 = 当前件数（显示为 件数/6）
-    // OutWay3 = 属性加成值
     UserItem.SetOutWay1(OUTWAY_6件状态, 配置.对照表基础索引 + 3)
     UserItem.SetOutWay2(OUTWAY_6件状态, 0)
     UserItem.SetOutWay3(OUTWAY_6件状态, 六件数值)
 
     // 9件效果：初始0件，未激活
-    // OutWay1 = 对照表索引（未激活用+5，已激活用+6）
-    // OutWay2 = 当前件数（显示为 件数/9）
-    // OutWay3 = 属性加成值
     UserItem.SetOutWay1(OUTWAY_9件状态, 配置.对照表基础索引 + 5)
     UserItem.SetOutWay2(OUTWAY_9件状态, 0)
     UserItem.SetOutWay3(OUTWAY_9件状态, 九件数值)
-
-    // 设置套装装备价值（基础价值 × 地图星级倍率）
-    // const 装备价值 = 套装基础价值 * 倍率
-    // UserItem.SetOutWay1(装备需求等级, 3)
-    // UserItem.SetOutWay2(装备需求等级, 1)
-    // UserItem.SetOutWay3(装备需求等级, 装备价值)
 
     return true
 }
@@ -343,25 +328,6 @@ export function 应用套装加成(Player: TPlayObject): void {
         Player.R.自定属性[主属性索引] = 智能计算(主属性原值, 增量, 1)
     }
 }
-
-/**
- * 清除装备的套装属性
- */
-export function 清除套装属性(UserItem: TUserItem): void {
-    for (let i = OUTWAY_套装名称; i <= OUTWAY_9件状态; i++) {
-        UserItem.SetOutWay1(i, 0)
-        UserItem.SetOutWay2(i, 0)
-        UserItem.SetOutWay3(i, 0)
-    }
-}
-
-/**
- * 判断装备是否有套装属性
- */
-export function 是否有套装属性(UserItem: TUserItem): boolean {
-    return 获取套装类型(UserItem) !== 0
-}
-
 
 /**
  * 测试套装 - 给玩家刷带套装属性的装备

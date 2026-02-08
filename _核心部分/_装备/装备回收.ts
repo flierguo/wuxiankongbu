@@ -566,6 +566,16 @@ function 简化数值显示(数值: string): string {
 
 export function 勾选(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 类型 = Args.Str[0]
+
+    // 10R档位限制：自动回收和材料入仓需要真实充值 >= 10
+    if ((类型 === '自动回收' || 类型 === '材料入仓') && !Player.V[类型]) {
+        const 真实充值 = Player.V.真实充值 || 0
+        if (真实充值 < 10) {
+            Player.MessageBox('{S=请联系管理员领取路费;C=249}')
+            return
+        }
+    }
+
     Player.V[类型] = !Player.V[类型]
     Main(Npc, Player)
 }

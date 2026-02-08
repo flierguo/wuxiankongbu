@@ -74,7 +74,7 @@ export const 特殊词缀配置 = {
 /**
  * 生物属性倍数信息接口
  */
-export interface 生物属性倍数信息 {
+interface 生物属性倍数信息 {
     // 核心倍数
     星级倍数: string        // 由地图固定星级计算（大数值）
     TAG倍数: number         // 由TAG类型决定
@@ -310,7 +310,6 @@ const 生物配置表: Record<number, 生物配置项> = {
 
 interface 地图难度信息 {
     固定星级: number        // 核心常量
-    地图强度: number        // 显示用
     难度名称: string
     难度系数: number
     爆率文件: string
@@ -327,7 +326,6 @@ function 获取地图难度信息(Envir: TEnvirnoment): 地图难度信息 {
 
     // 默认值
     let 固定星级 = 1
-    let 地图强度 = 1
     let 难度名称 = '简单'
     let 难度系数 = 1
     let 爆率文件 = '默认'
@@ -339,7 +337,6 @@ function 获取地图难度信息(Envir: TEnvirnoment): 地图难度信息 {
         for (const 副本 of 副本池) {
             if (副本 && 副本.地图ID === 地图名) {
                 固定星级 = 副本.固定星级 || 1
-                地图强度 = 副本.地图强度 || 固定星级
                 难度名称 = 副本.难度 || '简单'
                 爆率文件 = 副本.地图名 || '默认'
                 break
@@ -372,7 +369,6 @@ function 获取地图难度信息(Envir: TEnvirnoment): 地图难度信息 {
     for (const 配置 of 完整地图配置) {
         if (显示名.includes(配置.地图名)) {
             固定星级 = 配置.固定星级
-            地图强度 = 配置.地图强度
             爆率文件 = 配置.地图名
             找到的配置项 = 配置
             break
@@ -381,7 +377,6 @@ function 获取地图难度信息(Envir: TEnvirnoment): 地图难度信息 {
 
     return {
         固定星级,
-        地图强度,
         难度名称,
         难度系数,
         爆率文件,
@@ -481,11 +476,11 @@ export function Refresh(Envir: TEnvirnoment, Monster: TActor, Tag: number): void
     const 经验值 = Math.floor(地图信息.固定星级 * 配置.经验倍数 * 经验波动)
 
     // 特殊处理：新手地图防御为0
-    if (地图信息.固定星级 <= 10) {
+    if (地图信息.固定星级 <= 15) {
         防御 = '0'
     }
     // 低星级地图魔次抵抗为0
-    if (地图信息.固定星级 < 10 || 比较(魔次抵抗, '1') < 0) {
+    if (地图信息.固定星级 < 10 || 比较(魔次抵抗, '0') < 0) {
         魔次抵抗 = '0'
     }
 
@@ -562,7 +557,7 @@ export function Refresh(Envir: TEnvirnoment, Monster: TActor, Tag: number): void
     Monster.SetSVar(93, 攻击)  // 攻击
     Monster.SetSVar(94, 防御)  // 防御
     Monster.SetSVar(95, 魔次抵抗)  // 魔次抵抗
-    Monster.SetSVar(96, 防御)  // 防御大
+    Monster.SetSVar(96, 防御)  // 备用
 
     // 生成怪物名字（加入词缀和装备倍数前缀）
     const 怪物原始名字 = Monster.GetSVar(原始名字) || Monster.GetName()

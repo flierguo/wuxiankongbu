@@ -105,7 +105,6 @@ function 统计套装属性(Player: TPlayObject, 套装: 神器套装数据): vo
         const 后续次数 = 有效次数 - 1;
 
         const 总加成 = 首次加成 + 后续加成 * 后续次数;
-        // 🚀 性能优化：添加空值检查，避免undefined导致的错误
         Player.R.全体魔次 = 智能计算(Player.R.全体魔次 || '0', String(总加成), 1);
     }
 
@@ -136,7 +135,6 @@ function 统计特殊单件属性(Player: TPlayObject, 单件: 特殊单件数�
     const 后续次数 = 有效次数 - 1;
 
     const 总加成 = 首次加成 + 后续加成 * 后续次数;
-    // 🚀 性能优化：添加空值检查，避免undefined导致的错误
     Player.R.全体魔次 = 智能计算(Player.R.全体魔次 || '0', String(总加成), 1);
 }
 
@@ -164,7 +162,6 @@ function 应用套装效果(Player: TPlayObject, 套装: 神器套装数据): vo
                 Player.R.基因锁等级 = 1;
             }
             // 对2大陆及以上怪物增伤
-            // 🚀 性能优化：添加空值检查，避免undefined导致的错误
             Player.R.神器增伤加成 = 智能计算(
                 Player.R.神器增伤加成 || '0',
                 String(套装.套装属性值),
@@ -333,49 +330,4 @@ export function 套装给与(Player: TPlayObject, 参数: string): boolean {
         Player.SendMessage(`给予失败，可能是背包已满或物品不存在`);
         return false;
     }
-}
-
-// ==================== 查询接口 ====================
-
-/**
- * 获取组件使用次数
- */
-export function 获取组件使用次数(Player: TPlayObject, 组件名称: string): number {
-    return Player.V[组件名称] || 0;
-}
-
-/**
- * 获取套装激活状态
- */
-export function 获取套装激活状态(Player: TPlayObject, 套装名称: string): boolean {
-    return !!Player.V[`${套装名称}_已激活`];
-}
-
-/**
- * 获取套装收集进度
- */
-export function 获取套装进度(Player: TPlayObject, 套装名称: string): { 已收集: number; 总数: number } {
-    const 套装 = 神器套装配置.find(s => s.套装名称 === 套装名称);
-    if (!套装) return { 已收集: 0, 总数: 0 };
-
-    let 已收集 = 0;
-    for (const 组件名称 of 套装.组件列表) {
-        if ((Player.V[组件名称] || 0) > 0) 已收集++;
-    }
-
-    return { 已收集, 总数: 套装.组件列表.length };
-}
-
-/**
- * 获取玩家全体魔次总加成
- */
-export function 获取全体魔次加成(Player: TPlayObject): string {
-    return Player.R.全体魔次 || '0';
-}
-
-/**
- * 获取所有套装配置（供外部调用）
- */
-export function 获取神器套装配置(): 神器套装数据[] {
-    return 神器套装配置;
 }

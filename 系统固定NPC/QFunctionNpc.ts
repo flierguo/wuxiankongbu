@@ -168,7 +168,7 @@ GameLib.onGetExpEx = (Player: TPlayObject, ExpActor: TActor, Exp: number, Result
     const 玩家地图强度 = 地图.地图ID取固定星级(玩家地图ID);
 
     // 如果地图强度低于10，1%的几率获得额外经验值
-    if (玩家地图强度 < 10) {
+    if (玩家地图强度 < 20) {
         const 随机几率 = Math.random() * 50; // 生成0-100的随机数
         if (随机几率 < 3) { // 1%的几率
             const 随机索引 = Math.floor(Math.random() * 随机15经验.length);
@@ -261,7 +261,7 @@ GameLib.onMonDropItem = (Actor: TActor, Monster: TActor, Item: TUserItem, Map: T
 
     // 背包满了，掉落到地上
     if (Player.GetMaxBagSize() <= Player.GetItemSize()) {
-        return true
+        return false
     }
 
     // 先获取物品信息（防止后续被释放）
@@ -352,30 +352,30 @@ GameLib.onAfterTakeOffItem = (Player: TPlayObject, TakeOffItem: TUserItem, ItemW
 //穿装备触发,Accept是否允许穿戴,默认为True
 
 GameLib.onTakeOnItem = (Player: TPlayObject, UserItem: TUserItem, ItemWhere: TItemWhere): boolean => {
-    try {
-        // 安全获取装备名称
-        const itemName = UserItem.GetName();
-        const displayName = UserItem.DisplayName || itemName;
+    // try {
+    //     // 安全获取装备名称
+    //     const itemName = UserItem.GetName();
+    //     const displayName = UserItem.DisplayName || itemName;
 
-        if (displayName.indexOf('戒指') >= 0) {
-            // DisplayName 包含"戒指"的装备可放入首饰盒任意槽位
-            const jewelrySlots = [
-                TItemWhere.wJewelry1, TItemWhere.wJewelry2, TItemWhere.wJewelry3,
-                TItemWhere.wJewelry4, TItemWhere.wJewelry5, TItemWhere.wJewelry6
-            ];
+    //     if (displayName.indexOf('戒指') >= 0) {
+    //         // DisplayName 包含"戒指"的装备可放入首饰盒任意槽位
+    //         const jewelrySlots = [
+    //             TItemWhere.wJewelry1, TItemWhere.wJewelry2, TItemWhere.wJewelry3,
+    //             TItemWhere.wJewelry4, TItemWhere.wJewelry5, TItemWhere.wJewelry6
+    //         ];
 
-            for (let slot of jewelrySlots) {
-                if (!Player.GetArmItem(slot)) {
-                    Player.TakeOnItem(UserItem, slot);
-                    break;
-                }
-            }
-        }
-    } catch (e) {
-        // 如果UserItem已被释放，跳过处理
-        console.error(`[装备] 穿戴装备时发生错误: ${e}`);
-        return true;
-    }
+    //         for (let slot of jewelrySlots) {
+    //             if (!Player.GetArmItem(slot)) {
+    //                 Player.TakeOnItem(UserItem, slot);
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // } catch (e) {
+    //     // 如果UserItem已被释放，跳过处理
+    //     console.error(`[装备] 穿戴装备时发生错误: ${e}`);
+    //     return true;
+    // }
     return true
 }
 //穿戴装备且属性变化后触发，与OnTakeOnItem不同是 OnTakeOnItem 触发执行的时候装备附加的属性没有加到人身上。OnAfterTakeOnItem是属性已经附加到人物身上了。

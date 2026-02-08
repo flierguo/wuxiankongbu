@@ -48,7 +48,7 @@ export function CreateAdminUI() {
     GameLib.AdminUI.AddEdit('GM管理', '刷套装装备', '玩家名-套装名-装备名', '给予带套装属性的装备')
     GameLib.AdminUI.AddEdit('GM管理', '学习技能', '玩家名-技能名', '给玩家学习技能')
     GameLib.AdminUI.AddEdit('GM管理', '传送玩家', '玩家名-地图名', '传送玩家到指定地图')
-    GameLib.AdminUI.AddEdit('GM管理', '设置等级', '玩家名-等级', '设置玩家等级')
+    GameLib.AdminUI.AddEdit('GM管理', '修改充值点', '玩家名-充值点数', '正数加，负数减，格式：玩家名-点数')
     GameLib.AdminUI.AddButton('GM管理', '查看神器套装列表', '点击查看所有神器套装名称')
     GameLib.AdminUI.AddButton('GM管理', '查看装备套装列表', '点击查看所有装备套装名称')
 
@@ -187,8 +187,8 @@ GameLib.onAdminUIEditOk = (controlName: string, inputTex: string): void => {
     if (controlName === '传送玩家') {
         GM_传送玩家(inputTex);
     }
-    if (controlName === '设置等级') {
-        GM_设置等级(inputTex);
+    if (controlName === '修改充值点') {
+        GM_设置充值点(inputTex);
     }
 }
 
@@ -272,6 +272,10 @@ function GM_给玩家刷属性(input: string): void {
         case '5':
             玩家.SetLevel(数量);
             操作描述 = `设置等级 ${数量}`;
+            break;
+        case '6':
+            玩家.V.赞助鞭尸 = 数量;
+            操作描述 = `设置鞭尸 ${数量}`;
             break;
         default:
             GM_日志('类型错误：1充值 2元宝 3回收 4爆率 5等级');
@@ -393,21 +397,21 @@ function GM_传送玩家(input: string): void {
 }
 
 /**
- * 设置等级
- * @param input 格式：玩家名-等级
+ * 修改充值点（支持加减）
+ * @param input 格式：玩家名-充值点数（正数加，负数减）
  */
-function GM_设置等级(input: string): void {
-    const list = input.split('-');
-    if (list.length < 2) {
-        GM_日志('格式错误，正确格式：玩家名-等级');
+function GM_设置充值点(input: string): void {
+    const 分隔位置 = input.indexOf('-');
+    if (分隔位置 <= 0) {
+        GM_日志('格式错误，正确格式：玩家名-充值点数（正数加，负数减）');
         return;
     }
 
-    const 玩家名 = list[0].trim();
-    const 等级 = Number(list[1]);
+    const 玩家名 = input.substring(0, 分隔位置).trim();
+    const 数量 = Number(input.substring(分隔位置 + 1));
 
-    if (isNaN(等级) || 等级 <= 0) {
-        GM_日志('等级必须大于0');
+    if (isNaN(数量) || 数量 === 0) {
+        GM_日志('充值点数不能为0或无效数值');
         return;
     }
 
@@ -417,9 +421,11 @@ function GM_设置等级(input: string): void {
         return;
     }
 
-    玩家.SetLevel(等级);
-    玩家.MessageBox(`等级被设置为 ${等级}`);
-    GM_日志(`设置【${玩家名}】等级为 ${等级}`, '设置等级', 玩家名);
+    玩家.V.真实充值 ??= 0;
+    玩家.V.真实充值 += 数量;
+    const 操作 = 数量 > 0 ? `增加 ${数量}` : `减少 ${Math.abs(数量)}`;
+    玩家.MessageBox(`充值点${操作}，当前充值点：${玩家.V.真实充值}`);
+    GM_日志(`【${玩家名}】充值点${操作}，当前：${玩家.V.真实充值}`, '充值点', 玩家名);
 }
 
 /**
@@ -452,299 +458,3 @@ function GM_记录到数据库(GM账号: string, 操作类型: string, 目标玩
         操作内容: 操作内容
     });
 }
-
-// =================================== 玩家GM权限功能 ===================================
-
-/**
- * 玩家GM功能主界面（需要权限10）
- */
-export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) {
-        Player.MessageBox('你没有GM权限！');
-        return;
-    }
-
-    const S = `\\\\
-    {S=GM管理面板;C=254;X=180;Y=12}\\\\
-    <{S=给玩家刷物品;X=40;Y=50}/@@后台UI管理控制.玩家GM_刷物品(玩家名-物品名-数量)>
-    <{S=给玩家刷属性;X=180;Y=50}/@@后台UI管理控制.玩家GM_刷属性(玩家名-数量-类型 1充值2元宝3回收4爆率5等级)>
-    <{S=给与神器套装;X=320;Y=50}/@@后台UI管理控制.玩家GM_神器套装(玩家名-套装名)>\\\\
-    <{S=刷套装装备;X=40;Y=90}/@@后台UI管理控制.玩家GM_套装装备(玩家名-套装名-装备名)>
-    <{S=学习技能;X=180;Y=90}/@@后台UI管理控制.玩家GM_学习技能(玩家名-技能名)>
-    <{S=传送玩家;X=320;Y=90}/@@后台UI管理控制.玩家GM_传送(玩家名-地图名)>\\\\
-    <{S=设置等级;X=40;Y=130}/@@后台UI管理控制.玩家GM_设置等级(玩家名-等级)>\\\\
-    {S=====神器套装列表=====;C=250;X=40;Y=180}\\
-    `;
-
-    let 套装列表 = '';
-    for (let i = 0; i < 神器套装配置.length; i++) {
-        const 套装 = 神器套装配置[i];
-        套装列表 += `{S=${套装.套装名称};C=249;X=${40 + (i % 3) * 140};Y=${210 + Math.floor(i / 3) * 25}}`;
-        if ((i + 1) % 3 === 0) 套装列表 += '\\\\';
-    }
-
-    套装列表 += `\\\\{S=====装备套装列表=====;C=251;X=40;Y=320}\\\\`;
-    let idx = 0;
-    for (const [, 配置] of 套装配置表) {
-        套装列表 += `{S=${配置.名称};C=248;X=${40 + (idx % 4) * 110};Y=${350 + Math.floor(idx / 4) * 25}}`;
-        if ((idx + 1) % 4 === 0) 套装列表 += '\\\\';
-        idx++;
-    }
-
-    Npc.SayEx(Player, 'NPC大窗口', S + 套装列表);
-}
-
-/**
- * 玩家GM - 刷物品
- */
-export function 玩家GM_刷物品(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) return;
-
-    const input = Args.Str[0];
-    const list = input?.split('-');
-    if (!list || list.length < 3) {
-        Player.MessageBox('格式错误，正确格式：玩家名-物品名-数量');
-        return;
-    }
-
-    const 玩家名 = list[0].trim();
-    const 物品名 = list[1].trim();
-    const 数量 = Number(list[2]);
-
-    if (isNaN(数量) || 数量 <= 0) {
-        Player.MessageBox('数量必须大于0');
-        return;
-    }
-
-    const 目标 = GameLib.FindPlayer(玩家名);
-    if (!目标) {
-        Player.MessageBox(`玩家【${玩家名}】不在线`);
-        return;
-    }
-
-    目标.Give(物品名, 数量);
-    目标.MessageBox(`GM【${Player.GetName()}】给你发放了 ${物品名} x${数量}`);
-    Player.MessageBox(`成功给【${玩家名}】发放 ${物品名} x${数量}`);
-
-    GM_记录到数据库(Player.GetName(), '刷物品', 玩家名, `${物品名} x${数量}`);
-}
-
-/**
- * 玩家GM - 刷属性
- */
-export function 玩家GM_刷属性(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) return;
-
-    const input = Args.Str[0];
-    const list = input?.split('-');
-    if (!list || list.length < 3) {
-        Player.MessageBox('格式错误，正确格式：玩家名-数量-类型');
-        return;
-    }
-
-    const 玩家名 = list[0].trim();
-    const 数量 = Number(list[1]);
-    const 类型 = list[2].trim();
-
-    const 目标 = GameLib.FindPlayer(玩家名);
-    if (!目标) {
-        Player.MessageBox(`玩家【${玩家名}】不在线`);
-        return;
-    }
-
-    let 操作描述 = '';
-    switch (类型) {
-        case '1':
-            目标.V.真实充值 = (目标.V.真实充值 || 0) + 数量;
-            操作描述 = `增加真实充值 ${数量}`;
-            break;
-        case '2':
-            功能.增加.元宝(目标, 数量, '');
-            操作描述 = `增加元宝 ${数量}`;
-            break;
-        case '3':
-            目标.V.赞助回收 = 数量;
-            操作描述 = `设置回收比例 ${数量}`;
-            break;
-        case '4':
-            目标.V.赞助爆率 = 数量;
-            操作描述 = `设置爆率 ${数量}`;
-            break;
-        case '5':
-            目标.SetLevel(数量);
-            操作描述 = `设置等级 ${数量}`;
-            break;
-        default:
-            Player.MessageBox('类型错误：1充值 2元宝 3回收 4爆率 5等级');
-            return;
-    }
-
-    目标.MessageBox(`GM【${Player.GetName()}】${操作描述}`);
-    Player.MessageBox(`成功给【${玩家名}】${操作描述}`);
-    装备属性统计(目标);
-
-    GM_记录到数据库(Player.GetName(), '刷属性', 玩家名, 操作描述);
-}
-
-/**
- * 玩家GM - 给与神器套装
- */
-export function 玩家GM_神器套装(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) return;
-
-    const input = Args.Str[0];
-    const list = input?.split('-');
-    if (!list || list.length < 2) {
-        Player.MessageBox('格式错误，正确格式：玩家名-套装名');
-        return;
-    }
-
-    const 玩家名 = list[0].trim();
-    const 套装名 = list[1].trim();
-
-    const 目标 = GameLib.FindPlayer(玩家名);
-    if (!目标) {
-        Player.MessageBox(`玩家【${玩家名}】不在线`);
-        return;
-    }
-
-    const 套装 = 神器套装配置.find(s => s.套装名称 === 套装名);
-    if (!套装) {
-        Player.MessageBox(`未找到套装：${套装名}`);
-        return;
-    }
-
-    let 成功数 = 0;
-    for (const 组件 of 套装.组件列表) {
-        if (目标.GiveItem(组件)) 成功数++;
-    }
-
-    目标.MessageBox(`GM【${Player.GetName()}】给你发放了 ${套装名} 全套`);
-    Player.MessageBox(`成功给【${玩家名}】发放 ${套装名} (${成功数}/${套装.组件列表.length})`);
-
-    GM_记录到数据库(Player.GetName(), '神器套装', 玩家名, `${套装名} (${成功数}件)`);
-}
-
-/**
- * 玩家GM - 刷套装装备
- */
-export function 玩家GM_套装装备(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) return;
-
-    const input = Args.Str[0];
-    const 玩家名 = input?.split('-')[0]?.trim();
-
-    const 目标 = GameLib.FindPlayer(玩家名);
-    if (!目标) {
-        Player.MessageBox(`玩家【${玩家名}】不在线`);
-        return;
-    }
-
-    测试套装(目标, input);
-    Player.MessageBox(`成功给【${玩家名}】刷套装装备`);
-
-    GM_记录到数据库(Player.GetName(), '套装装备', 玩家名, input);
-}
-
-/**
- * 玩家GM - 学习技能
- */
-export function 玩家GM_学习技能(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) return;
-
-    const input = Args.Str[0];
-    const list = input?.split('-');
-    if (!list || list.length < 2) {
-        Player.MessageBox('格式错误，正确格式：玩家名-技能名');
-        return;
-    }
-
-    const 玩家名 = list[0].trim();
-    const 技能名 = list[1].trim();
-
-    const 目标 = GameLib.FindPlayer(玩家名);
-    if (!目标) {
-        Player.MessageBox(`玩家【${玩家名}】不在线`);
-        return;
-    }
-
-    if (目标.FindSkill(技能名)) {
-        Player.MessageBox(`玩家【${玩家名}】已学习【${技能名}】`);
-        return;
-    }
-
-    目标.AddSkill(技能名, 1);
-    if (目标.FindSkill(技能名)) {
-        目标.MessageBox(`GM【${Player.GetName()}】给你学习了技能【${技能名}】`);
-        Player.MessageBox(`成功给【${玩家名}】学习技能【${技能名}】`);
-        GM_记录到数据库(Player.GetName(), '学习技能', 玩家名, 技能名);
-    } else {
-        Player.MessageBox(`技能【${技能名}】不存在`);
-    }
-}
-
-/**
- * 玩家GM - 传送
- */
-export function 玩家GM_传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) return;
-
-    const input = Args.Str[0];
-    const list = input?.split('-');
-    if (!list || list.length < 2) {
-        Player.MessageBox('格式错误，正确格式：玩家名-地图名');
-        return;
-    }
-
-    const 玩家名 = list[0].trim();
-    const 地图名 = list[1].trim();
-
-    const 目标 = GameLib.FindPlayer(玩家名);
-    if (!目标) {
-        Player.MessageBox(`玩家【${玩家名}】不在线`);
-        return;
-    }
-
-    目标.RandomMove(地图名);
-    目标.MessageBox(`GM【${Player.GetName()}】将你传送到【${地图名}】`);
-    Player.MessageBox(`成功传送【${玩家名}】到【${地图名}】`);
-
-    GM_记录到数据库(Player.GetName(), '传送玩家', 玩家名, 地图名);
-}
-
-/**
- * 玩家GM - 设置等级
- */
-export function 玩家GM_设置等级(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    if (Player.GetPermission() !== 10) return;
-
-    const input = Args.Str[0];
-    const list = input?.split('-');
-    if (!list || list.length < 2) {
-        Player.MessageBox('格式错误，正确格式：玩家名-等级');
-        return;
-    }
-
-    const 玩家名 = list[0].trim();
-    const 等级 = Number(list[1]);
-
-    if (isNaN(等级) || 等级 <= 0) {
-        Player.MessageBox('等级必须大于0');
-        return;
-    }
-
-    const 目标 = GameLib.FindPlayer(玩家名);
-    if (!目标) {
-        Player.MessageBox(`玩家【${玩家名}】不在线`);
-        return;
-    }
-
-    目标.SetLevel(等级);
-    目标.MessageBox(`GM【${Player.GetName()}】将你等级设置为 ${等级}`);
-    Player.MessageBox(`成功设置【${玩家名}】等级为 ${等级}`);
-
-    GM_记录到数据库(Player.GetName(), '设置等级', 玩家名, String(等级));
-}
-console.log("自定义后台UI单元被引用...")
-
-
