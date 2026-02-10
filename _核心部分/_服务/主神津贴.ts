@@ -1,3 +1,5 @@
+import { 特效, 永久特效 } from '../基础常量'
+
 /**
  * 主神津贴系统
  * 
@@ -50,18 +52,18 @@ function 初始化津贴变量(Player: TPlayObject): void {
 // ==================== 主界面 ====================
 export function Main(Npc: TNormNpc, Player: TPlayObject): void {
     初始化津贴变量(Player);
-    
+
     const 当前津贴 = Player.V.津贴类型 || '';
     const 剩余分钟 = Player.V.津贴剩余分钟 || 0;
     const 是否有效 = 当前津贴 && 剩余分钟 > 0;
-    
+
     // 计算剩余时间
     let 剩余时间文本 = '';
     if (是否有效) {
         const 剩余天数 = Math.floor(剩余分钟 / 1440);
         const 剩余小时 = Math.floor((剩余分钟 % 1440) / 60);
         const 剩余分钟数 = 剩余分钟 % 60;
-        
+
         // 根据剩余时间长度选择合适的显示格式
         if (剩余天数 > 0) {
             剩余时间文本 = `剩余时间: ${剩余天数}天${剩余小时}小时`;
@@ -69,7 +71,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
             剩余时间文本 = `剩余时间: ${剩余小时}小时${剩余分钟数}分钟`;
         }
     }
-    
+
     // 显示当前津贴状态
     let 津贴状态文本 = '';
     if (是否有效) {
@@ -78,12 +80,12 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
     } else {
         津贴状态文本 = '当前津贴: 未激活';
     }
-    
+
     // 构建津贴列表
     let 津贴列表文本 = '';
     const Y基准 = 80;
     let 索引 = 0;
-    
+
     for (const 津贴名 of 津贴列表) {
         const 配置 = 津贴配置[津贴名];
         const Y位置 = Y基准 + 索引 * 60;
@@ -91,13 +93,13 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
         const 颜色 = 是当前津贴 ? 249 : 251;
         const 状态文字 = `[购买 ${配置.消耗点数}点]`;
         const 状态颜色 = 116;
-        
+
         津贴列表文本 += `{i=${配置.图标};f=新UI素材文件.data;X=10;Y=${Y位置 + 5}}  {S=${配置.名称};X=60;Y=${Y位置 - 5};C=${颜色};FS=13}\\\\`;
         津贴列表文本 += `{S=${配置.描述};X=60;Y=${Y位置 + 25};C=253;FS=11}\\\\`;
         津贴列表文本 += `<{S=${状态文字};X=385;Y=${Y位置 + 25};C=${状态颜色}}/@主神津贴.购买津贴(${津贴名})>\\\\`;
         索引++;
     }
-    
+
     // 构建完整界面
     const S = `
                               主神津贴系统\\\\\\
@@ -110,23 +112,23 @@ ${津贴列表文本}\\\\
     {S=;C=150;X=10;Y=240}{S=2. 购买新津贴会覆盖旧津贴;0X=10;Y=240;C=154;}
     {S=;C=150;X=10;Y=260}{S=3. 津贴效果立即生效，提升装备爆率;0X=10;Y=260;C=154;}
     `;
-    
+
     Npc.SayEx(Player, 'Npc大窗口', S);
 }
 
 // ==================== 购买津贴 ====================
 export function 购买津贴(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 津贴名 = Args.Str[0];
-    
+
     // 检查津贴是否存在
     if (!津贴配置[津贴名]) {
         Player.MessageBox('无效的津贴类型！');
         Main(Npc, Player);
         return;
     }
-    
+
     const 配置 = 津贴配置[津贴名];
-    
+
     // 检查积分是否足够
     const 当前积分 = Player.GetGamePoint();
     if (当前积分 < 配置.消耗点数) {
@@ -134,7 +136,7 @@ export function 购买津贴(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         Main(Npc, Player);
         return;
     }
-    
+
     // 显示确认对话框
     Player.Question(
         `确定购买【${配置.名称}】吗？\\\\消耗主神点数: ${配置.消耗点数}点\\\\爆率加成: +${配置.爆率加成}%\\\\持续时间: ${配置.持续时间}小时`,
@@ -146,16 +148,16 @@ export function 购买津贴(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 // ==================== 确认购买 ====================
 export function 确认购买(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     const 津贴名 = Args.Str[0];
-    
+
     // 检查津贴是否存在
     if (!津贴配置[津贴名]) {
         Player.MessageBox('无效的津贴类型！');
         Main(Npc, Player);
         return;
     }
-    
+
     const 配置 = 津贴配置[津贴名];
-    
+
     // 再次检查积分
     const 当前积分 = Player.GetGamePoint();
     if (当前积分 < 配置.消耗点数) {
@@ -163,17 +165,18 @@ export function 确认购买(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
         Main(Npc, Player);
         return;
     }
-    
+
     // 扣除积分
     Player.SetGamePoint(当前积分 - 配置.消耗点数);
     Player.GoldChanged();
-    
+
     // 设置津贴（使用分钟计数器）
     Player.V.津贴类型 = 津贴名;
     Player.V.津贴剩余分钟 = 配置.持续时间 * 60; // 小时转分钟
-    
+    Player.SetCustomEffect(永久特效.主神津贴, 特效.主神津贴);
+
     Player.MessageBox(`成功购买【${配置.名称}】！\\\\爆率加成: +${配置.爆率加成}%\\\\持续时间: ${配置.持续时间}小时`);
-    
+
     Main(Npc, Player);
 }
 
@@ -184,10 +187,10 @@ export function 确认购买(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
  */
 export function 获取津贴爆率加成(Player: TPlayObject): number {
     初始化津贴变量(Player);
-    
+
     const 当前津贴 = Player.V.津贴类型 || '';
     const 剩余分钟 = Player.V.津贴剩余分钟 || 0;
-    
+
     // 检查津贴是否有效
     if (!当前津贴 || 剩余分钟 <= 0) {
         // 津贴已过期，清空
@@ -197,12 +200,12 @@ export function 获取津贴爆率加成(Player: TPlayObject): number {
         }
         return 0;
     }
-    
+
     const 配置 = 津贴配置[当前津贴];
     if (!配置) {
         return 0;
     }
-    
+
     return 配置.爆率加成;
 }
 
@@ -214,17 +217,18 @@ export function 获取津贴爆率加成(Player: TPlayObject): number {
  */
 export function 检查津贴状态(Player: TPlayObject): void {
     初始化津贴变量(Player);
-    
+
     const 当前津贴 = Player.V.津贴类型 || '';
     const 剩余分钟 = Player.V.津贴剩余分钟 || 0;
-    
+
     // 如果有津贴且未过期，扣除时间（每10秒调用一次，不扣除）
     // 实际扣除在 个人1分钟 中进行
-    
+
     // 如果津贴已过期，清空并提示
     if (当前津贴 && 剩余分钟 <= 0) {
         Player.V.津贴类型 = '';
         Player.V.津贴剩余分钟 = 0;
+        Player.SetCustomEffect(永久特效.主神津贴, -1);
         Player.SendMessage('你的主神津贴已到期', 1);
     }
 }
@@ -237,16 +241,30 @@ export function 检查津贴状态(Player: TPlayObject): void {
 export function 津贴时间扣除(Player: TPlayObject): void {
     const 当前津贴 = Player.V.津贴类型 || '';
     const 剩余分钟 = Player.V.津贴剩余分钟 || 0;
-    
+
     // 只有在有津贴且未过期时才扣除
     if (当前津贴 && 剩余分钟 > 0) {
         Player.V.津贴剩余分钟 = 剩余分钟 - 1;
-        
+
         // 如果刚好到期，提示玩家
         if (Player.V.津贴剩余分钟 <= 0) {
             Player.V.津贴类型 = '';
             Player.V.津贴剩余分钟 = 0;
+            Player.SetCustomEffect(永久特效.主神津贴, -1);
             Player.SendMessage('你的主神津贴已到期', 1);
         }
     }
+}
+
+export function 检测津贴特效(Player: TPlayObject): void {
+
+    const 当前津贴 = Player.V.津贴类型 || '';
+    const 剩余分钟 = Player.V.津贴剩余分钟 || 0;
+    if (当前津贴 && 剩余分钟 > 0) {
+        Player.SetCustomEffect(永久特效.主神津贴, 特效.主神津贴);
+    }
+    else {
+        Player.SetCustomEffect(永久特效.主神津贴, -1);
+    }
+
 }

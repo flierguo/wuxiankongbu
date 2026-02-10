@@ -82,28 +82,42 @@ function 刷新怪物(map: TEnvirnoment, 怪物名字: string, TAG: number, 数�
 }
 
 /** 
- * 首次刷全怪 - 智能计算数量
- * 根据地图面积计算总数，按TAG比例分配
+ * 首次刷全怪 - 分批刷新，避免一帧内刷出上千只怪导致卡顿
+ * 每次调用刷一个TAG，通过计数器控制分批进度
  */
 function 首次刷全怪(map: TEnvirnoment, 地图名: string): void {
     const 地图ID = map.MapName
     const 状态 = 获取刷怪状态(地图ID)
     if (状态.首次刷怪完成) return
 
-    const 总怪物数 = 智能计算刷怪数量(map)
-    状态.目标怪物数 = 总怪物数
-    状态.地图名 = 地图名
-
-    for (let TAG = 1; TAG <= 5; TAG++) {
-        const 比例 = TAG刷怪比例[TAG as keyof typeof TAG刷怪比例]
-        const 数量 = Math.floor(总怪物数 * 比例)
-        if (数量 > 0) {
-            const 怪物名字 = 取生物名字(地图名, TAG)
-            刷新怪物(map, 怪物名字, TAG, 数量)
-        }
+    // 计算总怪物数（只算一次，缓存起来）
+    if (状态.目标怪物数 <= 0) {
+        状态.目标怪物数 = 智能计算刷怪数量(map)
+        状态.地图名 = 地图名
     }
 
-    设置刷怪状态(地图ID, { 首次刷怪完成: true, 上次补怪时间: GameLib.TickCount })
+    const 总怪物数 = 状态.目标怪物数
+
+    // 使用分批计数器，每秒刷一个TAG（1-5），共5秒刷完
+    GameLib.R.刷怪分批进度 ??= {}
+    GameLib.R.刷怪分批进度[地图ID] ??= 1
+    const 当前TAG = GameLib.R.刷怪分批进度[地图ID] as number
+
+    if (当前TAG <= 5) {
+        const 比例 = TAG刷怪比例[当前TAG as keyof typeof TAG刷怪比例]
+        const 数量 = Math.floor(总怪物数 * 比例)
+        if (数量 > 0) {
+            const 怪物名字 = 取生物名字(地图名, 当前TAG)
+            刷新怪物(map, 怪物名字, 当前TAG, 数量)
+        }
+        GameLib.R.刷怪分批进度[地图ID] = 当前TAG + 1
+    }
+
+    // 5个TAG全部刷完
+    if (当前TAG >= 5) {
+        设置刷怪状态(地图ID, { 首次刷怪完成: true, 上次补怪时间: GameLib.TickCount })
+        delete GameLib.R.刷怪分批进度[地图ID]
+    }
 }
 
 /** 补怪检测 - 智能计算 */
@@ -247,8 +261,13 @@ export function 获取击杀进度(地图ID: string): { 当前击杀: number, �
 
 // ==================== 定时器调用接口 ====================
 
-/** 秒钟检测首次刷怪 */
+/** 秒钟检测首次刷怪 - 使用计数器降低扫描频率 */
 export function 秒钟检测首次刷怪(): void {
+    // 性能优化：每2秒扫描一次，而非每秒（降低50%的CPU消耗）
+    GameLib.R.刷怪扫描计数器 ??= 0
+    GameLib.R.刷怪扫描计数器++
+    if (GameLib.R.刷怪扫描计数器 % 2 !== 0) return
+
     const 副本池 = 取地图()
     const 当前时间 = GameLib.TickCount
 
@@ -256,18 +275,23 @@ export function 秒钟检测首次刷怪(): void {
         if (!副本?.地图ID || 副本.地图ID === '') continue
         if (!副本.地图名 || 副本.地图名 === '') continue
 
+        const 状态 = 获取刷怪状态(副本.地图ID)
+
+        // 已完成刷怪的地图直接跳过（最常见情况，提前退出）
+        if (状态.首次刷怪完成) continue
+
         const map = GameLib.FindMap(副本.地图ID)
         if (!map) continue
 
         const 玩家数量 = map.GetHumCount() || 0
-        const 状态 = 获取刷怪状态(副本.地图ID)
 
-        if (玩家数量 > 0 && !状态.首次刷怪完成) {
+        if (玩家数量 > 0) {
             if (状态.首次进入时间 === 0) {
                 状态.首次进入时间 = 当前时间
                 GameLib.R[副本.地图ID] = true
             }
             if (当前时间 - 状态.首次进入时间 >= 默认配置.首次刷怪延迟 * 1000) {
+                // 分批刷怪：每次调用刷一个TAG
                 首次刷全怪(map, 副本.地图名)
             }
         }

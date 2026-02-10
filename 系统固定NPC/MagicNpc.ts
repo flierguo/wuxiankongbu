@@ -41,16 +41,18 @@ GameLib.onMonSelectMagicBeforeAttack = (AMon: TActor, ATarget: TActor, AMagicID:
 export function 查看属性(Source: TActor, Target: TActor): void {
     let Player: TPlayObject = Source as TPlayObject
     if (Target != null && !Target.IsPlayer()) {
-        let 生命 = 大数值整数简写(Target.GetSVar(92))
-        let 攻击 = 大数值整数简写(Target.GetSVar(93))
-        let 防御 = 大数值整数简写(Target.GetSVar(94))
-        let 魔次抵抗 = 大数值整数简写(Target.GetSVar(95))
+        const 生命 = 大数值整数简写(Target.GetSVar(92))
+        const 攻击 = 大数值整数简写(Target.GetSVar(93))
+        const 防御 = 大数值整数简写(Target.GetSVar(94))
+        const 魔次抵抗 = 大数值整数简写(Target.GetSVar(95))
+        const 怪物装备属性 = 大数值整数简写(Target.GetSVar(_P_Base.怪物装备属性))
 
         Player.SendMessage(`${Target.GetSVar(_P_Base.原始名字)}属性:`, 1)
         Player.SendMessage(`生命:${生命}`, 1)
         Player.SendMessage(`攻击:${攻击}`, 1)
         Player.SendMessage(`防御:${防御}`, 1)
         Player.SendMessage(`魔抗:${魔次抵抗}`, 1)
+        Player.SendMessage(`怪物装备属性:${怪物装备属性}`, 1)
         Player.SendMessage(`爆率文件:${Target.GetSVar(3)}`, 1)
         // 实时回血(Target, Player.GetSVar(92))
         // console.log(Target.GetCamp())

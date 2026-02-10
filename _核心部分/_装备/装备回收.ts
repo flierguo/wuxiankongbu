@@ -277,7 +277,7 @@ function 计算回收价值(Player: TPlayObject, UserItem: TUserItem): { 价值:
     const 最终倍率 = (Player.R.最终回收倍率 || 100) / 100
 
     if (是否神器(UserItem)) {
-        // 神器回收获得元宝
+        // 神器回收获得元宝 = 装备基础价值 × 神器倍数 × 回收倍率
         const 神器倍数 = 解析神器倍数(UserItem.DisplayName || '')
         const 元宝价值 = Math.floor(神器倍数 * 最终倍率)
         return { 价值: 元宝价值, 货币类型: '元宝' }

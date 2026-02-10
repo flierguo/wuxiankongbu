@@ -215,7 +215,7 @@ GameLib.onPlayerLogin = (Player: TPlayObject, OnlineAddExp: boolean): void => {
     Player.SetWCMin(999)
     Player.SetWCMax(999)
     Player.SetAlwaysShowHP(true)
-    登录触发.自定义变量(Player)
+    登录触发.登录初始化变量(Player)
     装备属性统计(Player)
     血量显示(Player)
     实时回血(Player, Player.GetSVar(92))

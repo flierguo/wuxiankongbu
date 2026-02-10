@@ -12,6 +12,10 @@ export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // 第八章,334,336
     // 第九章,334,336
     // 第十章,334,336
+
+        Player.MessageBox('暂无开放,敬请期待!!!')
+        return
+
     let S = ``
     switch (Npc.Tag) {
         case 1:

@@ -2,7 +2,7 @@ import { 装备属性统计 } from "./_装备/属性统计"
 import * as 地图 from "./_地图/地图"
 import * as 功能 from "./_功能"
 import { 神器套装配置 } from "./_装备/神器统计"
-import { 原始名字 } from "./基础常量"
+import { 原始名字, 基础属性第一条, 基础词条 } from "./基础常量"
 import { 血量显示 } from "./字符计算"
 import { 转大数值 } from "../_大数值/核心计算方法"
 import { 测试套装 } from "./_装备/随机套装"
@@ -49,10 +49,20 @@ export function 测试功能(Npc: TNormNpc, Player: TPlayObject): void {
 }
 
 export function 属性测试输出(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    Player.R.极品率加成 = 1000
-    装备属性统计(Player)
-    console.log(`测试输出: ${Player.R.极品率加成}---${Player.R.鞭尸几率}`)
-
+    // Player.R.极品率加成 = 1000
+    // 装备属性统计(Player)
+    // console.log(`测试输出: ${Player.R.极品率加成}---${Player.R.鞭尸几率}`)
+    const item = Player.GiveItem('『1阶』主神玄笠')
+    if (item) {
+        const 极品率 = 1 + random(30) // 1-30随机
+        item.SetOutWay1(基础属性第一条, 基础词条.极品百分比)
+        item.SetOutWay2(基础属性第一条, 极品率)
+        item.SetCustomDesc(JSON.stringify({
+            职业属性_职业: [基础词条.极品百分比],
+            职业属性_属性: [String(极品率)]
+        }))
+    }
+    Player.UpdateItem(item)
 }
 export function 清空背包(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     let item: TUserItem
@@ -336,3 +346,4 @@ export function InPutString7(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     }
     测试套装(Player, Args.Str[0]);
 }
+

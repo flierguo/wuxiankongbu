@@ -4,7 +4,7 @@ import { 装备属性统计 } from '../../_核心部分/_装备/属性统计';
 import { GetSameIPPlayerCount } from "../_功能"
 import { 新人职业技能 } from '../_服务/职业选择';
 import { 设置基础属性 } from '../_装备/装备掉落';
-import { 检查津贴状态 } from '../_服务/主神津贴';
+import { 检查津贴状态, 检测津贴特效 } from '../_服务/主神津贴';
 
 ///////////////登陆///////////////
 
@@ -20,10 +20,6 @@ export function PlayerRegister(Player: TPlayObject): void {
 	} else {
 		Player.AllowSendMessage = true;
 	}
-	if (Player.Level >= 1000) {
-		let exp1 = Player.Exp
-		Player.AddExp(-exp1)
-	}
 
 	if (Player.GetJewelrys(4) != null && Player.GetJewelrys(4).GetName() == '甘道夫之戒') {
 		if (Player.V.隐身开关 == false) {
@@ -33,9 +29,7 @@ export function PlayerRegister(Player: TPlayObject): void {
 		}
 	}
 
-	if (Player.Name == `鸿福` && Player.Account == `775800`) {
-		Player.SetPermission(10)
-	}
+
 	Player.SetMaxBagSize(226);
 	delete GameLib.V[Player.PlayerID]
 	GameLib.V[Player.PlayerID] = {}
@@ -44,6 +38,7 @@ export function PlayerRegister(Player: TPlayObject): void {
 	Player.SetSuperManMode(false)
 	Player.SetDenyAutoAddHP(false)
 	检查津贴状态(Player); // 检查主神津贴是否过期
+	检测津贴特效(Player);
 	装备属性统计(Player);/*重新计算玩家身上的装备*/
 	人物登录BUFF(Player)
 }
@@ -75,19 +70,9 @@ export function GiveNewPlayer(Player: TPlayObject): void {
 		case 5: GameLib.Broadcast(format('{S=喜讯ぐ;C=151}：欢迎新玩家武僧〖{S=%s;C=227}〗踏上了让人热血沸腾的征战之路！我们区又多了一位新朋友！！！', [Player.Name])); break;
 	}
 }
-export function 自定义变量(Player: TPlayObject): void {
+export function 登录初始化变量(Player: TPlayObject): void {
 	const vAny = Player.V as any;
 	const rAny = Player.R as any;
-
-	// ==================== 基础属性初始化 ====================
-	Player.R.生命 ??= '0'
-	Player.R.防御 ??= '0'
-	Player.R.攻击 ??= '0'
-	Player.R.魔法 ??= '0'
-	Player.R.道术 ??= '0'
-	Player.R.射术 ??= '0'
-	Player.R.刺术 ??= '0'
-	Player.R.武术 ??= '0'
 
 	// 基础属性倍数
 	Player.R.生命百分比 ??= 0;
@@ -96,7 +81,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.魔法百分比 ??= 0;
 	Player.R.道术百分比 ??= 0;
 	Player.R.刺术百分比 ??= 0;
-	Player.R.射术百分比 ??= 0;
+	Player.R.箭术百分比 ??= 0;
 	Player.R.武术百分比 ??= 0;
 	Player.R.天枢职业百分比 ??= 0;
 	Player.R.血神职业百分比 ??= 0;
@@ -105,6 +90,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.正义职业百分比 ??= 0;
 	Player.R.不动职业百分比 ??= 0;
 	Player.R.全体职业百分比 ??= 0;
+	Player.R.经验百分比 ??= 0
 
 	// ==================== 自定属性数组初始化 ====================
 	// 初始化自定属性数组（161-168为基础属性）
@@ -183,23 +169,24 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.R.基因锁等级 ??= 0;
 
 	// ==================== 战斗相关初始化 ====================
-	Player.R.暴击倍率 ??= '0'
 	Player.R.伤害吸收 ??= 0
 	Player.R.人王盾护盾值 ??= '0'
 	Player.R.人王盾开启 ??= false
 
 	// ==================== 爆率回收相关初始化 ====================
 	Player.R.爆率加成 ??= 0
-	Player.R.经验加成 ??= 0
 	Player.R.鞭尸几率 ??= 0
 	Player.R.鞭尸次数 ??= 0
 	Player.R.极品倍率 ??= 0
+	Player.R.极品率加成 ??= 0
 	Player.R.最终极品倍率 ??= 0
 	Player.R.回收倍率 ??= 100
 	Player.R.最终回收倍率 ??= 0
 	Player.R.最终爆率加成 ??= 0
 	Player.R.最终鞭尸次数 ??= 0
-	Player.R.本职装备几率 ??= 0
+
+	Player.R.未极品基础计数 ??= 0
+	Player.R.未极品技能计数 ??= 0
 
 	// ==================== 圣耀副本相关初始化 ====================
 	Player.R.圣耀地图爆率加成 ??= 0
@@ -221,8 +208,6 @@ export function 自定义变量(Player: TPlayObject): void {
 
 	Player.V.捐献点数 ??= '0'
 
-	Player.V.回收屏蔽 ??= false
-
 	Player.V.魂血精魄等级 ??= 0
 	// ==================== 宣传赞助相关初始化 ====================
 	Player.V.宣传爆率 ??= 0
@@ -237,6 +222,7 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.赞助极品率 ??= 0
 
 	Player.V.真实累充 ??= 0
+	Player.R.BOSS变异几率 ??= 0	
 	// ==================== 其他功能初始化 ====================
 	Player.V.幸运值 ??= 1
 
@@ -256,7 +242,6 @@ export function 自定义变量(Player: TPlayObject): void {
 	Player.V.我要秒怪 ??= false
 
 	Player.V.圣耀积分 ??= 0
-	Player.V.经验等级 ??= 0
 	Player.V.杀怪数量 ??= 0
 
 	// 累计回收货币（用于10秒提示）

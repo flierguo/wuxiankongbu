@@ -26,6 +26,7 @@ import { 自动回收提示 } from "../_核心部分/_装备/装备回收"
 
 
 
+
 /*一秒执行*/
 export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
 
@@ -169,7 +170,7 @@ export function 个人1秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
 export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // 地图.分钟检测副本玩家数量()
     // _M_Robot.按分钟检测(Player)
-    Player = GameLib.FindPlayer('鸿福'); //查找玩家
+    Player = GameLib.FindPlayer('很好'); //查找玩家
     if (Player != null) {
         // Player.SetSVar(92, 转大数值('1e100'))
         // // Player.SetSVar(91 , '1e100') 
@@ -182,6 +183,7 @@ export function 测试5秒(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): voi
         // console.log(Magic.GetKey())
         // GameLib.SetClientSpeed(1000)
         // GameLib.SendChangeClientSpeed()
+
     }
 
     //    // GameLib.MonGenEx( Player.Map , '多钩猫', 30, 120, 120, 30, 0, 0, 1, true, true, true, true)

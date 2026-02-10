@@ -233,6 +233,7 @@ function GM_给玩家刷属性(input: string): void {
     const list = input.split('-');
     if (list.length < 3) {
         GM_日志('格式错误，正确格式：玩家名-数量-类型');
+        GM_日志('类型错误：1充值 2元宝 3回收 4爆率 5等级 6鞭尸 7极品');
         return;
     }
 
@@ -242,6 +243,7 @@ function GM_给玩家刷属性(input: string): void {
 
     if (isNaN(数量) || 数量 < 0) {
         GM_日志('数量必须大于等于0');
+        GM_日志('类型错误：1充值 2元宝 3回收 4爆率 5等级 6鞭尸 7极品');
         return;
     }
 
@@ -277,8 +279,12 @@ function GM_给玩家刷属性(input: string): void {
             玩家.V.赞助鞭尸 = 数量;
             操作描述 = `设置鞭尸 ${数量}`;
             break;
+        case '7':
+            玩家.V.赞助极品 = 数量;
+            操作描述 = `设置极品率 ${数量}`;
+            break
         default:
-            GM_日志('类型错误：1充值 2元宝 3回收 4爆率 5等级');
+            GM_日志('类型错误：1充值 2元宝 3回收 4爆率 5等级 6鞭尸 7极品');
             return;
     }
     玩家.MessageBox(`GM调整了你的属性`);

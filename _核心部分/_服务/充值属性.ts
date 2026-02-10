@@ -1,6 +1,6 @@
 import { 装备属性统计 } from "../../_核心部分/_装备/属性统计";
 import { 插入, 创建表, 获取当前时间 } from "./_数据库";
-import { 职业第一条 } from "../基础常量";
+import { 职业第一条, 职业魔次分割 } from "../基础常量";
 
 // 安全初始化通区路径
 if (typeof GameLib !== 'undefined') {
@@ -159,23 +159,26 @@ export function 领取礼包(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 
     // 发放属性加成
     if (配置.特殊) {
-        // 10R档位：自动回收 + 材料存仓 + 福利戒指
-        Player.V.自动回收 = true;
-        Player.V.材料入仓 = true;
 
         // 发放福利戒指（牛角戒指改名，限时3天，全体魔次+100）
         const 福利戒指 = Player.GiveItem('牛角戒指', false);
         if (福利戒指) {
             福利戒指.Rename('[福利]戒指');
             福利戒指.SetBind(true);
+            福利戒指.SetNeverDrop(true)
+            福利戒指.State.SetNoDrop(true)
             福利戒指.MaxDate = DateUtils.IncDay(DateUtils.Now(), 3); // 限时3天
 
             // 设置全体魔次属性 - 使用outway让客户端显示
             const 属性ID = 10020; // 全体魔次ID
-            const 属性值 = '100';
+            const 属性值 = '20';
+            福利戒指.SetOutWay1(职业魔次分割, 2);  // 索引10，属性ID
+            福利戒指.SetOutWay2(职业魔次分割, 1);     // 前端显示数值
+
+
             福利戒指.SetOutWay1(职业第一条, 属性ID);  // 索引10，属性ID
-            福利戒指.SetOutWay2(职业第一条, 100);     // 前端显示数值
-            福利戒指.SetOutWay3(职业第一条, 0);       // 单位（0=无单位）
+            福利戒指.SetOutWay2(职业第一条, 20);     // 前端显示数值
+
             福利戒指.SetNeedLevel(1)
             // 保存属性记录到CustomDesc
             const 装备属性记录 = {

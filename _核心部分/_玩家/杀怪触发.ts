@@ -21,8 +21,11 @@ export function 杀怪变异(Player: TPlayObject, Monster: TActor): void {
     const 怪物TAG = Monster.GetNVar(TAG) % 10;
     if (怪物TAG !== 3 && 怪物TAG !== 4) return;
 
-    // 1/500 几率触发
-    if (random(500) !== 0) return;
+    const 变异几率 = Math.max(100, 0 + Player.R.变异几率 );
+    
+    if (random(400) <= 变异几率) return;
+
+    // if (random(400) !== 0) return;
 
     // 获取地图信息
     const map = Monster.Map;
@@ -87,6 +90,7 @@ export function 击杀生物(Player: TPlayObject, 敌人: TActor, 执行次数: 
             // 鞭尸触发提示
             if (Player.V.鞭尸提示) {
                 Player.SendCountDownMessage(`{S=【鞭尸】;C=253}触发！怪物被揉虐了 {S=${实际执行次数};C=191} 次`, 0);
+                Player.SendCenterMessage(`{S=【鞭尸】;C=253}触发！怪物被揉虐了 {S=${实际执行次数};C=191} 次`, 1);
             }
         }
 
