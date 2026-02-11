@@ -93,6 +93,7 @@ export function 初始化回收变量(Player: TPlayObject): void {
     Player.V.回收传说 ??= false
     Player.V.回收神话 ??= false
     Player.V.回收神器 ??= false
+    Player.V.回收斗笠 ??= false
 
     // 词条保留设置
     Player.V.本职勾选 ??= false
@@ -273,6 +274,11 @@ function 检查词条保留(Player: TPlayObject, UserItem: TUserItem): boolean {
  * 回收价格 = 基础属性翻倍倍率 * Player.R.最终回收倍率
  */
 function 计算回收价值(Player: TPlayObject, UserItem: TUserItem): { 价值: number, 货币类型: '金币' | '元宝' } {
+    // 斗笠固定回收10000金币
+    if (UserItem.StdMode === 16) {
+        return { 价值: 10000, 货币类型: '金币' }
+    }
+
     const 翻倍倍率 = 获取装备翻倍倍率(UserItem)
     const 最终倍率 = (Player.R.最终回收倍率 || 100) / 100
 
@@ -297,6 +303,17 @@ function 计算回收价值(Player: TPlayObject, UserItem: TUserItem): { 价值:
 export function 检查装备回收(Player: TPlayObject, UserItem: TUserItem): 回收结果 {
     // 初始化变量
     初始化回收变量(Player)
+
+    // 斗笠特殊处理：StdMode=16，固定回收10000金币
+    if (UserItem.StdMode === 16) {
+        if (!Player.V.回收斗笠) {
+            return { 应该回收: false, 回收价值: 0, 货币类型: '金币', 保留原因: '未勾选斗笠回收' }
+        }
+        if (UserItem.GetState()?.GetBind()) {
+            return { 应该回收: false, 回收价值: 0, 货币类型: '金币', 保留原因: '绑定装备' }
+        }
+        return { 应该回收: true, 回收价值: 10000, 货币类型: '金币' }
+    }
 
     // 检查装备类型
     if (!有效装备类型.includes(UserItem.StdMode)) {
@@ -490,6 +507,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
         <{I=$回收传说$;F=装备图标.DATA;X=50;Y=110}/@装备回收.勾选(回收传说)> {S=传说;C=251;OX=3;Y=110}
         <{I=$回收神话$;F=装备图标.DATA;X=120;Y=110}/@装备回收.勾选(回收神话)> {S=神话;C=244;OX=3;Y=110}
         <{I=$回收神器$;F=装备图标.DATA;X=190;Y=110}/@装备回收.勾选(回收神器)> {S=神器;C=249;OX=3;${神器说明};Y=110;}
+        <{I=$回收斗笠$;F=装备图标.DATA;X=260;Y=110}/@装备回收.勾选(回收斗笠)> {S=斗笠;C=253;OX=3;HINT=勾选后回收斗笠(固定10000金币);Y=110;}
 
 
         {S=词条保留设置;C=251;X=50;Y=150}{S=勾选后,高于设定数值的装备将被保留;C=154;X=150;Y=150}        
@@ -520,7 +538,7 @@ export function Main(Npc: TNormNpc, Player: TPlayObject): void {
         
 
         <{S=开始回收;C=253;X=420;Y=320}/@装备回收.开始回收>\\
-        <{S=一键全部回收;C=249;X=410;Y=360;HINT=回收背包内所有符合条件的装备}/@装备回收.一键全部回收>
+        <{S=一键全部回收;C=249;X=410;Y=360;HINT=回收背包内所有装备(绑定的除外)#92注意:注意:注意:会回收掉斗笠和神器,无视品质保留,全部回收!!}/@装备回收.一键全部回收>
     `
     // < { I=$自动随机$; F=装备图标.DATA; X=390; Y=155 } / @装备回收.勾选(自动随机) > { S=自动随机; C=9; OX=3; Y=155; HINT=请在下方设置随机秒数 }
     const M = 生成UI字符串(Player, S)
@@ -538,6 +556,7 @@ function 生成UI字符串(Player: TPlayObject, 模板: string): string {
         '回收传说': Player.V.回收传说 ? '31' : '30',
         '回收神话': Player.V.回收神话 ? '31' : '30',
         '回收神器': Player.V.回收神器 ? '31' : '30',
+        '回收斗笠': Player.V.回收斗笠 ? '31' : '30',
         '自动回收': Player.V.自动回收 ? '31' : '30',
         '自动拾取': Player.V.自动拾取 ? '31' : '30',
         '自动吃元宝': Player.V.自动吃元宝 ? '31' : '30',

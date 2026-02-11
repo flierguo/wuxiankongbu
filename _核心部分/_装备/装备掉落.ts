@@ -56,12 +56,12 @@ interface 装备属性记录 {
 
 // ==================== TAG词条配置 ====================
 const TAG词条配置 = {
-    1: { 基础词条: { min: 1, max: 4 }, 魔次几率: 100, 魔次词条: { min: 1, max: 1 } },
-    2: { 基础词条: { min: 2, max: 5 }, 魔次几率: 70, 魔次词条: { min: 1, max: 2 } },
-    3: { 基础词条: { min: 2, max: 6 }, 魔次几率: 40, 魔次词条: { min: 1, max: 3 } },
-    4: { 基础词条: { min: 3, max: 7 }, 魔次几率: 10, 魔次词条: { min: 1, max: 4 } },
-    5: { 基础词条: { min: 4, max: 8 }, 魔次几率: 5, 魔次词条: { min: 2, max: 5 } },  // 必获得
-    6: { 基础词条: { min: 5, max: 8 }, 魔次几率: 3, 魔次词条: { min: 3, max: 6 } },  // 必获得
+    1: { 基础词条: { min: 1, max: 4 }, 魔次几率: 150, 魔次词条: { min: 1, max: 1 } },
+    2: { 基础词条: { min: 2, max: 5 }, 魔次几率: 120, 魔次词条: { min: 1, max: 2 } },
+    3: { 基础词条: { min: 2, max: 6 }, 魔次几率: 100, 魔次词条: { min: 1, max: 3 } },
+    4: { 基础词条: { min: 3, max: 7 }, 魔次几率: 50, 魔次词条: { min: 1, max: 4 } },
+    5: { 基础词条: { min: 4, max: 8 }, 魔次几率: 20, 魔次词条: { min: 2, max: 5 } },  // 必获得
+    6: { 基础词条: { min: 5, max: 8 }, 魔次几率: 5, 魔次词条: { min: 3, max: 6 } },  // 必获得
     7: { 基础词条: { min: 6, max: 8 }, 魔次几率: 1, 魔次词条: { min: 3, max: 6 } },  // 必获得
 } as const
 
@@ -295,7 +295,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     const 基础保底系数 = Math.max(0.2, 1 - Math.floor(Player.R.未极品基础计数 / 300) * 0.05)
     const 技能保底系数 = Math.max(0.2, 1 - Math.floor(Player.R.未极品技能计数 / 300) * 0.05)
 
-    const 极品几率分母 = Math.max(80, 2000 - 极品率)
+    const 极品几率分母 = Math.max(100, 2000 - 极品率)
 
     if (random(Math.floor(极品几率分母 * 基础保底系数)) < 1) {
         基础极品倍率 = 3 + random(Math.floor(极品率 / 100) + 20)
@@ -315,7 +315,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     let 是否神器 = false
     let 神器倍数 = 0
     const 神器几率 = Player.R?.神器爆率加成 || 0
-    if (random(Math.max(50, 1400 - 神器几率)) < 1) {
+    if (random(Math.max(100, 1500 - 神器几率)) < 1) {
         是否神器 = true
         神器倍数 = 1 + random(10)
     }
@@ -325,7 +325,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
 
     // 生成基础翻倍值（用于装备价值计算）
     let 基础翻倍 = (数值平衡配置.基础翻倍最小 + random(数值平衡配置.基础翻倍范围))
-    let 装备价值 = 基础翻倍 * Player.R.最终回收倍率 / 20
+    let 装备价值 = 基础翻倍 * Player.R.最终回收倍率 / 25
     const 生肖价值倍率 = 计算套装倍率(固定星级)
     // 设置装备需求及价值（StdMode 68 由套装系统单独设置）
     if (UserItem.StdMode == 68) {
@@ -339,7 +339,7 @@ export function 装备掉落(Player: TPlayObject, Monster: TActor, UserItem: TUs
     UserItem.SetOutWay2(基础属性分割, 基础极品倍率)
 
     if (固定星级 < 5){
-        基础翻倍 = 基础翻倍 * 1.2
+        基础翻倍 = 基础翻倍 * 1.1
     }
 
     // 生成基础词条

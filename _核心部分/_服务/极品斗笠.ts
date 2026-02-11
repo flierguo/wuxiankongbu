@@ -100,122 +100,94 @@ function 删除背包斗笠(Player: TPlayObject, 目标阶数: number, 数量: n
 
 // ==================== 主界面 ====================
 export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    // 统计背包中各阶斗笠数量，生成3列合成按钮
+    let 合成列表 = ''
+    let Y = 130
+    const 列X = [20, 160, 300] // 3列的X坐标
+    for (let 阶数 = 1; 阶数 <= 9; 阶数++) {
+        const 列 = (阶数 - 1) % 3
+        const 数量 = 统计背包斗笠(Player, 阶数)
+        const 颜色 = 数量 >= 3 ? 249 : 254
+        合成列表 += `<{S=[合成${阶数 + 1}阶 ${数量}/3];C=${颜色};X=${列X[列]};Y=${Y}}/@极品斗笠.合成斗笠(${阶数})>`
+        if (列 === 2) Y += 25
+    }
+
+    // 刷新属性区域（使用框内物品）
     const 主装备 = Player.GetCustomItem(0)
     const 副装备 = Player.GetCustomItem(1)
-
-    // 读取主装备信息
-    let 主装备信息 = '未放入'
-    let 主装备阶数 = 0
-    let 主装备极品率 = 0
-    if (主装备 && 主装备.StdMode === 斗笠StdMode) {
-        主装备阶数 = 获取斗笠阶数(主装备.DisplayName)
-        主装备极品率 = 获取斗笠极品率(主装备)
-        if (主装备阶数 > 0) {
-            主装备信息 = `${主装备.DisplayName} 极品率:${主装备极品率}%`
-        } else {
-            主装备信息 = '非斗笠装备'
-        }
-    }
-
-    // 读取副装备信息
-    let 副装备信息 = '未放入'
-    let 副装备阶数 = 0
-    if (副装备 && 副装备.StdMode === 斗笠StdMode) {
-        副装备阶数 = 获取斗笠阶数(副装备.DisplayName)
-        副装备信息 = 副装备阶数 > 0 ? `${副装备.DisplayName} 极品率:${获取斗笠极品率(副装备)}%` : '非斗笠装备'
-    }
-
-    // 合成提示
-    let 合成提示 = ''
-    if (主装备阶数 > 0 && 主装备阶数 < 10) {
-        const 背包同阶数量 = 统计背包斗笠(Player, 主装备阶数)
-        const 新阶数 = 主装备阶数 + 1
-        const 新名字 = 斗笠列表[新阶数 - 1]
-        合成提示 = `合成${新名字}需要: 框内1个+背包2个同阶斗笠(背包有${背包同阶数量}个)`
-    } else if (主装备阶数 === 10) {
-        合成提示 = '已达最高阶,无法继续合成'
-    }
-
-    // 刷新提示
+    let 主装备信息 = ''
     let 刷新提示 = ''
-    if (主装备阶数 > 0 && 副装备阶数 === 主装备阶数) {
-        const 最大极品率 = 主装备阶数 * 30
-        刷新提示 = `消耗副装备刷新极品率,范围:${主装备极品率}~${最大极品率}%`
-    } else if (主装备阶数 > 0 && 副装备阶数 > 0 && 副装备阶数 !== 主装备阶数) {
-        刷新提示 = '刷新需要同阶斗笠作为材料'
+    if (主装备 && 主装备.StdMode === 斗笠StdMode) {
+        const 主阶数 = 获取斗笠阶数(主装备.DisplayName)
+        if (主阶数 > 0) {
+            const 当前极品率 = 获取斗笠极品率(主装备)
+            const 最大极品率 = 主阶数 * 30
+            主装备信息 = `${主装备.DisplayName} 极品率:${当前极品率}% / 上限:${最大极品率}%`
+            if (副装备 && 副装备.StdMode === 斗笠StdMode) {
+                const 副阶数 = 获取斗笠阶数(副装备.DisplayName)
+                if (副阶数 === 主阶数) {
+                    刷新提示 = `消耗副装备刷新,范围:${当前极品率}~${最大极品率}%`
+                } else if (副阶数 > 0) {
+                    刷新提示 = '刷新需要同阶斗笠作为材料'
+                }
+            }
+        }
     }
 
     const S = `
         {S=极品斗笠;C=254;X=200;Y=10}
-        {S=主装备(上框): ${主装备信息};C=250;X=20;Y=40}
-        {S=副装备(下框): ${副装备信息};C=250;X=20;Y=65}
-        {S=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━;C=154;X=10;Y=85}
+        {S=规则: 3个相同阶数斗笠合成更高一阶;C=154;X=20;Y=35}
+        {S=极品率上限: 阶数×30%;C=154;X=20;Y=55}
+        {S=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━;C=154;X=10;Y=90}
         {S=【合成高级斗笠】;C=251;X=20;Y=105}
-        {S=规则: 3个相同阶数斗笠合成更高一阶;C=154;X=20;Y=125}
-        {S=${合成提示};C=249;X=20;Y=145}
-        <{S=[合成斗笠];C=254;X=180;Y=170}/@极品斗笠.合成斗笠>
-        {S=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━;C=154;X=10;Y=195}
-        {S=【刷新斗笠属性】;C=251;X=20;Y=215}
-        {S=规则: 消耗同阶斗笠刷新极品率(不低于当前值);C=154;X=20;Y=235}
-        {S=${刷新提示};C=249;X=20;Y=255}
-        <{S=[刷新属性];C=254;X=180;Y=280}/@极品斗笠.刷新属性>
-        {S=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━;C=154;X=10;Y=305}
-        {S=斗笠阶数: 1阶~10阶;C=154;X=20;Y=325}
-        {S=极品率上限: 阶数×30%;C=154;X=20;Y=345}
+        ${合成列表}
+        {S=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━;C=154;X=10;Y=${Y}}
+        {S=【刷新斗笠属性】;C=251;X=20;Y=${Y + 20}}
+        <{S=[刷新属性];C=254;X=220;Y=${Y + 20}}/@极品斗笠.刷新属性>
+        {S=规则: 消耗同阶斗笠刷新极品率(不低于当前值);C=154;X=20;Y=${Y + 42}}
+        {S=上框: ${主装备信息 || '未放入斗笠'};C=250;X=20;Y=${Y + 62}}
+        {S=${刷新提示};C=249;X=20;Y=${Y + 82}}
     `
     Npc.SayEx(Player, '极品斗笠', S)
 }
 
 // ==================== 合成斗笠 ====================
 export function 合成斗笠(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const 主装备 = Player.GetCustomItem(0)
-    if (!主装备 || 主装备.StdMode !== 斗笠StdMode) {
-        Player.MessageBox('请将斗笠放入上方框内')
+    // 优先用 Int，备用 Str 转换
+    let 源阶数 = Args.Int[0]
+    if (!源阶数) {
+        源阶数 = Number(Args.Str[0]) || 0
+    }
+    if (源阶数 < 1 || 源阶数 > 9) {
+        Player.MessageBox('无效的合成阶数')
         return
     }
 
-    const 当前阶数 = 获取斗笠阶数(主装备.DisplayName)
-    if (当前阶数 <= 0) {
-        Player.MessageBox('无法识别该斗笠阶数')
-        return
-    }
-    if (当前阶数 >= 10) {
-        Player.MessageBox('已达最高阶,无法继续合成')
+    // 检查背包中同阶斗笠数量（需要3个）
+    const 背包数量 = 统计背包斗笠(Player, 源阶数)
+    if (背包数量 < 3) {
+        Player.MessageBox(`背包中${斗笠列表[源阶数 - 1]}不足,需要3个,当前${背包数量}个`)
         return
     }
 
-    // 检查背包中同阶斗笠数量（需要2个，框内1个 = 共3个）
-    const 背包数量 = 统计背包斗笠(Player, 当前阶数)
-    if (背包数量 < 2) {
-        Player.MessageBox(`背包中同阶斗笠不足,需要2个,当前${背包数量}个`)
-        return
-    }
-
-    // 删除背包中2个同阶斗笠
-    if (!删除背包斗笠(Player, 当前阶数, 2)) {
+    // 删除背包中3个同阶斗笠
+    if (!删除背包斗笠(Player, 源阶数, 3)) {
         Player.MessageBox('删除材料失败,请重试')
         return
     }
 
-    // 删除框内斗笠
-    Player.DeleteItem(主装备)
-
     // 生成新斗笠
-    const 新阶数 = 当前阶数 + 1
+    const 新阶数 = 源阶数 + 1
     const 新名字 = 斗笠列表[新阶数 - 1]
     const 新极品率 = 1 + random(新阶数 * 30) // 1 ~ 阶数*30
 
     const item = Player.GiveItem(新名字)
     if (item) {
         更新斗笠属性(item, 新极品率)
-        item.SetBind(true)
-        item.SetNeverDrop(true)
-        item.State.SetNoDrop(true)
         Player.UpdateItem(item)
     }
 
-    Player.SendMessage(`{S=合成成功！获得 ${新名字} 极品率+${新极品率}%;C=251}`, 1)
-    装备属性统计(Player)
+    Player.MessageBox(`{S=合成成功！获得 ${新名字} 极品率+ ${新极品率} %;C=251}`)
     Main(Npc, Player, Args)
 }
 
@@ -256,9 +228,9 @@ export function 刷新属性(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     // 消耗副装备
     Player.DeleteItem(副装备)
 
-    // 刷新极品率：范围为 当前值 ~ 阶数*30
+    // 刷新极品率：范围为 当前值+1 ~ 阶数*30（未满时最少+1）
     const 范围 = 最大极品率 - 当前极品率
-    const 新极品率 = 当前极品率 + (范围 > 0 ? random(范围 + 1) : 0)
+    const 新极品率 = 范围 > 1 ? 当前极品率 + 1 + random(范围) : 最大极品率
 
     // 更新主装备属性
     更新斗笠属性(主装备, 新极品率)
@@ -266,6 +238,62 @@ export function 刷新属性(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 
     const 变化 = 新极品率 - 当前极品率
     Player.MessageBox(`{S=刷新成功！极品率: ${当前极品率}% → ${新极品率}% (${变化 >= 0 ? '+' : ''}${变化}%);C=251}`)
-    装备属性统计(Player)
     Main(Npc, Player, Args)
+}
+
+
+// ==================== 自动合成（每1分钟调用） ====================
+
+/**
+ * 自动合成斗笠（在RobotManageNpc的个人1分钟中调用）
+ * 逻辑：遍历背包，找到3个及以上同阶斗笠时自动合成为更高一阶
+ * 从低阶到高阶依次检查，每次合成一个
+ */
+export function 自动合成斗笠(Player: TPlayObject): void {
+    // 从1阶到9阶依次检查（10阶无法继续合成）
+    for (let 阶数 = 1; 阶数 <= 9; 阶数++) {
+        const 目标名 = 斗笠列表[阶数 - 1]
+        if (!目标名) continue
+
+        // 统计背包中该阶数斗笠数量
+        let 数量 = 0
+        for (let i = 0; i < Player.ItemSize; i++) {
+            const item = Player.GetBagItem(i)
+            if (!item) continue
+            if (item.StdMode === 斗笠StdMode && item.DisplayName === 目标名) {
+                数量++
+            }
+        }
+
+        // 不足3个，跳过
+        if (数量 < 3) continue
+
+        // 删除3个同阶斗笠
+        let 已删除 = 0
+        for (let i = Player.ItemSize - 1; i >= 0 && 已删除 < 3; i--) {
+            const item = Player.GetBagItem(i)
+            if (!item) continue
+            if (item.StdMode === 斗笠StdMode && item.DisplayName === 目标名) {
+                Player.DeleteBagItem(item, 1)
+                已删除++
+            }
+        }
+
+        if (已删除 < 3) continue
+
+        // 生成新斗笠
+        const 新阶数 = 阶数 + 1
+        const 新名字 = 斗笠列表[新阶数 - 1]
+        const 新极品率 = 1 + random(新阶数 * 30)
+
+        const item = Player.GiveItem(新名字)
+        if (item) {
+            更新斗笠属性(item, 新极品率)
+            Player.UpdateItem(item)
+        }
+
+        Player.SendMessage(`{S=【自动合成】3个${目标名} → ${新名字} 极品率+${新极品率}%;C=251}`, 1)
+        // 每次只合成一个，下次再继续
+        return
+    }
 }

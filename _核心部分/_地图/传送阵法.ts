@@ -84,17 +84,15 @@ export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     //     return;
     // }
 
-    // Y坐标：1-5固定副本，6-10圣耀副本
+    // Y坐标：0-4固定副本，5-9圣耀副本
     const yPositions = [22, 60, 98, 136, 174, 212, 250, 288, 326, 364, 402];
     const 固定副本数 = 5;
 
-    // 计算该地图的起始下标
-    let 地图索引 = 地图声明.findIndex(c => c.地图名 === 地图名);
-    if (地图索引 === -1) return;
-    let 起始下标 = 地图索引 * 10;
+    // 计算该地图的起始下标（使用配置中的下标字段）
+    let 起始下标 = 地图配置.下标;
 
-    // 生成固定副本按钮（1-5）
-    for (let i = 1; i <= 固定副本数; i++) {
+    // 生成固定副本按钮（下标+0 到 下标+4，共5个固定难度）
+    for (let i = 0; i < 固定副本数; i++) {
         const y = yPositions[i];
         const 下标 = 起始下标 + i;
         const 副本 = 副本池[下标];
@@ -111,8 +109,8 @@ export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
 
     //<{M=297,297,297;F=新UI素材文件.data;X=28;;HINT=${hint}
 
-    // 生成圣耀副本按钮（6-10）
-    for (let i = 固定副本数 + 1; i <= 10; i++) {
+    // 生成圣耀副本按钮（下标+5 到 下标+9，共5个圣耀位）
+    for (let i = 固定副本数; i < 10; i++) {
         const y = yPositions[i];
         const 下标 = 起始下标 + i;
         const 副本 = 副本池[下标];

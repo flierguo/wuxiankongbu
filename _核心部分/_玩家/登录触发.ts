@@ -237,6 +237,7 @@ export function 登录初始化变量(Player: TPlayObject): void {
 	Player.V.掉落提示 ??= true
 	Player.V.鞭尸提示 ??= true
 	Player.V.回收屏蔽 ??= true
+	Player.V.合成斗笠 ??= false
 
 
 	Player.V.我要秒怪 ??= false

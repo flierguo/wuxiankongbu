@@ -90,7 +90,6 @@ export function 击杀生物(Player: TPlayObject, 敌人: TActor, 执行次数: 
             // 鞭尸触发提示
             if (Player.V.鞭尸提示) {
                 Player.SendCountDownMessage(`{S=【鞭尸】;C=253}触发！怪物被揉虐了 {S=${实际执行次数};C=191} 次`, 0);
-                Player.SendCenterMessage(`{S=【鞭尸】;C=253}触发！怪物被揉虐了 {S=${实际执行次数};C=191} 次`, 1);
             }
         }
 

@@ -29,6 +29,16 @@ const 默认配置 = {
     无人清理延迟: 120,       // 地图无玩家2分钟（120秒）后清理
 }
 
+// ==================== 刷怪倍率初始化 ====================
+/** 获取高TAG刷怪倍率（TAG 5/6/7），专区服务器翻倍 */
+function 获取高TAG刷怪倍率(): number {
+    GameLib.R.刷怪倍率 ??= 1
+    if (GameLib.R.刷怪倍率 === 1 && GameLib.ServerName.includes('专区')) {
+        GameLib.R.刷怪倍率 = 2
+    }
+    return GameLib.R.刷怪倍率
+}
+
 // ==================== 刷怪状态管理 ====================
 interface 地图刷怪状态 {
     地图ID: string
@@ -105,7 +115,9 @@ function 首次刷全怪(map: TEnvirnoment, 地图名: string): void {
 
     if (当前TAG <= 5) {
         const 比例 = TAG刷怪比例[当前TAG as keyof typeof TAG刷怪比例]
-        const 数量 = Math.floor(总怪物数 * 比例)
+        let 数量 = Math.floor(总怪物数 * 比例)
+        // TAG5 应用高TAG刷怪倍率（专区翻倍）
+        if (当前TAG === 5) 数量 = Math.floor(数量 * 获取高TAG刷怪倍率())
         if (数量 > 0) {
             const 怪物名字 = 取生物名字(地图名, 当前TAG)
             刷新怪物(map, 怪物名字, 当前TAG, 数量)
@@ -136,7 +148,9 @@ function 补怪(map: TEnvirnoment, 地图名: string): void {
         const 需补充总数 = 目标怪物数 - 当前怪物数
         for (let TAG = 1; TAG <= 5; TAG++) {
             const 比例 = TAG刷怪比例[TAG as keyof typeof TAG刷怪比例]
-            const 数量 = Math.floor(需补充总数 * 比例)
+            let 数量 = Math.floor(需补充总数 * 比例)
+            // TAG5 应用高TAG刷怪倍率（专区翻倍）
+            if (TAG === 5) 数量 = Math.floor(数量 * 获取高TAG刷怪倍率())
             if (数量 > 0) {
                 const 怪物名字 = 取生物名字(地图名, TAG)
                 刷新怪物(map, 怪物名字, TAG, 数量)
@@ -194,8 +208,8 @@ export function 大陆BOSS刷新检测(): void {
                 BOSS数量 = 难度BOSS数量映射[副本.难度] || 1
             }
 
-            // TAG7 = 大陆BOSS
-            刷新怪物(map, 配置.大陆BOSS名字, 7, BOSS数量)
+            // TAG7 = 大陆BOSS（应用高TAG刷怪倍率）
+            刷新怪物(map, 配置.大陆BOSS名字, 7, BOSS数量 * 获取高TAG刷怪倍率())
             状态.大陆BOSS存活 = true
 
             GameLib.BroadcastTopMessage(`{s=【大陆BOSS】${配置.大陆BOSS名字} x${BOSS数量} 出现在 ${map.DisplayName || 地图名}!;c=249}`)
@@ -227,6 +241,9 @@ export function 特殊BOSS刷新检测(): void {
 
         const 配置 = 取完整地图配置(副本.地图名)
         const BOSS名字 = 配置?.特殊BOSS名字 || '特殊BOSS'
+        // // TAG6 = 特殊BOSS（应用高TAG刷怪倍率）
+        // 刷新怪物(map, BOSS名字, 6, 获取高TAG刷怪倍率())
+
         // TAG6 = 特殊BOSS
         刷新怪物(map, BOSS名字, 6, 1)
 

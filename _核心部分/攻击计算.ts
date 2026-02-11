@@ -76,10 +76,10 @@ export function 计算受伤被动(Player: TPlayObject, 伤害: string): string 
  * 获取地图伤害修正系数 - 基于世界配置的范围匹配
  * 配置在 世界配置.ts 的 地图伤害修正配置 中统一管理
  */
-function 获取地图伤害修正(地图等级: number): number | null {
+function 获取地图伤害修正(地图下标: number): number | null {
     for (let i = 0; i < 地图伤害修正配置.length; i++) {
         const 配置 = 地图伤害修正配置[i]
-        if (地图等级 >= 配置.起始星级 && 地图等级 <= 配置.结束星级) {
+        if (地图下标 >= 配置.起始星级 && 地图下标 <= 配置.结束星级) {
             return 配置.修正系数
         }
     }
@@ -416,7 +416,7 @@ function 计算玩家伤害(自己: TPlayObject, 敌人: TActor, 技能序号: n
     const R = 自己.R;
 
     // 直接获取怪物属性（不需要随机，已经在生物属性中计算好）
-    const 地图等级 = 地图.地图ID取地图下标(敌人.Map.MapID);
+    const 地图下标 = 地图.地图ID取地图下标(敌人.Map.MapID);
     let 敌人防御 = 敌人.GetSVar(94) || '0';  // SVar(94) = 防御
     let 敌人魔次抵抗 = 敌人.GetSVar(95) || '0';  // SVar(95) = 魔次抵抗
 
@@ -648,11 +648,6 @@ function 计算玩家伤害(自己: TPlayObject, 敌人: TActor, 技能序号: n
         自己.SendCountDownMessage(`【暴击】触发！`, 0);
     }
 
-    // 第八步：地图伤害修正
-    const 修正 = 获取地图伤害修正(地图等级);
-    if (修正 !== null) {
-        技能攻击 = 智能计算(技能攻击, String(修正), 3);
-    }
     // 第九步：获取基因阶数并计算 2^基因阶数
     // 根据玩家的基因类型获取对应的阶数
     let 基因阶数 = 0;
@@ -701,6 +696,13 @@ function 计算玩家伤害(自己: TPlayObject, 敌人: TActor, 技能序号: n
     }
 
     基础伤害 = 智能计算(基础伤害, String(幸运), 3)
+
+    // 第八步：地图伤害修正
+    const 修正 = 获取地图伤害修正(地图下标);
+    if (修正 !== null) {
+        技能攻击 = 智能计算(技能攻击, String(修正), 3);
+    }
+
     // GM秒怪功能
     if (V.我要秒怪) {
         return 转大数值('9e200')
@@ -722,14 +724,14 @@ function 处理怪物对玩家伤害(自己: TActor, 敌人: TPlayObject): strin
     const EV = 敌人.V;
     const ER = 敌人.R;
 
-    // 直接获取地图等级
-    const 地图等级 = 地图.地图ID取地图下标(敌人.GetMap().MapID);
+    // 直接获取地图下标
+    const 地图下标 = 地图.地图ID取地图下标(敌人.GetMap().MapID);
 
     // 安全获取怪物的攻击力（SVar(93) = 攻击）
     let 怪物攻击 = 安全数值(自己.GetSVar(93), 基本常量.最小攻击);
 
     // 高强度地图怪物攻击加成
-    if (地图等级 > 150) {
+    if (地图下标 > 150) {
         怪物攻击 = 智能计算(怪物攻击, '10', 3);
     }
 

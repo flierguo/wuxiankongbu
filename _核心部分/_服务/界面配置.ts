@@ -1,3 +1,28 @@
+// ==================== 提示设置  ====================
+
+export function 提示设置(Npc: TNormNpc, Player: TPlayObject): void {
+    const 提示列表 = ['伤害提示', '护盾提示', '掉落提示', '鞭尸提示', '回收屏蔽', '合成斗笠']
+    let str = `{S=提示设置;C=251;X=175;Y=5}\n{S=取消勾选后将不再提示;C=154;X=15;Y=30}\n\n`
+    let y = 70
+
+    for (let i = 0; i < 提示列表.length; i++) {
+        const 提示名 = 提示列表[i]
+        const x = 15 + (i % 4) * 100
+        const 当前Y = y + Math.floor(i / 4) * 35
+        const 图标 = Player.V[提示名] ? '31' : '30'
+        str += `<{I=${图标};F=装备图标.DATA;X=${x};Y=${当前Y}}/@界面配置.勾选提示(${提示名})>{S=${提示名};C=9;OX=3;Y=${当前Y}}\n`
+    }
+
+    Npc.SayEx(Player, 'NPC小窗口', str)
+}
+
+export function 勾选提示(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const 变量名 = Args.Str[0]
+    Player.V[变量名] = !Player.V[变量名]
+    Player.SendMessage(`${变量名}已${Player.V[变量名] ? '开启' : '关闭'}`, 1)
+    提示设置(Npc, Player)
+}
+
 
 // ==================== 自动施法设置 ====================
 const 本职业技能施法配置: { [job: number]: string[] } = {
@@ -42,29 +67,7 @@ export function 勾选技能(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     自动设置(Npc, Player)
 }
 
-export function 提示设置(Npc: TNormNpc, Player: TPlayObject): void {
-    const 提示列表 = ['伤害提示', '护盾提示', '掉落提示', '鞭尸提示', '回收屏蔽']
-    let str = `{S=提示设置;C=251;X=175;Y=5}\n{S=取消勾选后将不再提示;C=154;X=15;Y=30}\n\n`
-    let y = 70
-
-    for (let i = 0; i < 提示列表.length; i++) {
-        const 提示名 = 提示列表[i]
-        const x = 15 + (i % 4) * 100
-        const 当前Y = y + Math.floor(i / 4) * 35
-        const 图标 = Player.V[提示名] ? '31' : '30'
-        str += `<{I=${图标};F=装备图标.DATA;X=${x};Y=${当前Y}}/@界面配置.勾选提示(${提示名})>{S=${提示名};C=9;OX=3;Y=${当前Y}}\n`
-    }
-
-    Npc.SayEx(Player, 'NPC小窗口', str)
-}
-
-export function 勾选提示(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
-    const 变量名 = Args.Str[0]
-    Player.V[变量名] = !Player.V[变量名]
-    Player.SendMessage(`${变量名}已${Player.V[变量名] ? '开启' : '关闭'}`, 1)
-    提示设置(Npc, Player)
-}
-
+// ==================== 保护设置 ====================
 
 export function 保护设置(Npc: TNormNpc, Player: TPlayObject): void {
     let S = `\\\\\\
@@ -141,3 +144,5 @@ export function 保护5(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     Player.V.随机读秒 = 自动间隔时间
     保护设置(Npc, Player)
 }
+
+// =================================================================================
