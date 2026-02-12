@@ -51,7 +51,7 @@ export function 测试功能(Npc: TNormNpc, Player: TPlayObject): void {
 export function 属性测试输出(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
     // Player.R.极品率加成 = 1000
     // 装备属性统计(Player)
-    // console.log(`测试输出: ${Player.R.极品率加成}---${Player.R.鞭尸几率}`)
+    console.log(`测试输出: ${Player.R.变异几率}---${Player.R.鞭尸几率}`)
     const item = Player.GiveItem('『1阶』主神玄笠')
     if (item) {
         const 极品率 = 1 + random(30) // 1-30随机

@@ -1,5 +1,6 @@
 import { 文本 } from '../_功能';
 import * as 地图 from './地图';
+import * as 地图成就 from '../_服务/地图成就';
 
 const 地图声明 = 地图.完整地图配置
 
@@ -85,7 +86,7 @@ export function 副本传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     // }
 
     // Y坐标：0-4固定副本，5-9圣耀副本
-    const yPositions = [22, 60, 98, 136, 174, 212, 250, 288, 326, 364, 402];
+    const yPositions = [60, 98, 136, 174, 212, 250, 288, 326, 364, 402 , 440];
     const 固定副本数 = 5;
 
     // 计算该地图的起始下标（使用配置中的下标字段）
@@ -154,16 +155,36 @@ export function 固定传送(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): v
     const 下标 = Args.Int[1];
     const 地图配置 = 地图声明.find(m => m.地图名 === 地图名);
     if (!地图配置) return;
+    
+    // 等级检查
     if (Player.GetLevel() < 地图配置.需求等级) {
         Player.MessageBox(`您的等级不足，无法进入${地图名}。`);
         return;
     }
-    // if (Player.V.地图成就 + 1 < 地图配置.固定星级) {
-    //     Player.MessageBox(`您的地图成就不足，无法进入${地图名}。`);
-    //     return;
-    // }
+    
+    // 地图成就权限检查（新手地图不需要）
+    if (地图名 !== '新手地图') {
+        // 从下标计算难度（下标+0=简单, +1=普通, +2=困难, +3=精英, +4=炼狱）
+        const 难度索引 = (下标 - 地图配置.下标) % 5;
+        const 难度列表 = ['简单', '普通', '困难', '精英', '炼狱'] as const;
+        const 当前难度 = 难度列表[难度索引];
+        
+        // 检查进图权限（需要前置难度达标）
+        if (!地图成就.检查进图权限(Player, 地图名, 当前难度)) {
+            // 获取前置难度名称和成就值
+            if (难度索引 > 0) {
+                const 前置难度 = 难度列表[难度索引 - 1];
+                const 当前成就值 = 地图成就.获取成就值(Player, 地图名, 前置难度);
+                const 需求达标 = 地图成就.升级需求配置[前置难度];
+                Player.MessageBox(`{S=【地图成就】;C=251}进入 ${地图名} ${当前难度} 需要先完成 ${地图名} ${前置难度} 成就！ \\\\当前进度: ${当前成就值}/${需求达标}`);
+            } else {
+                Player.MessageBox(`{S=【地图成就】;C=251}进入 ${地图名} ${当前难度} 需要完成前置成就！`);
+            }
+            return;
+        }
+    }
+    
     Player.RandomMove(地图.取地图ID(下标))
-
 }
 
 

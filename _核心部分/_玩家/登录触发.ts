@@ -185,6 +185,7 @@ export function 登录初始化变量(Player: TPlayObject): void {
 	Player.R.最终爆率加成 ??= 0
 	Player.R.最终鞭尸次数 ??= 0
 
+	Player.R.神器获得几率 ??= 0
 	Player.R.未极品基础计数 ??= 0
 	Player.R.未极品技能计数 ??= 0
 
@@ -255,7 +256,7 @@ export function 登录初始化变量(Player: TPlayObject): void {
 	Player.V.血量保护间隔 ??= 10
 	Player.V.随机保护间隔 ??= 0
 
-
+	Player.R.变异几率 ??= 0
 	// ==================== 性能计数器初始化 ====================
 	Player.R.性能计数器 ??= 0
 }

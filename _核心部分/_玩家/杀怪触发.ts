@@ -3,6 +3,7 @@ import { 装备属性统计 } from '../_装备/属性统计';
 import { 增加击杀计数, 特殊BOSS死亡, 大陆BOSS死亡 } from '../_生物/生物刷新';
 import { 执行掉落 } from '../_装备/爆率系统';
 import { 取生物名字 } from '../世界配置';
+import { 杀怪触发成就 } from '../_服务/地图成就';
 
 /**
  * 杀怪触发 - 引擎杀怪事件入口
@@ -93,6 +94,32 @@ export function 击杀生物(Player: TPlayObject, 敌人: TActor, 执行次数: 
             }
         }
 
+        // 预先提取地图成就相关信息（避免循环内重复计算）
+        const 地图ID = 敌人.Map?.MapName;
+        const 怪物TAG = 敌人.GetNVar(TAG) % 10;
+        let 地图成就信息: { 地图本名: string; 难度名: string } | null = null;
+
+        // 只有TAG 5/6/7才触发成就，预先提取信息
+        if (地图ID && (怪物TAG === 5 || 怪物TAG === 6 || 怪物TAG === 7)) {
+            const map = 敌人.Map;
+            if (map) {
+                const 显示名 = map.DisplayName || '';
+                const 分隔位置 = 显示名.indexOf('«');
+                const 地图本名 = 分隔位置 >= 0 ? 显示名.slice(0, 分隔位置) : 显示名;
+                let 难度名 = 分隔位置 >= 0 ? 显示名.slice(分隔位置 + 1, 显示名.indexOf('»')) : '简单';
+                
+                // 圣耀地图的成就计入炼狱难度
+                if (难度名 === '圣耀') {
+                    难度名 = '炼狱';
+                }
+                
+                // 只处理固定难度（简单、普通、困难、精英、炼狱）
+                if (难度名 === '简单' || 难度名 === '普通' || 难度名 === '困难' || 难度名 === '精英' || 难度名 === '炼狱') {
+                    地图成就信息 = { 地图本名, 难度名 };
+                }
+            }
+        }
+
         // 执行掉落和其他计算
         for (let i = 0; i < 实际执行次数; i++) {
             执行掉落(Player, 敌人);
@@ -102,9 +129,13 @@ export function 击杀生物(Player: TPlayObject, 敌人: TActor, 执行次数: 
             Player.V.杀怪数量 = (Player.V.杀怪数量 || 0) + 1;
 
             // 增加击杀计数（享受鞭尸加成）
-            const 地图ID = 敌人.Map?.MapName;
             if (地图ID) {
                 增加击杀计数(地图ID);
+            }
+
+            // 地图成就触发（享受鞭尸加成）
+            if (地图成就信息) {
+                杀怪触发成就(Player, 地图成就信息.地图本名, 地图成就信息.难度名 as any, 怪物TAG);
             }
 
             // 鞭尸额外 GoDie（第一次已在外部调用，这里只处理额外次数）
@@ -114,8 +145,6 @@ export function 击杀生物(Player: TPlayObject, 敌人: TActor, 执行次数: 
         }
 
         // 特殊BOSS/大陆BOSS死亡触发（只触发一次，不受鞭尸影响）
-        const 地图ID = 敌人.Map?.MapName;
-        const 怪物TAG = 敌人.GetNVar(TAG) % 10;
         if (地图ID) {
             if (怪物TAG === 7) {
                 特殊BOSS死亡(地图ID);
