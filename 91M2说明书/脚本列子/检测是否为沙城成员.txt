@@ -1,0 +1,6 @@
+检测是否为沙城成员
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+  if (Player.ISCastleGuild) {
+    Npc.MessageBox(Player, '你是沙城的成员');
+  }
+}

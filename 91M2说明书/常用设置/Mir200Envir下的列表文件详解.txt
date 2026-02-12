@@ -1,0 +1,14 @@
+Mir200\Envir下的列表文件详解
+DenyAccountList.txt	禁止账号登陆列表
+DenyChrNameList.txt	禁止人物登陆列表
+DenyIPAddrList.txt	禁止IP地址登陆列表
+DenyMachineCodeList.txt	禁止机器码登陆列表
+DisableMoveMap.txt	禁止移动的地图列表
+DisableSendMsgList.txt	禁言列表
+MonDropLimit.txt	怪物爆物品限制列表
+ItemNameList.txt	自定义名称物品列表
+ItemBindIPaddr.txt	物品绑定IP列表
+ItemBindAccount.txt	物品绑定账号列表
+ItemBindCharName.txt	物品绑定人物列表
+UnMasterList.txt	出师记录表
+UnForceMasterList.txt	强行出师记录表

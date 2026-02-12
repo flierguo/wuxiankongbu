@@ -1,0 +1,41 @@
+如何获得地图上指定范围内的怪物数量
+// 获得地图上指定范围内的怪物数量
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let ACount: number;
+    //取得玩家当前坐标3格范围内的全部白野猪数量
+    ACount = Player.Map.GetMonCountInRange(Player.MapX, Player.MapY, 3, '白野猪');  
+    //取得玩家当前坐标3格范围内的全部怪物数量
+    ACount = Player.Map.GetMonCountInRange(Player.MapX, Player.MapY, 3); 
+} 
+
+// 获得地图上全部玩家的信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AMap: TEnvirnoment
+    AMap = GameLib.FindMap('0'); //查找一个地图对象
+    if (AMap) { //如果找到了地图对象
+        for (let I = 0; I <= GameLib.PlayCount - 1; I++) { //循环全部在线玩家
+            if ((GameLib.GetPlayer(I) != Player) && (GameLib.GetPlayer(I).Map = AMap)) { //如果第I个玩家不是当前传入的玩家参数并且其所处地图就是要匹配的地图            
+                GameLib.GetPlayer(I).SendMessage('你妈喊你回家吃饭！！！');
+                //此处即可针对该玩家做任何处理
+            }
+        }
+    }
+}
+
+// 获取坐标上指定范围内的全部怪物
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AActorList: TActorList;
+    let AActor: TActor;
+    //取出指定范围里的对象列表
+    AActorList = Player.Map.GetActorListAt(Player.MapX + 1, Player.MapY, '白野猪'/*如果不指定名称则取出的是全部对象*/); //取出一个坐标上的全部白野猪列表
+    for (let i = 0; i <= AActorList.Count - 1; i++) {
+        AActor = AActorList.Actor(i);
+        //针对AActor做些处理
+    }
+    //取出以某坐标为中心范围内的怪物列表
+    AActorList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 3/*3格范围*/, '白野猪'/*如果不指定名称则取出的是全部对象*/);
+    for (let i = 0; i <= AActorList.Count - 1; i++) {
+        AActor = AActorList.Actor(i);
+        //针对AActor做些处理
+    }
+}

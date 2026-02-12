@@ -1,0 +1,19 @@
+如何查看装备是否可被穿戴或取下
+//脱装备触发,Accept是否允许脱下,默认为True
+export function OnTakeOffItem(Npc: TNormNpc, Player: TPlayObject, UserItem: TUserItem, Ite    mWhere: TItemWhere, Accept: Boolean) {
+    if (UserItem.StdMode == 5 || UserItem.StdMode == 6) {//如果当前取消的是武器
+        if (Player.CheckCanTakeOffItem(TItemWhere.wHelmet)) {//如果头盔可被取消
+            Player.TakeOffItem(TItemWhere.wHelmet); //将头盔取下
+        }
+    }
+}
+//穿装备触发,Accept是否允许穿戴,默认为True
+export function OnTakeOnItem(Npc: TNormNpc, Player: TPlayObject, UserItem: TUserItem, ItemWhere: TItemWhere, Accept: Boolean) {
+    if (UserItem.StdMode == 23) {//如果类型是23
+        if (ItemWhere != TItemWhere.wRingR) { //如果当前穿戴位置不是右手戒指位置
+            if (Player.CheckCanTakeOnItem(UserItem, TItemWhere.wRingR)) { //如果右手戒指位置可以把当前装备穿戴到上面
+                Player.TakeOnItem(UserItem, TItemWhere.wRingR); //将当前装备穿戴到右手戒指位置   
+            }
+        }
+    }
+}

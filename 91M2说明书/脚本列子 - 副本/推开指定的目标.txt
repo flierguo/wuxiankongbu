@@ -1,0 +1,8 @@
+推开指定的目标
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //Push函数返回实际被推开的距离.在障碍物的影响下,实际推出距离可能小于指定的距离
+    //Player.Push(random(8){ 随机8个方向中的一个 }, Random(5) + 1{ 推出1- 5格距离}) > 0
+    if (Player.Push(random(8), random(5) + 1) > 0) {
+        Player.MessageBox('你被推开了！');
+    }
+}

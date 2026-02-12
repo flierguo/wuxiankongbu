@@ -1,0 +1,86 @@
+如何实现充值平台对接
+游戏中充值平台是一个很重要的环节，基于访问文件及数据库的功能，通过变通处理能支持任何的充值平台，对于充值平台本身就是写文件或数据库的模式则更是易如反掌。
+
+在示范版本中我们只做了基于写文件的充值模式，下面则是玩家充值后领取元宝的核心代码：
+
+import * as DefiniensConst from "./DefiniensConst"
+/*
+    充值模块说明：
+  本模块适用于在"Mir200\Envir\QuestDiary\充值积分"文件夹里对应的文本中写入充值账号信息的充值方式
+*/
+export function CheckAccount(TxtFile, Account: string, Rate: number): number {
+    let LS: TStringList;
+    let Idx: number;
+    let ASum: number;
+    let Result = 0;
+    //检查是否存在文件
+    if (GameLib.FileExists(TxtFile)) {
+        LS = GameLib.CreateStringList()
+        ASum = 0; //初始取到的行数为0
+        try {
+            //将文件加载到TStrings对象
+            LS.LoadFromFile(TxtFile);
+            while (true) {
+                Idx = LS.IndexOf(Account);
+                //取出一条账号记录
+                if (Idx != -1) {
+                    //如果取到了记录，则删除这条记录，并增加取到的行数
+                    LS.Delete(Idx);
+                    ASum++
+                }
+                else {
+                    //没取到则直接跳出循环
+                    break;
+                }
+            }
+            if (ASum > 0) {
+                //如果取到的行数大于0，则说明对列表有做过更新，需要保存
+                LS.SaveToFile(TxtFile);
+            }
+            //返回元宝数量(取到的行数x比例)   
+            Result = ASum * Rate;
+        }
+        finally {
+            LS.Free();
+        }
+    }
+    return Result
+}
+//领取充值元宝
+export function DoObtainGold(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {//领取元宝入口函数
+    let AGoldSum: number;
+    if (DefiniensConst.G_GoldLocked) {
+        //如果G_GoldLocked为True，则表示正在为其他玩家发放元宝，为了不引起并发读写问题，当前此次请求无效
+        //此类处理方法可有效避免并发文本读写造成的数据错乱
+        Player.SendCenterMessage('我正在为其他玩家发放元宝，请稍后！！！', 0);
+        return;
+    }
+    //将G_GoldLocked置为True
+    DefiniensConst.setG_GoldLocked(true);
+    try {
+        //初始化当前领取到的元宝总数为0，然后从每个文件中去读取元宝数量
+        //示范版本中以常见的充值方式处理元宝处理，如果是读取数据库充值记录，则可以采用Gamelib.DBEngine对象来处理    
+        AGoldSum = 0;
+        AGoldSum = AGoldSum + CheckAccount('Envir\\QuestDiary\\充值积分\\yb01.txt', Player.Account, 0.1);
+        AGoldSum = AGoldSum + CheckAccount('Envir\\QuestDiary\\充值积分\\yb02.txt', Player.Account, 0.2);
+        AGoldSum = AGoldSum + CheckAccount('Envir\\QuestDiary\\充值积分\\yb1.txt', Player.Account, 1);
+        AGoldSum = AGoldSum + CheckAccount('Envir\\QuestDiary\\充值积分\\yb2.txt', Player.Account, 2);
+        AGoldSum = AGoldSum + CheckAccount('Envir\\QuestDiary\\充值积分\\yb6.txt', Player.Account, 6);
+        //作为演示,这里省略更多的元宝比例文件
+        if (AGoldSum > 0) { //如果玩家领取到的元宝数量大于0   
+            AGoldSum = AGoldSum * 100;
+            Player.GameGold = Player.GameGold + Math.round(AGoldSum);
+            Player.GoldChanged;
+            Player.SendCenterMessage('元宝领取成功，一共领取元宝' + Math.round(AGoldSum).toString() + '个！！！', 0);
+        }
+        else {
+            Player.SendCenterMessage('元宝领取失败，暂时没有你的充值信息！！！', 0);
+        }
+    }
+    finally {//领取结束,将G_GoldLocked置为False,此时其他玩家可执行元宝领取了
+        DefiniensConst.setG_GoldLocked(false);
+    }
+}
+// 上面代码中，CheckAccount函数就是检查文本文件中是否存在某账号记录，如果存在则全部取出来，算出对应的元宝数量并返回。
+
+// DoObtainGold函数则是一个普通的入口函数，即玩家点击客户端界面可触发的函数，这个函数先是提取出玩家有多少元宝，然后将元宝发放给玩家

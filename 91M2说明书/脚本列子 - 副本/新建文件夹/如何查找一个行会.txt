@@ -1,0 +1,6 @@
+如何查找一个行会
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let guild = GameLib.FindGuild('天下第一会'); //查找一个行会
+    if (guild != null)  //如果行会对象存在
+        Npc.MessageBox(Player, guild.VarString('帮会别名').AsString); //弹出对话框，提示行会的变量内容
+}

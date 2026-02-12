@@ -1,0 +1,34 @@
+如何增加和移除一个个人时钟事件
+// 声明时钟的代码：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //增加一个无限循环的时钟,需要使用ClearDelayGoto来停止时钟
+    Player.DelayGoto(100/*时钟ID*/, 60/*执行时钟的间隔时间*/, true/*切换地图时时钟失效且被删除*/, false/*不是一个只执行一次的时钟*/);
+    Player.ClearDelayGoto(100);
+    //增加一个值使用一次的时钟,不需要手工清除
+    Player.DelayGoto(101/*时钟ID*/, 60/*执行时钟的间隔时间*/, false/*切换地图时时钟不失效*/, true/*只执行一次*/);
+    //个人时钟执行时候调用TimeManageNpc单元的PrivyEventExecute函数，个人时钟移除时调用TimeManageNpc的PrivyEventRemove函数
+} 
+//时钟NPC执行代码：
+//个人的时钟事件
+export function PrivyEventExecute(Npc: TNormNpc, Player: TPlayObject, TimeID: number) {
+    if (TimeID == 100) {
+        Player.MessageBox('100:时钟被执行');
+    } else if (TimeID == 101) {
+        Player.MessageBox('101:时钟被执行');
+    }
+}
+export function PrivyEventRemove(Npc: TNormNpc, Player: TPlayObject, TimeID: number) {
+    if (TimeID == 100) {
+        Player.MessageBox('100:时钟结束');
+    } else if (TimeID == 101) {
+        Player.MessageBox('101:时钟结束');
+    }
+}
+//全局的时钟事件
+export function GlobalEventExecute(Npc: TNormNpc, TimeID: number) {
+    //这个是全局时钟执行的地方
+}
+export function GlobalEventRemove(Npc: TNormNpc, TimeID: number) {
+    //这个是全局时钟结束
+}
+注：时钟需要配合TimeManageNpc使用

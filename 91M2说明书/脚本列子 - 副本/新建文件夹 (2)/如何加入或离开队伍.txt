@@ -1,0 +1,15 @@
+如何加入或离开队伍
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+        let P: TPlayObject;
+    //加入队伍
+    P = GameLib.FindPlayer('张三');
+    if (P) {
+        //JoinGroup时,如果双方都没有队伍,则调用JoinGroup函数的角色为队长
+        //如果对方为队长,则调用JoinGroup函数的角色加入对方的队伍
+        //JoinGroup第二个参数为是否显示对话框,如果为false,则直接加入队伍,如果为true,则
+        //对方会收到组队邀请或申请
+        Player.JoinGroup(P, false/*是否显示对话框*/);
+    }
+    //离开队伍  
+    Player.LeaveGroup; //如果Player是队长则队伍解散
+} 

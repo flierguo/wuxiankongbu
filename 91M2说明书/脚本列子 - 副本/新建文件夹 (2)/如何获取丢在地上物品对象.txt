@@ -1,0 +1,11 @@
+如何获取丢在地上物品对象
+// 用于获取 GameLib.ThrowItem 和 GameLib.ThrowItemEx 丢出在地上的物品对象。
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let ItemList: TList;
+    let Item: TUserItem;
+    GameLib.ThrowItem('3', '乌木剑', 300, 300, 3, 1, Player); //在地图300x300的3格坐标范围内爆出一把乌木剑,当前的Player可拾取 
+    ItemList = GameLib.GetLastThrowItemList()
+    for (let i = 0; i < ItemList.Count; i++) {
+        Item = ItemList.GetItem(I)        //对Item 进行操作。
+    }
+}

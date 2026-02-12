@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module":"CommonJS",
+    // "outDir": "D:/版本文件/Script",
+    // "outDir": "../../MirServer/Mir200/Script",
+    "outDir":"H:/10职业/10TS",
+    "experimentalDecorators": false,
+    "sourceMap": true,
+    "declaration": false,
+    "lib": [
+      "ES2018", 
+      "dom",
+      "ES2016.Array.Include"
+    ],
+    "types": [],
+    "noImplicitReturns":true,
+    "noFallthroughCasesInSwitch":true,
+    "allowJs":true,
+    // "esModuleInterop": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    "JONE.d.ts"
+  ]
+}   

@@ -1,0 +1,9 @@
+如何打开指定的URL
+// 如何打开指定的URL
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.OpenURL('http://www.baidu.com', 800, 600); //打开百度首页,窗口大小为800X600
+}
+// 如何请求一个URL
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+Player.RequestURL('http://www.mywebsite.com?name=xxxx'); //执行一个POST操作,将数据提交到指定的地址,不会弹出浏览器窗口,仅做数据提交用途
+}

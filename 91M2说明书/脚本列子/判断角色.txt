@@ -1,0 +1,17 @@
+判断角色
+// 判断角色是否为队长
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.ISGroupMaster) { //如果没有加入任何队伍则返回False
+        Npc.MessageBox(Player, '你是队长');
+    }
+}
+// 判断角色是否为沙巴克城主
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.ISCastleMaster)
+        Npc.MessageBox(Player, '你是沙城之主');
+}
+// 判断角色是否为行会掌门人
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.IsGuildMaster)
+        Npc.MessageBox(Player, '你是行会掌门人');
+}

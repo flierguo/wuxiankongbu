@@ -1,0 +1,28 @@
+如何脚本增加和删除一个怪物NPC
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AMonNpc: TActor;
+    //添加一个怪物NPC
+    AMonNpc = GameLib.AddMonNpc('多钩猫', '贾老虎', '3', 300, 300, 'Q2', 0, 0, true, true, false, false);
+    if (AMonNpc != null) {
+        AMonNpc.NameColor = 249;
+    }
+    //AddMonNpc(const MonName, NpcName, MapName: String; MapX, MapY: Integer; const AUnitName: String; Camp, Nation: Byte; AttackDiffCamp, AttackDiffNation, AttackRed, AttackMon: Boolean): TActor;
+    //MonName: 怪物名称
+    //NpcName: NPC名称
+    //MapName: 目标地图名称
+    //MapX, MapY: 刷新位置
+    //AUnitName: 和怪物NPC关联的脚本单元名
+    //Camp: 阵营
+    //Nation: 国别
+    //AttackDiffCamp: 是否攻击不同阵营对象
+    //AttackDiffNation: 是否攻击不同国别对象
+    //AttackRed: 是否攻击红名
+    //AttackMon: 是否攻击怪物
+
+    //删除一个怪物NPC
+    GameLib.RemoveMonNpc('贾老虎', '3', 300, 300);
+    //RemoveMonNpc(const NpcName, MapName: String; MapX, MapY: Integer): Boolean;
+    //NpcName: NPC名称
+    //MapName: 目标地图名称
+    //MapX, MapY: 刷新位置
+} 

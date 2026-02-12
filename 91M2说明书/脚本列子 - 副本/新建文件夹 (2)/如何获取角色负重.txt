@@ -1,0 +1,6 @@
+如何获取角色负重
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Npc.Say(Player, format('当前背包负重：%d/%d', [Player.Weight, Player.MaxWeight]));
+    Npc.Say(Player, format('当前穿戴负重：%d/%d', [Player.WearWeight, Player.MaxWearWeight]));
+    Npc.Say(Player, format('当前手持负重：%d/%d', [Player.HandWeight, Player.MaxHandWeight]));
+}

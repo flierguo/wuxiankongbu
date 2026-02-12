@@ -1,0 +1,10 @@
+如何修改人物技能属性
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let Magic: TUserMagic; //定义一个技能对象
+    Magic = Player.FindSkill('基础剑术'); //查找角色的技能“基础剑术”
+    if (Magic) { //如果找到了该技能
+        Magic.TranPoint = Magic.TranPoint + 10; //将该技能的修炼点 + 10
+        Magic.Level = 1; //将该技能的等级设置为1级
+        Player.UpdateMagic(Magic); //发送到客户端更新该技能的信息
+    }
+} 

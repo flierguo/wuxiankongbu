@@ -1,0 +1,13 @@
+如何创建一个行会
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AGuild: TGuild;
+    if (GameLib.FindGuild('斧头帮') == null) { //首先查看是否存在这个名称的行会
+        AGuild = GameLib.CreateGuild('斧头帮', Player.Name); //创建行会 
+        AGuild.MemberMaxLimit = 20; //设置成员上限为20
+        AGuild.VarDateTime('创建日期').AsDateTime = DateUtils.Now(); //写一个行会变量
+        AGuild.VarDateTime('创建日期').Save(); //将行会变量保存到文件
+    } else {
+        //如果相同名称的行会存在
+        Npc.MessageBox(Player, '帮会已存在');
+    }
+} 

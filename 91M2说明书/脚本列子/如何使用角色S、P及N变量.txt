@@ -1,0 +1,30 @@
+如何使用角色S、P及N变量
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.SetSVar(1, '3')  //临时的字符串变量,序号从1-300、
+    Player.SetPVar(1, 100)  //临时的整型变量,序号从1-300
+    Player.SetPVar(2, 100)
+    Player.SetNVar(1, 1234) //整型变量,序号从1-300,会保存到角色数据库中（怪物N变量范围0-99）
+    }
+
+    //与Player.VarString这类变量的区别在于: S、P、N变量更高效,访问时只能通过序号来访问,对于N变量
+    //的存储是存与角色数据表中;而Player.VarString这类的变量可任意选择是否存储,存储的位置为Envir下
+    //的任意目录。效率上Player.VarString略低是理论值,实际的运行效率基本可以忽略不计,只有百万次上
+    //上的访问才有毫秒级的差别
+
+    // 2021年12月20日更新，新增加了角色变量、行会变量、服务器变量
+    // Player.R 和 Player.V
+    // Guild.R 和 Guild.V
+    // GameLib.R 和 GameLib.V
+    // 更新日志：
+    // 增加 Player.V 和 Player.R 其类型为 {} , 可以更加方便的自定义变量。（注意需要更新替换掉自己版本内的 JONE.d.ts）
+    // 例如 赋值代码为:
+    // Player.V[“血脉等级”] = 5
+    // 或者
+    // Player.V.魂玉系统 = {}
+    // Player.V.魂玉系统.等级 = 10
+    // Player.V.魂玉品质.品质 = “史诗级”
+    // 取值代码为
+    // Player.SendMessage(Player.V[“血脉等级”])
+    // Player.SendMessage(Player.V.魂玉系统.等级)
+    // 其中 V 和 R的类型为 V会保存到数据库 玩家上下线值会以json格式保存在player表中的customSaveStr字段中。
+    // Player.R 玩家下线就会清空。

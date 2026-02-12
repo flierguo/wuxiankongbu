@@ -1,0 +1,18 @@
+如何修改怪物名称
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AList: TActorList;
+    let AActor: TActor;
+    AList = Player.Map.GetActorListInRange(Player.MapX, Player.MapY, 3); //将人物坐标3格范围内的全部对象取出来
+    try {
+        for (let I = 0; I <= AList.Count - 1; I++) {
+            AActor = AList[I];
+            if ((AActor) && !AActor.Death && !AActor.IsNPC() && !AActor.IsMonNPC() && !AActor.IsPlayer()) {
+                //如果对象存在           且没有死亡      且不是NPC           且不是怪物NPC            且不是玩家
+                AActor.Name = '我们都是地球怪'; //将怪物改名
+            }
+        }
+    }
+    finally {
+        AList.Free();  //释放列表
+    }
+} 

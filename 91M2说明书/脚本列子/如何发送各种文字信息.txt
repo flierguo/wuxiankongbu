@@ -1,0 +1,23 @@
+如何发送各种文字信息
+// 1.角色对象发送消息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //角色对象发送消息
+    Player.SendMessage('这里是消息内容', 0); //0：红色消息  1: 绿色消息 2：蓝色消息 3: 直接模拟玩家聊天信息，比如：“/张三 你好！”，可以让张三收到一条当前玩家的私聊消息
+    Player.SendGuildMessage('这里是消息内容'); //发送行会消息
+    Player.SendTopMessage('这里是消息内容', 0); //发送顶部滚动消息 0:自己可见 1：所有人可见 2：行会可见 3：当前地图所有玩家可见
+    Player.SendCenterMessage('这里是消息内容', 0); //发送屏幕中央消息 0:自己可见 1：所有人可见 2：行会可见 3：当前地图所有玩家可见
+    Player.SendCountDownMessage('这里是消息内容', 0);//发送底部消息 0:自己可见 1：所有人可见 2：行会可见 3：当前地图所有玩家可见
+} 
+
+// 2.Gamelib发送全局消息
+export function Main2(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //Gamelib发送全局消息
+    GameLib.Broadcast('这里是消息内容'); //广播一个系统消息
+    GameLib.BroadcastSay('这里是消息内容', 249, 255); //广播一个系统消息，第二个参数为文字颜色，第三个参数为背景色
+    GameLib.BroadcastTopMessage('这里是消息内容'); //广播一个顶部滚动消息
+    GameLib.BroadcastCenterMessage('这里是消息内容'); //广播一条居中消息
+    GameLib.BroadcastCountDownMessage('这里是消息内容'); //广播一条底部消息
+}
+
+// 注：SendCountDownMessage和Gamelib.BroadcastCountDownMessage可以发送底部倒计时消息，格式为<$Time:倒计时秒数$>
+//所有消息内容都支持文字属性处理< /A>，比如{S=文字消息;C=249}

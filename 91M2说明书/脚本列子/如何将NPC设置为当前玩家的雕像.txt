@@ -1,0 +1,5 @@
+如何将NPC设置为当前玩家的雕像
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Npc.SetEffigyState(Player.Job/*职业*/, Player.Properties/*属性*/, Player.Feature/*外观*/, Player.FeatureEx/*外观*/, 40/*素材序号*/);
+    //SetEffigyState将设置NPC的外观为雕像状态，但是不会保存NPC的状态，如果需要类似天下第一那种需要保持状态的则需要将相关的参数保存到变量中(参考示范版本天下第一写法)
+} 

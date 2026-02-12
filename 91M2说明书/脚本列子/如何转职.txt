@@ -1,0 +1,12 @@
+如何转职
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let NewJob: number;
+    NewJob = Args.Int[0]; //调用此函数时传入了新职业参数,如转职到法师:@SetJob(1)
+    if ((NewJob >= 0) && (NewJob <= 4)) { //如果职业编码介于战士和弓箭手之间则是被允许的
+        if (Player.Job != NewJob) { //新的职业编码和当前职业不同
+            Player.Job = NewJob;  //设置新的职业编码
+            Player.ClearSkill();  //清除已学习的技能
+            Player.MessageBox('恭喜你，职业转换成功！！！'); //发送消息到客户表示职业转换完成
+        }
+    }
+}

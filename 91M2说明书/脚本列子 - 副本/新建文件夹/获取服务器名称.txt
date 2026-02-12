@@ -1,0 +1,4 @@
+获取服务器名称
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+  Npc.MessageBox(Player, '服务器名称是：'+GameLib.ServerName);
+}

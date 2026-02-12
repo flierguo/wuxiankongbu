@@ -1,0 +1,44 @@
+TGuild 行会对象类
+GetName(): string;Name:string;                          / 行会名称
+GetGuildID(): number;GuildID:number;                    / 行会ID
+GetChiefName(): string;ChiefName:string;                / 行会创建人名称
+GetContestPoint(): number;ContestPoint:number;          / 获取行会争霸赛积分
+SetContestPoint(Value: number): void;                   / 设置行会争霸赛积分
+GetTeamFight(): boolean;TeamFight:boolean;              / 判断是否在进行行会争霸赛
+GetMemberMaxLimit(): number;MemberMaxLimit:number;      / 获取行会最大成员数量
+SetMemberMaxLimit(Value: number): void;                 / 设置行会最大成员数量
+GetMemberCount(): number;MemberCount:number;            / 行会名称
+GetCount(): number;Count:number;                        / 获取当前行会成员数量
+IsFull(): boolean;                                      / 判断是否行会人员已满
+GetBuildPoint(): number;BuildPoint:number;              / 获取行会建造值
+SetBuildPoint(Value: number): void;                     / 设置行会建造值
+GetAurae(): number;Aurae:number;                        / 获取行会人气度
+SetAurae(Value: number): void;                          / 设置行会人气度
+GetStability(): number;Stability:number;                / 获取行会安定度
+SetStability(Value: number): void;                      / 设置行会人气度
+GetFlourishing(): number;Flourishing:number;            / 获取行会繁荣度
+SetFlourishing(Value: number): void;                    / 设置行会人气度
+GetFountainOpen(): boolean;FountainOpen:boolean;        / 判断行会喷泉是否开放
+SetFountainOpen(Value: boolean): void;                  / 设置行会喷泉是否开放
+
+AddMember(APlayName: string): boolean;                  / 将玩家加入到行会，返回是否加入成功
+DeleteMember(APlayName: string): boolean;               / 将玩家移除行会，返回是否移除成功
+VarString(AVarName: string): TVarValue;                 / 定义或加载一个行会字符串变量
+VarInteger(AVarName: string): TVarValue;                / 定义或加载一个行会整数形变量
+VarDateTime(AVarName: string): TVarValue;               / 定义或加载一个行会日期变量
+VarFloat(AVarName: string): TVarValue;                  / 定义或加载一个行会浮点数变量
+VarBoolean(AVarName: string): TVarValue;                / 定义或加载一个行会布尔变量
+
+UpdateRankName(AOldName: string,ANewName: string): boolean;      // 修改行会名称
+AddRankName(ARankNo: number,ARankName: string): boolean;         // 添加行会职位
+DropRankName(ARankName: string): boolean;                        // 删除行会职位
+AddMemberWithRank(ARankName: string,APlayName: string): boolean; // 添加成员并且给与行会职位（参数1：职位 参数2：玩家名称）
+ChangeChief(APlayName: string): boolean;                         // 修改行会掌门人
+AddAlly0(AGuildName: string): boolean;                           // 添加联盟行会（行会名称）
+AddAlly1(AAllyGuild: TGuild): boolean;                           // 添加联盟行会（行会对象）
+DeleteAlly0(AGuildName: string): boolean;                        // 取消联盟行会（行会名称）
+DeleteAlly1(AAllyGuild: TGuild): boolean;                        // 取消联盟行会（行会名称）
+
+// 注意：AList 需要先创建 GameLib.CreateStringList()
+GetRankNames(AList: TStringList): void;                          // 获取行会所有的职位名称到AList列表
+GetRankMembers(ARankName: string,AList: TStringList): void;      // 获取指定对应职位的所有玩家名称到 AList列表

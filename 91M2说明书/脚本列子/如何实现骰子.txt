@@ -1,0 +1,22 @@
+如何实现骰子
+1.在QFunctionNpc增加骰子事件函数定义：
+export function OnDiceEvent(Npc: TNormNpc, Player: TPlayObject, ATag: number, APoint1: number, APoint2: number, APoint3: number)
+
+2.发送骰子消息：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //100{ 骰子标志 }, 4{ 骰子点数1 }, 1{ 骰子点数2 }, 6{ 骰子点数3 }
+    Player.PlayDice(100, 4, 1, 6);
+    //骰子标志: 任意设置,用来区分骰子类型而已
+    //骰子点数1: 当前点数1,取值范围1-6。这个点数实际上是服务器设置好的,客户端只是播放下而已
+    //骰子点数2: 当前点数2,取值范围0-6
+    //骰子点数3: 当前点数3,取值范围0-6
+    //当点数3和点数2也在1-6时表示投掷3个点数,当点数2为1-6时而点数3不在1-6时表示投掷两个点数
+    //如果点数2和3都不在1-6时表示只投一个点数
+}
+
+3.当客户端骰子播放完成后触发骰子事件，在QFunctionNpc的OnDiceEvent中进行处理:
+
+export function OnDiceEvent(Npc: TNormNpc, Player: TPlayObject, ATag: number, APoint1: number, APoint2: number, APoint3: number) {
+Player.MessageBox(format('骰子标志%d, 点数1:%d, 点数2:%d, 点数3:%d', [ATag, APoint1, APoint2, APoint3]));
+
+注：骰子的点数为服务端设置后发送给客户端的，客户端只执行播放动作，所以可以通过一些控制来设置骰子的实际点数

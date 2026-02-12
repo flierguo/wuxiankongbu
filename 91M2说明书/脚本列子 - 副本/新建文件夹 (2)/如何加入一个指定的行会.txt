@@ -1,0 +1,16 @@
+如何加入一个指定的行会
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let guild: TGuild;
+    guild = GameLib.FindGuild('天下第一会'); //查找行会
+    if (guild != null) {
+        if (!guild.IsFull()) {//如果没有满员
+            if (guild.AddMember(Player.Name)) { //如果加入当前角色名称成功
+                Player.SendGuildMessage(format('欢迎{S=%s;C=250}加入到行会！！！', [Player.Name])); //发送行会消息
+                Npc.MessageBox(Player, '加入行会成功');
+            }
+        } else
+            Npc.MessageBox(Player, '已经满员！！！');
+    } else {
+        Npc.MessageBox(Player, '没有该行会信息！！！');
+    }
+}

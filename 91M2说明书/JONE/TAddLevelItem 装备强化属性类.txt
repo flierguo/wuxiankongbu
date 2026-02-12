@@ -1,0 +1,55 @@
+TAddLevelItem 装备强化属性类
+// 装备附加属性类 - TAddPointItem (一共支持21条 0-20)
+GetValue(): number;Value:number;                   / 获取物品附加属性的值
+SetValue(Value: number): void;                     / 设置物品附加属性的值
+GetValueType(): number;ValueType:number;           / 获取物品附加属性的类型
+SetValueType(Value: number): void;                 / 设置物品附加属性的类型
+
+// 装备强化属性类 - TAddLevelItem (一共支持21条 0-20)
+GetValue(): number;Value:number;                   / 获取物品强化属性的值
+SetValue(Value: number): void;                     / 设置物品强化属性的值
+GetValueType(): number;ValueType:number;           / 获取物品强化属性的类型
+SetValueType(Value: number): void;                 / 设置物品强化属性的类型
+GetState(): number;State:number;                   / 获取物品强化属性状态
+SetState(Value: number): void;                     / 设置物品强化属性装状态（0 不显示 1 未激活 2 已激活）
+
+// 物品装备的附加属性和强化属性支持的类型如下：
+1:伤害吸收百分比
+2:伤害反弹百分比
+3:伤害加成百分比
+4:致命一击百分比
+5:会心一击百分比
+6:HP(生命)恢复百分比
+7:MP(法力)恢复百分比
+8:经验加成百分比
+9:宝物掉落几率增加百分比
+10:金币获得增加百分比
+11:准确
+12:敏捷
+13:生命上限增加
+14:魔力上限增加
+15:固定伤害
+16:生命上限百分比增加
+17:魔力上限百分比增加
+18:致命一击额外伤害增加
+19:会心一击额外伤害增加
+20:会心一击抵抗几率
+21:致命一击抵抗几率
+22:固定伤害减免
+
+// 示例：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+  let Item: TUserItem; //定义一个物品变量
+  Item = Player.Wepon; //将物品设置为角色装备的武器
+  if (Item != null) {  //如果物品存在（角色没穿戴武器则不存在物品）
+    Item.GetAddPoint(0).SetValueType(3);  //设置第一个附加属性的属性类型为3（伤害加成）
+    Item.GetAddPoint(0).SetValue(20);     //设置第一个附加属性的值为20，即伤害加成20%
+    Item.GetAddLevel(0).SetValueType(4);  //设置第一个强化属性的属性类型为4（致命一击）
+    Item.GetAddLevel(0).SetValue(10);     //设置第一个强化属性的值为10，即致命一击10%
+    Debug('您的武器第一个附加属性类型是：'+String(Item.GetAddPoint(0).GetValueType());
+    Debug('您的武器第一个附加属性的值是：'+String(Item.GetAddPoint(0).GetValue());
+    Debug('您的武器第一个强化属性类型是：'+String(Item.GetAddLevel(0).GetValueType());
+    Debug('您的武器第一个强化属性的值是：'+String(Item.GetAddLevel(0).GetValue());
+  }
+    Player.UpdateItem(Item); //发送到客户端更新该物品
+}

@@ -1,0 +1,15 @@
+如何监控玩家扔物品
+//人物扔物品触发(针对监视物品):Player：玩家,Item: 物品,Accept:是否允许扔出
+export function PlayerThrowItem(Npc: TNormNpc, Player: TPlayObject, Item: TUserItem, MapX: number, MapY: number, Accept: boolean): boolean {
+    if (Item.Name = '乌木剑') { //如果正准备扔出的物品的数据库名称是"xxxx"            
+        Player.DeleteItem(Item); //直接删除该物品
+        Accept = false; //Accept返回False,因为物品已不存在,不需要扔到地面上
+    } else if ((Item.DisplayName = '最牛逼的铁剑') && (Player.CheckCanTakeOnItem(Item, TItemWhere.wWeapon))) { //如果物品的显示名称为"最牛逼的铁剑"并且当前玩家可以将其穿戴到武器位置
+        Player.TakeOnItem(Item, TItemWhere.wWeapon); //穿戴到武器位置
+        Accept = false; //因为穿戴了,所以不需要扔出来,返回为False
+    } else if (Player.InSafeZone) { //如果玩家处于安全区
+        Player.DeleteItem(Item); //直接删除该物品
+        Accept = false; //Accept返回False,因为物品已不存在,不需要扔到地面上
+    }
+    return Accept
+}

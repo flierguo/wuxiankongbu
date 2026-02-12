@@ -1,0 +1,30 @@
+如何使用JSON
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let json_obj = '{"name":"91M2","version":"2014.6.8","code":100,"date":"2014-06-08","names":["白野猪","黑野猪"],"objs":[{"name":"白野猪","hp":2000},{"name":"黑野猪","hp":500}]}';
+    let I: number;
+    let A = []
+    let O = {}
+    //从json字符串中解析json对象
+    let V = JSON.parse(json_obj)
+    if (V != null) {
+        if (typeof V == "object") {
+            O = V;
+            Npc.MessageBox(Player, O['name'].Value);  //读取name的值
+            A = O['objs'];
+        }
+    }
+    // 小提示：判断一个json里的对象是不是数组可以用：Array.isArray(O['Array'])
+    //直接创建JSON对象,然后写入值
+    O = {};
+    O['name'] = '91M2';  //加入字符串节点 
+    O['IsShared'] = true; //true  
+    O['Deleted'] = false; //false
+    O['Int'] = 100; //整型
+    O['Float'] = 1.25; //浮点
+    A = [];  //创建一个数组对象
+    A.push("XXX")
+    A.push('AAA');
+    O['Array'] = A; //将数组加到json对象中,加入之后json对象会负责释放这个数组对象,所以不能手工释放被加入到其他json对象的json对象
+    Npc.MessageBox(Player, O.toString());
+}
+注意：JSON对象将会作为自定义消息传输的格式

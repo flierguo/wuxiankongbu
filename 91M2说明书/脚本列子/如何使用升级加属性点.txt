@@ -1,0 +1,17 @@
+如何使用升级加属性点
+// 首先角色升级触发的是函数是QFunctionNPC中的函数PlayerLevelUp，定义如下:
+export function Main(Npc: TNormNpc, Player: TPlayObject, Level: number)
+// 示例：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Level: number): void {
+    if (Level >= 0 && Level <= 10) {
+        Player.BonusPoint = Player.BonusPoint + 5; //10级前每升1级+5点
+    } else if (Level >= 11 && Level <= 20) {
+        Player.BonusPoint = Player.BonusPoint + 7; //11-20级级前每升1级+7点
+    } else if (Level >= 21 && Level <= 40) {
+        Player.BonusPoint = Player.BonusPoint + 10; //21-40级前每升1级+10点
+    } else {
+        Player.BonusPoint = Player.BonusPoint + 12; //高于40级每升一级+12点
+    }
+    //注意: 当角色升级1级1级递增的时候,上面的处理是正确的;实际上可能还存在代码调整等级
+    //的情况,这个时候则需要在代码调整等级的地方计算
+}

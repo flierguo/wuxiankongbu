@@ -1,0 +1,15 @@
+如何增加或减少角色经验值
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //直接处理人物的经验值函数为AddEx
+    //当传入参数大于0则增加经验值,达到当前等级上限的时候人物升级
+    //当传入参数小于0则减少经验值,当前等级不够减时则人物降级，直到人物等级为1或者要减的经验值减完   
+    //1.增加经验值
+    Player.AddExp(10000); //角色的经验值+10000
+    //2.减少经验值
+    Player.AddExp(-10000); //角色的经验值-10000
+}
+
+// 如何判断当前等级的经验值上限
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Npc.Say(Player, format('当前经验值：%u/%u', [Player.Exp, Player.MaxExp]));
+} 

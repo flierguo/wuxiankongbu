@@ -1,0 +1,8 @@
+如何取得物品的数据库单价和销售价格
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.Wepon) { //如果玩家手里有武器的话
+        Player.SendMessage('武器数据库单价:' + Player.Wepon.Price.toString() + '  当前属性下出售价格:' + Player.Wepon.Price2.toString());
+    }
+    //Price表示数据库中设置的该物品价格
+    //Price2表示物品当前售价,受持久、极品属性及数量等因素影响,价格和Price是不一样的
+} 

@@ -1,0 +1,16 @@
+如何取得地图上的怪物数量
+取当前角色所在地图怪物数量
+export function Main(Npc TNormNpc, Player TPlayObject, Args TArgs) void {
+    let ACount number;
+    ACount = Player.Map.MonCount; 地图上的全部怪物总数
+    ACount = Player.Map.GetMonCountEx('白野猪'); 地图上白野猪总数
+}
+根据地图ID取怪物数量
+export function Main2(Npc TNormNpc, Player TPlayObject, Args TArgs) void {
+    let AMap TEnvirnoment;
+    let ACount number
+    AMap = GameLib.FindMap('0'); 取比奇
+    if (AMap) {
+        ACount = AMap.MonCount; 地图上的全部怪物总数
+    }
+}

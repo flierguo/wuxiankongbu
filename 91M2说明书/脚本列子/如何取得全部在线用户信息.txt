@@ -1,0 +1,14 @@
+如何取得全部在线用户信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let APlayer: TPlayObject
+    //Gamelib.PlayCount 表示当前在线总人数
+    //Gamelib.GetPlayer(I) 表示第I个用户,如果I的值超过在线人数则返回为null
+    for (let I = 0; I <= GameLib.PlayCount - 1; I++) { //循环全部在线玩家
+        APlayer = GameLib.GetPlayer(I);
+        if (APlayer) { //如果第I个玩家不是当前传入的玩家参数并且其所处地图就是要匹配的地图    
+            APlayer.GoHome(); //让该玩家回城         
+            APlayer.SendMessage('你妈喊你回家吃饭！！！');
+            //此处即可针对该玩家做任何处理
+        }
+    }
+} 

@@ -1,0 +1,33 @@
+如何克隆玩家为人形怪
+方法1 直接从现有玩家克隆：
+export function Main1(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let AObj: TActor;
+    //直接克隆当前玩家
+    // Player{ 克隆对象 }, '鸭梨山大'{ 克隆后角色的名称 }, Player.Map{ 指定克隆对象的目标地图 }, 100, 100{ 目标地图的坐标 }
+    AObj = GameLib.AddClonePlayer(Player, '鸭梨山大', Player.Map, 100, 100);
+    if (AObj) { //克隆可能会失败,所以需要判断是否为nil
+        AObj.Master = Player; //将克隆的对象设置为当前玩家的下属    
+        AObj.MasterRoyaltyTick = 60 * 60 * 1000; //设置下属的有效期为60分钟
+    }
+}
+
+// 方法2 从文件中加载玩家数据克隆：
+// 1. 首先需要在特殊情况下保存玩家数据
+export function Main2(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //将当前玩家的数据保存到本地文件(Envir目录下面)
+    GameLib.SavePlayerToFile(Player, 'Store\\第一战士.dat');
+}
+
+方法2 然后根据需要执行克隆
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let AObj: TActor;
+    //直接克隆当前玩家
+    // 'Store\第一战士.dat'{ 要克隆的玩家数据文件 }, '鸭梨山大'{ 克隆后角色的名称 }, Player.Map{ 指定克隆对象的目标地图 }, 100, 100{ 目标地图的坐标 }
+    AObj = GameLib.AddClonePlayerFromFile('Store\\第一战士.dat', '鸭梨山大', Player.Map, 100, 100);
+    if (AObj) { //克隆可能会失败,所以需要判断是否为nil
+        AObj.Master = Player; //将克隆的对象设置为当前玩家的下属    
+        AObj.MasterRoyaltyTick = 10 * 60 * 1000; //设置下属的有效期为10分钟
+    }
+    //如果不设置为下属,则克隆对象将是一个普通怪物
+}
+注意：通过克隆出来的人形怪不会爆出任何装备

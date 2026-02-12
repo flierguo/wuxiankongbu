@@ -1,0 +1,33 @@
+TFastIniFile ini配置文件操作类
+// 读取指定段的某个子键的整型值
+ReadInteger(Sect: string,Name: string,Def: number): number;
+// 向指写段的某个子键写入整数型值
+WriteInteger(Sect: string,Name: string,Value: number): void;
+// 读取指定段的某个子键的字符串
+ReadString(Sect: string,Name: string,Def: string): string;
+// 向指写段的某个子键写入字符串
+WriteString(Sect: string,Name: string,Value: string): void;
+// 读取指定段的某个子键的布尔型值
+ReadBoolean(Sect: string,Name: string,Def: boolean): boolean;
+// 向指写段的某个子键写入布尔型值
+WriteBoolean(Sect: string,Name: string,Value: boolean): void;
+// 判断某节名是否存在
+SectionExists(Sect: string): boolean;
+// 读取固定日期时间
+ReadFixedDateTime(Sect: string,Name: string,Value: number): number;
+// 更新ini文件
+UpdateFile(): void;
+// 删除ini文件中指定的一个整段（同时将该段的所有子键及键值删除）
+EraseSection(Sect: string): void;
+// 释放ini文件列表
+Free: () =>  void;
+// 从ini文件中读取所有段名，并存入AList列表中
+ReadSections(AList: TStringList): void;
+// 从ini文件中读入指定段的所有子键名及其键值，并存入AList列表中
+ReadSectionValues(Name: string,AList: TStringList): void;
+// 把Ini内容获取到 TStringList  TStringList 要预先创建
+GetStrings(AList: TStringList): void;
+// 判断是否支持注释
+GetInlineCommentsEnabled(): boolean;InlineCommentsEnabled:boolean;
+// 设置是否支持注释
+SetInlineCommentsEnabled(Value: boolean): void;

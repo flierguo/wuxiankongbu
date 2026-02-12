@@ -1,0 +1,11 @@
+如何加载和保存自定义的配置文件（INI文件读写）
+export function LoadConfigFromFile() {
+    let IniFile: TFastIniFile;
+    let V: number;
+    IniFile = GameLib.CreateFastIniFile(GameLib.EnvirPath + '示范版本脚本配置文件.ini');  //创建ini对象，参数指定INI文件名称（文件只能从M2 Envir文件夹中读取）
+    V = IniFile.ReadInteger('新人', '赠送金币', -1); //从INI文件中读取一个整形值，默认值为-1
+    if (V == -1) { //如果读取的值为-1，则写入一个值到INI文件中
+        IniFile.WriteInteger('新人', '赠送金币', 100000); //写值
+        IniFile.UpdateFile();  //更新INI文件
+    }
+}

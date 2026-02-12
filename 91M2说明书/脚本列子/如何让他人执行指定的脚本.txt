@@ -1,0 +1,21 @@
+如何让他人执行指定的脚本
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let APlayer: TPlayObject
+    Npc.Say(Player, 'Hello!!!'); //对当前玩家Player说话  
+    APlayer = GameLib.FindPlayer('张三'); //在M2中找出一个名叫“张三”的人
+    if (APlayer != null) { //如果"张三"在线                    
+        //方法1(推荐)：
+        SayHello(Npc, APlayer, null);   //直接调用函数执行,最后一个参数如果传递为nil，则在对应的函数处理要避免访问或者需要保护处理    
+        //方法2:
+        APlayer.CallMethod(Npc, '@Q2.SayHello'); //最终效果和方法1相同,这里多了一个回传到M2中的步骤,在调用SayHello函数时,存在Args对象
+        //两者使用的区别在于，方法1简单直接且更高效,但是需要自行处理Args参数,如果直接传递当前的Args参数则可能是不对的,因为当前Args参数
+        //针对的是当前函数调用者,而在让其他玩家触发函数的时候,可能当前的Args参数并不合适,同时方法1调用方式如果函数名改变的时候在编译期
+        //是能被发现的；方法2则是将字符串“@Q2.SayHello”回传给M2,解析出对应的SayHello函数及参数，然后再调用SayHello,这种方式会自动产生
+        //Args参数,但是当SayHello更名的时候如果不主动修改方法2这里的参数将会造成玩家不会执行对应的函数调用,所以使用方法2就必须自己同步
+        //维护相关参数
+    }
+}
+
+export function SayHello(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    Npc.Say(Player, 'Hello!!!');
+}

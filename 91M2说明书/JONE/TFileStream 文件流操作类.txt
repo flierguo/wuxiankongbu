@@ -1,0 +1,17 @@
+TFileStream 文件流操作类
+// 写入字符串 以asiic编码
+WriteStrAnsi(Str: string): void;
+// 暂无
+WriteBuffer(PBuffer: Object,Size: number): void;
+// 暂无
+ReadBuffer(PBuffer: Object,Size: number): void;
+// 获取文件大小
+GetSize(): number;Size:number;
+// 设置文件大小
+SetSize(Value: number): void;
+// 获取文件读写位置
+GetPosition(): number;Position:number;
+// 设置文件读写位置
+SetPosition(Value: number): void;
+// 释放文件
+Free(): void;

@@ -1,0 +1,7 @@
+如何自动增加或减少元宝
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.StartAutoAddGameGold(1, 10); //开始自动增加元宝,每10秒钟元宝数量+1
+    Player.StopAutoAddGameGold(); //停止自动增加元宝
+    Player.StartAutoSubGameGold(1, 10); //开始自动减少元宝,每10秒钟元宝数量-1
+    Player.StopAutoSubGameGold(); //停止自动减少元宝
+} 

@@ -1,0 +1,55 @@
+关于Outway的使用详解
+GetOutWay1(Index: number): number;
+SetOutWay1(Index: number,Value: number): void;
+
+物品Item 的Outway属性 可以实现各种自定义内容
+Outway属性包含 Outway1 Outway2 Outway3 Outway4三个类别；
+其中Outway1是用来客户端显示；Outway2 和 Outway3 Outway4则是用来记录赋值的
+例如：
+Item.SetOutWay1(0,1)
+第一个参数：0 最多支持0-40 一共41条
+第二个参数：1 对应的是 版本管理器 -> 扩展数据 -> 物品产出来源对照表 中1=的内容 如下：
+1={S=#;C=249}{S=体魄 + 3;C=249}
+
+
+在游戏中展示出来的效果就是：
+#体魄 + 3
+
+这个 体魄 + 3点 的值 可以用变量替换，例如你想让这个值等于你的最大攻击力，那么你可以这么写：
+物品产出来源对照表：
+1={S=#;C=249}{S=攻击力 + $OUTWAY2$点;C=249}
+
+用 $OUTWAY2$ 变量来替换你的最大攻击力，代码如下：
+
+Item.SetOutWay1(0,1); //设置客户端显示
+Item.SetOutWay2(0,Player.DCMax); //这里会将OutWay2的值自动替换$OUTWAY2$到客户端显示(提示：$OUTWAY2$这个必须要用大写字母)
+
+同理：物品产出来源对照表这么写
+1={S=#;C=249}{S=攻击力 $OUTWAY2$-$OUTWAY3$这点;C=249}
+
+Item.SetOutWay1(0,1); //设置客户端显示
+Item.SetOutWay2(0,Player.DCMin); //这里会将OutWay2的值自动替换$OUTWAY2$到客户端显示
+Item.SetOutWay3(0,Player.DCMax); //这里会将OutWay3的值自动替换$OUTWAY3$到客户端显示
+
+客户端就会显示：
+#攻击力1-5
+
+增加一条：
+1={S=#;C=249}{S=攻击力 $OUTWAY2$-$OUTWAY3$这点;C=249}
+1={S=#;C=249}{S=魔法力 $OUTWAY2$-$OUTWAY3$这点;C=249}
+
+代码：
+Item.SetOutWay1(1,2); //设置客户端显示
+Item.SetOutWay2(1,Player.MCMin); //这里会将OutWay2的值自动替换$OUTWAY2$到客户端显示
+Item.SetOutWay3(1,Player.MCMax); //这里会将OutWay3的值自动替换$OUTWAY3$到客户端显示
+客户端显示效果：
+#攻击力1-5
+#魔法力1-5
+
+
+如果输入文本中有{Line},将自动画一条装备属性背景中的分割线
+
+
+同样的也支持图片和动画插入显示：（请注意这里最好用MO=编号,如果用I=图片编号不支持修改坐标偏移）
+
+

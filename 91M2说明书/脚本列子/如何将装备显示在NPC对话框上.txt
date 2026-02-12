@@ -1,0 +1,8 @@
+如何将装备显示在NPC对话框上
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.Wepon)
+        Npc.Say(Player, format('你当前佩戴的武器是：{U=%s}', [Player.Wepon.MakeString]));
+    //{U=%s}: U属性字符专处理用户装备显示.当使用U的时候,U必须在第一位,如:{U=%s;x=100;y=200}
+    //Player.Wepon.MakeString: 将玩家的武器格式化为字符串
+    //这里也可写为:  Npc.Say(Player, '你当前佩戴的武器是:{U=' + Player.Wepon.MakeString + '}');
+}

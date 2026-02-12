@@ -1,0 +1,7 @@
+如何脚本增加和删除一个NPC
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    GameLib.AddNpc('张家铁铺', '0', 300, 300, 1, 'Q40');  //在地图“0” X300、Y300的位置上增加一个名字为“张家铁铺”的NPC，外观形象为1，对应的脚本单元为“Q40”
+    if (GameLib.RemoveNpc('张家铁铺', '0', 300, 300)) {//移除地图“0” X300、Y300这个位置上名为“张家铁铺”的NPC
+        Npc.MessageBox(Player, 'NPC移除成功');
+    }
+}

@@ -1,0 +1,26 @@
+如何读写文本文件
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AList: TStringList;
+    let AName: string;
+    let I: number;
+    let APlayer: TPlayObject;
+    //TStrings访问文本文件的方式：
+    AList = GameLib.CreateStringList()
+    try {
+        //出于对版本使用者机器的保护出发(非开发者),引擎中的脚本读写只允许Mir200\Envir目录下的文件,Gamelib.EnvirPath可以取得
+        if (GameLib.FileExists(GameLib.EnvirPath + 'UnMaster.txt')) { //如果文件存在
+            AList.LoadFromFile(GameLib.EnvirPath + 'UnMaster.txt'); //加载文件
+            for (I = AList.Count - 1; I >= 0; I--) {
+                AName = AList[I]; //取出一个名字 
+                APlayer = GameLib.FindPlayer(AName); //查找玩家
+                if (APlayer != null) {
+                    //针对APlayer做些事情       
+                }
+                AList.Delete(I); //删除文本中的一条记录
+            }
+            AList.SaveToFile(GameLib.EnvirPath + 'UnMaster.txt'); //把修改后的文件保存下来
+        }
+    } finally {
+        AList.Free;
+    }
+} 

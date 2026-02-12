@@ -1,0 +1,17 @@
+如何完全控制他人
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let APlayer: TPlayObject;
+    APlayer = GameLib.FindPlayer('张三'); //在M2中找出一个名叫“张三”的人
+    if (APlayer) { //如果"张三"在线
+        APlayer.Say('hello 77!!!'); //张三说一句话
+        APlayer.MoveTo(100, 100); //张三移动到地图坐标100x100上
+        APlayer.GameGold = APlayer.GameGold + 10000; //调整金币
+        APlayer.GoldChanged;
+        ///这里可以针对张三做任何能做的事情,和操作当前传入角色Player完全一样，并且毫无区别
+        //这就是91M2脚本中所谓的“无我境界，一切皆是对象”的概念
+    }
+} 
+// 如何让玩家回城
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.GoHome(); //回城
+} 

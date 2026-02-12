@@ -1,0 +1,14 @@
+TVarValue 自定义变量类
+GetName(): string;Name:string;                       / 获取自定义变量的名称
+GetVarType(): number;VarType:number;                 / 获取自定义变量的类型
+GetAsString(): string;AsString:string;               / 读取自定义字符串变量
+SetAsString(Value: string): void;                    / 设置自定义字符串变量
+GetAsFloat(): number;AsFloat:number;                 / 读取自定义浮点型变量
+SetAsFloat(Value: number): void;                     / 设置自定义浮点型变量
+GetAsInteger(): number;AsInteger:number;             / 读取自定义整数型变量
+SetAsInteger(Value: number): void;                   / 设置自定义整数型变量
+GetAsDateTime(): number;AsDateTime:number;           / 读取自定义时间变量
+SetAsDateTime(Value: number): void;                  / 设置自定义时间变量
+GetAsBoolean(): boolean;AsBoolean:boolean;           / 读取自定义布尔型变量
+SetAsBoolean(Value: boolean): void;                  / 设置自定义布尔型变量
+Save(): void;                                        / 保存自定义变量到服务器

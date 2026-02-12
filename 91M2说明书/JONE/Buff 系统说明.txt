@@ -1,0 +1,240 @@
+Buff 系统说明
+buff系统介绍
+buff 系统分类
+1.属性类Buff
+2.状态类Buff
+3.间隔作用类Buff
+Buff系统对应接口说明
+1.添加属性类Buff
+2.添加状态类Buff
+3.添加间隔作用类Buff
+4.设置Buff客户端图标以及提示消息。
+5.使用预定义配置添加Buff
+6.移除Buff
+7.根据Buff分组移除Buff
+8.根据Buff Tag移除Buff
+9.遍历玩家或者怪物身上拥有的Buff示例
+Buff系统脚本触发
+1.添加Buff时触发
+2.移除Buff时触发
+3.自定义间隔作用类Buff触发。
+Buff对象字段说明
+Buff系统类型定义参考表
+1.Buff分类对照表
+TBuffCategory
+2.属性类Buff类型对照表。
+TBuffAbilityType
+3.状态类Buff类型对照表
+TBuffStatusType
+4.间隔作用类Buff类型对照表
+TBuffIntervalType
+buff系统介绍
+buff系统为一定时间内为玩家以及怪物提供一定的增益 或者 减益效果
+buff 系统分类
+buff系统根据实际作用效果可分为三大类。
+1.属性类Buff
+玩家或怪物获得此类Buff 可增加或者减少其某些属性的数值。
+2.状态类Buff
+玩家或怪物获得此类Buff 可增加 对应的状态 , 例如 禁止移动、 无敌 、 隐身、禁止使用某些技能以及物品等。
+3.间隔作用类Buff
+玩家或怪物获得此类Buff 将在持续时间内以间隔时间为单位产生作用。 例如 持续10秒 每2秒减少100点HP。
+Buff系统对应接口说明
+1.添加属性类Buff
+TActor.AddAbilityBuff(GroupID:Integer;AbilityType:TBuffAbilityType;DuraMs:Cardinal;AblityValue:Int64;ValueIsRate:Boolean):TBuff;
+参数说明
+
+参数名称	参数类型	说明
+GroupID	Integer	分组ID(同组ID只能存在一个Buff 若重复在添加的时候会先移除掉之前的Buff)
+AbilityType	TBuffAblityType	属性类型 跳转 TBuffAbilityType 对照表
+DuraMs	Cardinal	持续时间(单位毫秒)
+AblityValue	Int64	增加的属性数值，根据ValueIsRate来确定增加的属性是万分比值还是具体数值
+ValueIsRate	Boolean	此字段若为true则表示添加的属性AblityValue使用万分比类型，否则为具体实际数值。
+2.添加状态类Buff
+TActor.AddStatusBuff(GroupID:Integer;StatusType:TBuffStatusType;DuraMs:Cardinal;Args1:Int64; Args2:Int64):TBuff;
+参数说明
+
+参数名称	参数类型	说明
+GroupID	Integer	分组ID(同组ID只能存在一个Buff 若重复在添加的时候会先移除掉之前的Buff)
+StatusType	TBuffStatusType	状态Buff类型 TBuffStatusType 对照表
+DuraMs	Cardinal	持续时间(单位毫秒)
+Args1	Int64	可选参数1 对于某些特定类型的Buff才有意义请查询 TBuffStatusType 对照表
+Args2	Int64	可选参数2 对于某些特定类型的Buff才有意义请查询 TBuffStatusType 对照表
+3.添加间隔作用类Buff
+TActor.AddIntervalBuff(GroupID:Integer;IntervalType:TBuffIntervalType;DuraMs:Cardinal;Interval:Cardinal;Args1:Int64; Args2:Int64):TBuff;
+参数说明
+
+参数名称	参数类型	说明
+GroupID	Integer	分组ID(同组ID只能存在一个Buff 若重复在添加的时候会先移除掉之前的Buff)
+IntervalType	TBuffIntervalType	属性类型 参照 TBuffIntervalType 对照表
+DuraMs	Cardinal	持续时间(单位毫秒)
+Interval	Cardinal	间隔作用时间(单位毫秒)
+Args1	Int64	可选参数1 对于某些特定类型的Buff才有意义请查询 TBuffIntervalType 对照表
+Args2	Int64	可选参数2 对于某些特定类型的Buff才有意义请查询 TBuffIntervalType 对照表
+4.设置Buff客户端图标以及提示消息。
+Buff添加完毕就会立即生效。如果需要在客户端Buff作用区域显示Buff图标，在添加Buff后立即调用TPlayObject.SetBuffIcon即可。
+
+TPlayObject.SetBuffIcon(BuffHandle:Integer;ImageLibFile:String; ImageIndex:Integer; HoverImageIndex:Integer;ShowMessage:String;DisappearMessage:String;HintMessage:String;FlashOnDisappear:Boolean;ShowTimeStr:Boolean);
+参数说明
+
+参数名称	参数类型	说明
+BuffHandle	Integer	添加Buff成功后返回的Buff对象的Handle值。
+ImageLibFile	String	图片库文件 如果为空 则默认使用 icons.data
+ImageIndex	Word	正常图标显示的序号
+HoverImageIndex	Word	鼠标选中状态的图标序号。
+ShowMessage	String	Buff添加时候发送到聊天栏的文字消息。(仅自己可见)
+DisappearMessage	String	Buff 从身上移除时候发送到聊天栏的文字消息。(仅自己可见)
+HintMessage	String	鼠标选中图标时候的提示信息(支持文字排版)
+FlashOnDisappear	Boolean	是否在消失前3秒图标闪动
+ShowTimeStr	Boolean	是否在图标底部显示剩余时间
+说明:
+三个字符串参数 可用
+$属性值$
+$属性值比率$ buff值 百分比小数 保留两位小数
+$Args1$ 参数1值
+$Args2$ 参数2值
+$Args1比率$ 百分比小数 保留两位小数
+$Args2比率$ 百分比小数 保留两位小数
+$持续时间$ 总持续时间 单位秒
+$剩余时间$ 剩余时间 单位秒
+$作用间隔$ BUFF触发间隔 对于 持续间隔作用类BUFF有效。 单位秒 进行格式化
+
+5.使用预定义配置添加Buff
+在版本管理器如下位置可以对Buff做一个预定义设置。
+
+
+  // 设置之后可以使用下列方式给目标增加buff
+
+  // 使用预定义BuffID 添加Buff
+  TActor.AddBuffByID(BuffID:Integer;GroupID:Integer):TBuff;
+  // 使用预定义Buff名称 添加Buff
+  TActor.AddBuffByName(BuffName:String;GroupID:Integer):TBuff;
+对Buff进行添加。
+注意: 当参数GroupID留空或者为-1时候表示 不修改配置中的分组ID 当GroupID >=0 表示动态修改为对应的分组ID ，根据分组ID
+
+使用预定义配置添加的Buff 在流量带宽上有更好的表现。频繁添加的Buff 建议使用预定义配置进行添加。
+并且在添加了预定义buff后 无需再执行SetBuffIcon对 Buff进行图标设置。
+
+6.移除Buff
+TActor.DeleteBuff(BuffHandle:Integer):Boolean;
+参数名称	参数类型	说明
+BuffHandle	Integer	Buff添加返回得到的Handle
+7.根据Buff分组移除Buff
+TActor.DeleteBuffByGroupID(MinGroupID:Integer;MaxGroupID:Integer):Integer;
+参数名称	参数类型	说明
+MinGroupID	Integer	最小的作用组
+MaxGroupID	Integer	最大的作用组
+说明: 其中参数使用的是闭区间 即包含最小组和最大组 , 返回值为移除的Buff 数量。
+
+8.根据Buff Tag移除Buff
+TActor.DeleteBuffByTag(Tag:Integer):Integer;
+参数名称	参数类型	说明
+Tag	Integer	Tag值
+说明: 其中参数使用的是闭区间 即包含最小组和最大组 , 返回值为移除的Buff 数量。
+
+9.遍历玩家或者怪物身上拥有的Buff示例
+for (let I = 0; I <= Actor.BuffCount-1; I++) {
+  Buff = Actor.GetBuffByIndex(i)
+}
+Buff系统脚本触发
+1.添加Buff时触发
+当对玩家或者怪物添加Buff时会引擎会触发QFunction内的
+
+GameLib.OnAddBuff(Actor:TActor; Buff:TBuff; Accept:Boolean)
+函数 通过修改 Accept = False 可以禁止此Buff添加到怪物或者玩家身上。
+
+2.移除Buff时触发
+当Buff从玩家或者怪物身上移除的时候引擎会触发QFunction内的
+
+GameLib.OnRemoveBuff(Actor:TActor; Buff:TBuff)
+3.自定义间隔作用类Buff触发。
+当添加自定义间隔作用类Buff之后 在间隔设定时间后。引擎将调用QFunction
+
+GameLib.onCustomBuffAct(Actor:TActor,Buff:TBuff)
+Buff对象字段说明
+TBuff 对象说明
+
+字段	参数类型	只读	说明
+Handle	Integer	√	Buff的运行唯一标记通过此Handle 可对Buff进行一些操作。
+Tag	Integer	×	Buff标志值用于提供给脚本对buff进行特殊标记
+GroupID	Integer	√	Buff创建时候的分组ID (同组所有的Buff只能存在一个)
+Category	TBuffCategory	√	Buff分类。 TBuffCategory 对照表
+AbilityType	TBuffAbilityType	√	属性类型，仅当Buff类型为属性类Buff时有效
+AbilityValue	Int64	√	Buff增加的属性数值，仅当Buff类型为属性类Buff时有效
+ValueIsRate	Boolean	√	Buff作用值是否为万分比(仅Buff为属性类Buff时有意义)
+StatusType	TBuffStatusType	√	状态类型，仅当Buff类型为状态类Buff时有效 TBuffStatusType 对照表
+IntervalType	TBuffIntervalType	√	间隔作用类型,仅当Buff类型为状态类Buff时有效 TBuffIntervalType 对照表
+Args1	Int64	√	参数1，对不同的Buff类型有不同的意义
+Args2	Int64	√	参数2，对不同的Buff类型有不同的意义
+CustomInt	Array[0..3] of Int64	×	自定义数据，提供给脚本中进行实现自定义数据标记。
+CustomStr	String	×	自定义数据，提供给脚本中进行实现自定义数据标记。
+Buff系统类型定义参考表
+1.Buff分类对照表
+TBuffCategory
+类型	说明
+bcNone	无效
+bcAbility	属性类buff
+bcStatus	状态类buff
+bcInterval	间隔作用类buff
+2.属性类Buff类型对照表。
+TBuffAbilityType
+类型	说明
+atNone	无效
+atMaxHP	最大HP
+atMaxMP	最大MP
+atDC	物理攻击下限
+atDCMax	物理攻击上限
+atMC	魔法攻击下限
+atMCMax	魔法攻击上限
+atSC	道术下限
+atSCMax	道术上限
+atPC	刺术下限
+atPCMax	刺术上限
+atTC	箭术下限
+atTCMax	箭术上限
+atWC	武术下限
+atWCMax	武术上限
+atAC	物理防御下限
+atACMax	物理防御上限
+atMAC	魔法防御下限
+atMacMax	魔法防御上限
+atHitPoint	准确
+atHitSpeed	攻击速度
+atSpeedPoint	敏捷
+atLucky	幸运
+atHealthRecover	HP恢复
+atSpellRecover	MP恢复
+atAntiMagic	魔法躲避
+atAntiPoison	毒物躲避
+atPoisonRecover	中毒恢复
+atAbsorbing	伤害吸收
+atRebound	伤害反弹
+atAttackAdd	附加伤害
+atPunchHit	致命一击
+atCriticalHit	会心一击
+atPunchHitDef	致命一击抵抗
+atCriticalHitDef	会心一击抵抗
+3.状态类Buff类型对照表
+TBuffStatusType
+类型	说明
+stNone	无效
+stStone	石化
+stDenyMove	禁止移动(跑步和走路以及骑马都不行)
+stDenyWalk	禁止行走
+stDenyRun	禁止跑步
+stDenyHorse	禁止骑马
+stSuperMan	无敌
+stSuperManForMon	只对怪物无敌
+stRelive	复活 (Args1为复活次数 次数达到会自动移除掉,0表示无限制)
+stUnRelive	防复活
+stObserver	隐身
+stObserverForMon	隐身只对怪物
+stDenyUseMagic	禁止使用技能(Args1为技能ID, -1表示禁止所有技能)
+stDenyUseItem	禁止使用物品(Args1为物品ID，-1表示禁止所有物品)
+4.间隔作用类Buff类型对照表
+TBuffIntervalType
+类型	说明
+biNone	无效
+biCustom	自定义
+biHP	减少或增加HP(Args1 为数量 , Args2为万分比例)
+biMP	减少或增加MP(Args1 为数量 , Args2为万分比例)
+biExp	减少或增加经验值(Args1 为数量 ,Args2为万分比例)

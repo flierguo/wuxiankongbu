@@ -1,0 +1,24 @@
+TToptenz 排行榜类
+GetRichest(): TNumOrderItems;Richest:TNumOrderItems;                               / 读取财富排行榜
+GetLevels(): TLevelOrderItems;Levels:TLevelOrderItems;                             / 读取等级排行榜
+GetMaster(): TNumOrderItems;Master:TNumOrderItems;                                 / 读取师徒排行榜
+GetEfficiency(): TNumOrderItems;Efficiency:TNumOrderItems;                         / 读取战力排行榜
+GetWarrior(): TJobOrderItems;Warrior:TJobOrderItems;                               / 读取战士排行榜
+GetWizard(): TJobOrderItems;Wizard:TJobOrderItems;                                 / 读取法师排行榜
+GetTaoist(): TJobOrderItems;Taoist:TJobOrderItems;                                 / 读取道士排行榜
+GetArcher(): TJobOrderItems;Archer:TJobOrderItems;                                 / 读取弓箭手排行榜
+GetAssassin(): TJobOrderItems;Assassin:TJobOrderItems;                             / 读取刺客排行榜
+GetShaman(): TJobOrderItems;Shaman:TJobOrderItems;                                 / 读取武僧排行榜
+Refresh(): void;                                                                   / 读取财富排行榜
+
+
+GetMinValue(AIndex: number): number;MinValue:number;          / 指定序号角色的输出值的下限
+GetMaxValue(AIndex: number): number;MaxValue:number;          / 指定序号角色的输出值的上限
+GetReLevel(AIndex: number): number;ReLevel:number;            / 指定序号角色的转生次数
+GetLevel(AIndex: number): number;Level:number;                / 指定序号角色的等级
+GetValue(AIndex: number): number;Value:number;                / 指定序号角色的排行数据值，如财富榜为金币、战力榜为战力
+GetCount(): number;Count:number;                              / 排行榜总人数
+GetName(AIndex: number): string;Name:string;                  / 指定序号角色的名称
+GetJob(AIndex: number): number;Job:number;                    / 指定序号角色的职业
+GetGender(AIndex: number): number;Gender:number;              / 指定序号角色的性别
+IndexOf(AName: string): number;                               / 指定名称在排行榜中的排行(未上榜返回-1 第一名返回0)

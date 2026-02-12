@@ -1,0 +1,4 @@
+如何将指定名称的玩家传送到身边
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.RecallHuman('张三'); //将“张三”传送到Player的身边
+} 

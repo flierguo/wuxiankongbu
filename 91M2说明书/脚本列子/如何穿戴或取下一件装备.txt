@@ -1,0 +1,12 @@
+如何穿戴或取下一件装备
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AUserItem: TUserItem
+    if (Player.Wepon) { //如果装备了武器
+        Player.TakeOffItem(TItemWhere.wWeapon); //将武器取下来,wWeapon表示装备的位置
+    }
+    AUserItem = Npc.GiveItem(Player, '乌木剑'); //给玩家制造一把乌木剑
+    if (AUserItem) {
+        Player.TakeOnItem(AUserItem, TItemWhere.wWeapon); //然后将乌木剑装备到武器位置上}
+    } 
+}
+注意：代码中调用TakeOffItem和TakeOnItem执行装备取下和穿上的时候，将不会触发QFunctionNpc中的OnTakeOffItem和OnTakeOnItem事件

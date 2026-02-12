@@ -1,0 +1,19 @@
+如何实现一个机器人
+// 首先配置机器人信息，然后根据机器人指定的执行函数在“系统固定NPC\RobotManageNpc”里面实现函数，如：
+// 在示范版本中，DailyResile是一个系统机器人。请勿对系统机器人的参数Player做任何操作，该参数不指向玩家，指向了机器人本身，对其操作无任何意义
+// 如果是玩家个人机器人，则Player指向了执行该函数的当前玩家
+export function DailyResile(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let I: number;
+    let APlay: TPlayObject;
+    //将服务器标记+1并保存
+    GameLib.VarInteger('Flag').AsInteger = GameLib.VarInteger('Flag').AsInteger + 1;
+    GameLib.VarInteger('Flag').Save();
+    //循环将在线人物进行数据初始化，传统脚本会调用一个StartQuest函数通知每个角色去执行什么内容，
+    //在本引擎中也可以支持StartQuest执行通知，但是使用一个循环操作更方便管理代码
+    for (let I = GameLib.PlayCount - 1; I >= 0; I--) {//使用循环可以避免访问超界
+        APlay = GameLib.GetPlayer(I);
+        if (APlay) {
+        //对角色执行每日的初始化操作
+        }
+    }
+}

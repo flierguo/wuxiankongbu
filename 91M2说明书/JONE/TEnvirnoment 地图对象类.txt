@@ -1,0 +1,144 @@
+TEnvirnoment 地图对象类
+GetName(): string;Name:string;                                           / 返回地图名称，比如比奇、白日门
+GetMapName(): string;MapName:string;                                     / 地图ID（比如比奇地图为0）
+GetDuplicate(): boolean;Duplicate:boolean;                               / 判断地图是否为副本地图
+GetDark(): boolean;Dark:boolean;                                         / 判断是否黑夜
+SetDark(Value: boolean): void;                                           / 设置是否黑夜
+GetDay(): boolean;Day:boolean;                                           / 判断是否白天
+SetDay(Value: boolean): void;                                            / 设置是否白天
+GetDarkness(): boolean;Darkness:boolean;                                 / 判断是否午夜
+SetDarkness(Value: boolean): void;                                       / 设置是否午夜
+GetDayLight(): boolean;DayLight:boolean;                                 / 判断是否中午
+SetDayLight(Value: boolean): void;                                       / 设置是否中午
+GetSafe(): boolean;Safe:boolean;                                         / 判断是否为安全地图(不可PK)
+SetSafe(Value: boolean): void;                                           / 设置是否为安全地图(不可PK)
+GetFight(): boolean;Fight:boolean;                                       / 判断是否为PK地图
+SetFight(Value: boolean): void;                                          / 设置是否为PK地图
+GetFight3(): boolean;Fight3:boolean;                                     / 判断是否为行会战争地图
+SetFight3(Value: boolean): void;                                         / 设置是否为行会战争地图
+GetQuiz(): boolean;Quiz:boolean;                                         / 判断是否允许喊话
+SetQuiz(Value: boolean): void;                                           / 设置是否允许喊话
+GetNoReconect(): boolean;NoReconect:boolean;                             / 判断是否下线后重新传送到指定地图
+SetNoReconect(Value: boolean): void;                                     / 设置是否下线后重新传送到指定地图
+GetReConnectMap(): string;ReConnectMap:string;                           / 判断下线后重新传送的地图ID
+SetReConnectMap(Value: string): void;                                    / 设置下线后重新传送的地图ID
+GetMUSIC(): boolean;MUSIC:boolean;                                       / 判断是否播放背景音乐
+SetMUSIC(Value: boolean): void;                                          / 设置是否播放背景音乐
+GetExpRate(): number;ExpRate:number;                                     / 获取当前地图杀怪经验值倍率
+SetExpRate(Value: number): void;                                         / 设置当前地图杀怪经验值倍率
+GetPKWinLevel(): number;PKWinLevel:number;                               / 获取当前地图PK赢了增加的等级数
+SetPKWinLevel(Value: number): void;                                      / 设置当前地图PK赢了增加的等级数
+GetPKWinExp(): number;PKWinExp:number;                                   / 获取当前地图PK赢了增加的经验值
+SetPKWinExp(Value: number): void;                                        / 设置当前地图PK赢了增加的经验值
+GetPKLostLevel(): number;PKLostLevel:number;                             / 获取当前地图PK输了降低的等级数
+SetPKLostLevel(Value: number): void;                                     / 设置当前地图PK输了降低的等级数
+GetPKLostExp(): number;PKLostExp:number;                                 / 获取当前地图PK输了降低的经验值
+SetPKLostExp(Value: number): void;                                       / 设置当前地图PK输了降低的经验值
+GetDecHP(): number;DecHP:number;                                         / 获取当前地图自动减少HP的值
+SetDecHP(Value: number): void;                                           / 设置当前地图自动减少HP的值
+GetDecHPTime(): number;DecHPTime:number;                                 / 获取当前地图自动减少HP的间隔时间
+SetDecHPTime(Value: number): void;                                       / 设置当前地图自动减少HP的间隔时间
+GetIncHP(): number;IncHP:number;                                         / 获取当前地图自动增加HP的值
+SetIncHP(Value: number): void;                                           / 设置当前地图自动增加HP的值
+GetIncHPTime(): number;IncHPTime:number;                                 / 获取当前地图自动增加HP的间隔时间
+SetIncHPTime(Value: number): void;                                       / 设置当前地图自动增加HP的间隔时间
+GetDecGameGold(): number;DecGameGold:number;                             / 获取当前地图自动减少元宝数量
+SetDecGameGold(Value: number): void;                                     / 设置当前地图自动减少元宝数量
+GetDecGameGoldTime(): number;DecGameGoldTime:number;                     / 获取当前地图自动减少元宝的间隔时间
+SetDecGameGoldTime(Value: number): void;                                 / 设置当前地图自动减少元宝的间隔时间
+GetDecGamePoint(): number;DecGamePoint:number;                           / 获取当前地图自动减少礼金的数量
+SetDecGamePoint(Value: number): void;                                    / 设置当前地图自动减少礼金的数量
+GetDecGamePointTime(): number;DecGamePointTime:number;                   / 获取当前地图自动减少礼金的间隔时间
+SetDecGamePointTime(Value: number): void;                                / 设置当前地图自动减少礼金的间隔时间
+GetIncGameGold(): number;IncGameGold:number;                             / 设置当前地图自动增加元宝数量
+SetIncGameGold(Value: number): void;                                     / 设置当前地图自动增加元宝数量
+GetIncGameGoldTime(): number;IncGameGoldTime:number;                     / 获取当前地图自动增加元宝的间隔时间
+SetIncGameGoldTime(Value: number): void;                                 / 设置当前地图自动增加元宝的间隔时间
+GetIncGamePoint(): number;IncGamePoint:number;                           / 获取当前地图自动增加礼金的数量
+SetIncGamePoint(Value: number): void;                                    / 设置当前地图自动增加礼金的数量
+GetIncGamePointTime(): number;IncGamePointTime:number;                   / 获取当前地图自动增加礼金的间隔时间
+SetIncGamePointTime(Value: number): void;                                / 设置当前地图自动增加礼金的间隔时间
+GetRunHuman(): boolean;RunHuman:boolean;                                 / 判断是否允许穿人
+SetRunHuman(Value: boolean): void;                                       / 设置是否允许穿人
+GetRunMon(): boolean;RunMon:boolean;                                     / 判断是否允许穿怪
+SetRunMon(Value: boolean): void;                                         / 设置是否允许穿怪
+GetNeedHole(): boolean;NeedHole:boolean;                                 / 判断切换到该地图是否需要一个洞
+SetNeedHole(Value: boolean): void;                                       / 设置切换到该地图是否需要一个洞
+GetNoRecall(): boolean;NoRecall:boolean;                                 / 判断是否禁止天地合一
+SetNoRecall(Value: boolean): void;                                       / 设置是否禁止天地合一
+GetNoGuildRecall(): boolean;NoGuildRecall:boolean;                       / 判断是否禁止行会传送
+SetNoGuildRecall(Value: boolean): void;                                  / 设置是否禁止行会传送
+GetNoDearRecall(): boolean;NoDearRecall:boolean;                         / 判断是否禁止夫妻传送
+SetNoDearRecall(Value: boolean): void;                                   / 设置是否禁止夫妻传送
+GetNoMasterRecall(): boolean;NoMasterRecall:boolean;                     / 判断是否禁止师徒传送
+SetNoMasterRecall(Value: boolean): void;                                 / 设置是否禁止师徒传送
+GetNoRandomMove(): boolean;NoRandomMove:boolean;                         / 判断是否禁止随机传送
+SetNoRandomMove(Value: boolean): void;                                   / 设置是否禁止随机传送
+GetNoDrug(): boolean;NoDrug:boolean;                                     / 判断是否禁止使用物品
+SetNoDrug(Value: boolean): void;                                         / 设置是否禁止使用物品
+GetMine(): boolean;Mine:boolean;                                         / 判断是否允许挖矿
+SetMine(Value: boolean): void;                                           / 设置是否允许挖矿
+GetNoPostionMove(): boolean;NoPostionMove:boolean;                       / 判断是否禁止传送
+SetNoPostionMove(Value: boolean): void;                                  / 设置是否禁止传送
+GetFightPK(): boolean;FightPK:boolean;                                   / 判断是否PK可以爆装备不红名
+SetFightPK(Value: boolean): void;                                        / 设置是否PK可以爆装备不红名
+GetNoHorse(): boolean;NoHorse:boolean;                                   / 判断是否禁止骑马
+SetNoHorse(Value: boolean): void;                                        / 设置是否禁止骑马
+GetMonCount(): number;MonCount:number;                                   / 获取当前怪物数量
+GetHumCount(): number;HumCount:number;                                   / 获取当前玩家数量
+
+// 清除地图怪物，如果指定了怪物名称则只清除该名称的怪物
+ClearMon(ANoDrop: boolean,AMonName: string): void;
+
+// 获取地图怪物数量，如果指定了怪物名称则只计算该名称的怪物
+GetMonCountEx: ( AMonName?: string) =>  number;MonCountEx:number;
+
+// 设置客户端显示的地图名字
+SetDisplayName(S: string): void;
+
+// 获取客户端显示的地图名字
+GetDisplayName(): string;DisplayName:string;
+
+// 获取当前地图的宽度
+GetMapWidth(): number;MapWidth:number;
+
+// 获取当前地图的高度
+GetMapHeight(): number;MapHeight:number;
+
+// 获取在地图指定坐标范围内怪物数量，如果指定了怪物名称则只计算该名称的怪物
+GetMonCountInRange(MapX: number,MapY: number,Range: number,AMonName: string): number; MonCountInRange:number;
+
+// 获取在地图指定坐标范围内怪物列表（该列表使用完后必须释放），如果指定了怪物名称则只计算该名称的怪物
+GetActorListInRange: ( MapX: number,MapY: number,Range: number,ActorName?: string) =>  TActorList; ActorListInRange:TActorList;
+
+// 获取在地图指定坐标上的怪物列表（该列表使用完后必须释放），如果指定了怪物名称则只包含该名称的怪物
+GetActorListAt: ( MapX: number,MapY: number,ActorName?: string) =>  TActorList;ActorListAt:TActorList;
+
+// 【适用于鞭尸】
+// 用于在地图上丢弃怪物的爆率物品配置 , 当怪物爆率设置为触发脚本时 将会触发 GameLib.onDropItemByMonName
+// 如 Player.Map.ThrowMonItems(Player.MapX,Player.MapY,5,”黑野猪8”,null,10000,Player.AddedAbility.ItemRate)
+// 参数解释:
+// MapX ,MapY ,Range 坐标 XY 和范围。
+// MonName : 怪物名称
+// ItemOwner ：物品归属玩家 可为null
+// ForbidPickUpTime 禁止拾取时间， 如设置为10000表示掉落后10秒可以拾取。
+// AppendDropRatePercent:额外附加爆率百分比
+ThrowMonItems(MapX: number,MapY: number,Range: number,MonName: string,ItemOwner: TPlayObject,ForbidPickUpTime: number,AppendDropRatePercent: number): number;
+
+// 判断当前地图指定坐标是否可以到达
+// 其中boIgnoreActor 表示 是否忽略坐标点上的角色。
+// 如果为true 则该坐标只要不是障碍点 则有没有人和怪物都可以移动。
+// 为 false 则 如果坐标点不是障碍物，但是上面有人和怪物 则不可移动。
+CanMove(MapX: number,MapY: number,boIgnoreActor: boolean): boolean;
+
+// 判断是否等待释放(只对副本地图有效)
+GetFreeing(): boolean;Freeing:boolean;
+
+// 获取副本创建时间(只对副本地图有效)
+GetStartTime(): number;StartTime:number;
+
+// 开启浑水摸鱼模式
+SetInTroubleModeActive(boDenySay: boolean,boDenyAutoColor: boolean,boDenyViewUserInfo: boolean,WeaponShape: number,DressShape: number,SameName: string): void;
+
+// 关闭浑水摸鱼模式
+SetInTroubleModeClose(): void;

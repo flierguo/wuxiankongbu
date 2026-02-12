@@ -1,0 +1,19 @@
+如何删除玩家的物品
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AItem: TUserItem;
+    //方法1:通过NPC拿走玩家的物品
+    Npc.Take(Player, '乌木剑', 1);  //拿走一把乌木剑  
+    for (let I = 0; I <= Player.MaxBagSize - 1; I++) //循环背包
+    {
+        AItem = Player.GetBagItem(I); //取出一个背包物品 
+        if (AItem) //如果物品存在
+            Npc.TakeItem(Player, AItem); //收走物品      
+    }
+    //方法2:通过玩家自身DeleteItem函数处理
+    for (let I = 0; I <= Player.MaxBagSize - 1; I++) { //循环背包
+        AItem = Player.GetBagItem(I); //取出一个背包物品  
+        if (AItem) //如果物品存在
+            Player.DeleteItem(AItem, 1); //收走物品,指定数量数量为1,如果是可叠加物品则是数量减1,反之则是收走物品
+    }
+    //玩家自身并没支持Take函数,因为Take实际上也是循环背包,开发中可以自己扩展函数处理
+} 

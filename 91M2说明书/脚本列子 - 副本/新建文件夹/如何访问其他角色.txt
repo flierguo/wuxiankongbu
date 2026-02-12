@@ -1,0 +1,15 @@
+如何访问其他角色
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let Obj: TPlayObject = GameLib.FindPlayer('张三');
+    if (Obj) {
+        Obj.SendMessage('你的东西掉了。。。', 0);
+        if (Obj.Wepon) {
+            Obj.Wepon.AddDC = Obj.Wepon.AddDC + 10;
+            Obj.UpdateItem(Obj.Wepon);
+        }
+    } else {
+        Npc.MessageBox(Player, '玩家“张三”不在线！！！');
+    }
+}
+注：脚本中本身没有“我”的这个概念，而是根据传人参数确定当前执行者，所以对通过Gamelib查找出来的角色和参数传入的角色的操作没有区别
+同时需要注意的是，Gamelib.FindPlayer只能够查找当前在线的角色，角色不存在或不在线是不可被查找到的，如果需要判定更准确，可以辅以数据库操作来判断角色是否存在

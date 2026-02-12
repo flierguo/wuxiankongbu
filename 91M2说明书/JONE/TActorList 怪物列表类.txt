@@ -1,0 +1,6 @@
+TActorList 怪物列表类
+GetCount(): number;Count:number;                            / 获取怪物列表的数量
+Actor(index: number): TActor;                               / 获取怪物列表的怪物对象
+Add(Item: TActor): number;                                  / 添加一个元素到怪物列表里
+Delete(Index: number): void;                                / 删除怪物列表里的一个元素
+Free: () =>  void;                                          / 释放怪物列表

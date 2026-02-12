@@ -1,0 +1,20 @@
+如何延时调用一个函数
+// 人物执行延时调用时，可使用DelayGoto或DelayCallMethod来执行
+DelayGoto 指定一个时钟ID和延迟时间，然后需要在TimeManageNpc单元实现相关定义，该函数可指定是否可反复执行，如果可反复执行则需要使用ClearDelayGoto来关闭该时钟
+DelayCallMethod 指定需要调用的函数名称、延迟时间及是否切换地图删除三个参数，函数名则是为与当前单元或其他单元的一个函数的名称（建议加单元名前缀），执行完毕后立即删除，即只是一次性使用的
+
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.DelayCallMethod('Q56.TestDelayCallMethod'/*要调用的函数名*/, 1000/*延迟时间1000毫秒*/, false/*切换地图不删除该延迟调用*/);
+}
+
+export function TestDelayCallMethod(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.MessageBox('延迟调用执行');
+} 
+
+// 如何删除一个延时调用函数
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //添加一个延迟调用
+    Player.DelayCallMethod('Q56.TestDelayCallMethod'/*要调用的函数名*/, 1000/*延迟时间1000毫秒*/, false/*切换地图不删除该延迟调用*/);
+    //删除一个延迟调用 
+    Player.DeleteDelayCallMethod('Q56.TestDelayCallMethod');
+}

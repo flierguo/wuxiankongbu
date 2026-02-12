@@ -1,0 +1,8 @@
+创建一个藏匿于地图上的攻击事件
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //CreateAttackEvent(X坐标, Y坐标, 持续存在时间, 伤害间隔时间, 单次伤害值); 时间单位为毫秒
+    //100, 100, 10000{ 10秒 } + Random(40000{ 0..40秒 }), 200{ 200毫秒执行一次伤害 }, 100{ 100的伤害值 }
+    if (Player.CreateAttackEvent(100, 100, 10000 + random(40000), 200, 100)) {
+        Player.MessageBox('创建成功!!!');
+    }
+}

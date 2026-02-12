@@ -1,0 +1,26 @@
+如何给玩家发放物品
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AItem: TUserItem;
+    //方式1:NPC给玩家发放
+    Npc.Give(Player, '乌木剑'/*物品名称*/, 1/*数量*/, true/*是否随机升级属性,只对可穿戴物品有效*/);  //普通的发放方式
+    AItem = Npc.GiveItem(Player, '乌木剑'/*物品名称*/, true/*是否随机升级属性,只对可穿戴物品有效*/);//发放物品后可修改发放的物品,一次只能发放一个
+    if (AItem) { //如果物品存在(发放成功)
+        AItem.AddDC = AItem.AddDC + 10; //修改物理攻击
+        AItem.AddSC = AItem.AddSC + 10; //修改道术
+        Player.UpdateItem(AItem); //客户端更新物品信息,针对一个物品属性修改完成后再调用此函数
+    }
+    AItem = Npc.GiveItemByIndex(Player, 30/*物品在数据库中的序号,示范版本中30是乌木剑*/, true);  //根据物品的序号发放物品比如在取下镶嵌物品的时候,只知道镶嵌物品的ID  
+    if (AItem) { //如果物品存在(发放成功)
+        //这里的操作和前面一样,可以针对物品做任何的修改
+}
+    //方式2:Player对象自己发放,和NPC发放的函数不同点在于少了一个参数,不依赖于NPC
+    Player.Give('乌木剑'/*物品名称*/, 1/*数量*/, true/*是否随机升级属性,只对可穿戴物品有效*/);
+    AItem = Player.GiveItem('乌木剑'/*物品名称*/, true/*是否随机升级属性,只对可穿戴物品有效*/);
+    if (AItem) { //如果物品存在(发放成功)
+        //可针对物品做任何的修改
+    }
+    AItem = Player.GiveItemByIndex(30/*物品在数据库中的序号,示范版本中30是乌木剑*/, true);
+    if (AIteml) { //如果物品存在(发放成功)
+        //可针对物品做任何的修改
+    }
+}

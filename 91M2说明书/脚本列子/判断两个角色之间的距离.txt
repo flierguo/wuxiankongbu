@@ -1,0 +1,7 @@
+判断两个角色之间的距离
+//ABS为取绝对值函数。此处判断NPC和角色的X坐标或Y坐标距离是否大于5，怪物、NPC及玩家都有MapX和MapY属性
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if ((Math.abs(Npc.MapX - Player.MapX) > 5) || (Math.abs(Npc.MapY - Player.MapY) > 5)) {
+        Npc.Say(Player, '你离我太远了，我看不清楚。。。');
+    }
+}

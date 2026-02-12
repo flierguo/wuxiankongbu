@@ -1,0 +1,7 @@
+如何增加一个地图连接点
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //在盟重省的X600、Y600上增加一个地图入口，出口位于比奇的X300、Y300上，持续时间120秒，外观为UI自定义里面指定的ID为100的特效，该连接点显示名称
+    if (GameLib.AddMapRoute('比奇暗道', '3', 600, 600, '0', 300, 300, 120/* 时间为0则表示增加一个永久的连接点 8*/, 100, true)) {
+        Npc.MessageBox(Player, '暗道增加成功');
+    }
+} 

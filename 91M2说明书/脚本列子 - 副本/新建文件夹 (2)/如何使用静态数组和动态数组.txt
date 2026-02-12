@@ -1,0 +1,24 @@
+如何使用静态数组和动态数组
+// 这是一个静态数组,运行期不需要改变,所以定义为const
+const JobNames: string[] = ['战士', '法师', '道士', '刺客', '弓箭手']; 
+let Job_AddAbility: number[][]
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.Say(Job_AddAbility[0][1].toString()); //访问数组数据 
+
+}
+export function InitArry() {
+    //赋值
+    Job_AddAbility[0] = [12, 13, 14, 15];
+    Job_AddAbility[1] = [10, 6, 10, 4];
+    Job_AddAbility[2] = [10, 12, 20, 8];
+    Job_AddAbility[3] = [10, 18, 30, 12];
+    Job_AddAbility[4] = [10, 30, 50, 20];
+}
+export function FinaArry() {
+    Job_AddAbility = null
+}
+export function initialization() {
+    InitArry()
+}
+export function finalization() {
+}

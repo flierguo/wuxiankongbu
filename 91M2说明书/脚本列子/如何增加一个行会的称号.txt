@@ -1,0 +1,63 @@
+如何增加一个行会的称号
+// 增加一个行会的称号 
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.Guild) {
+        if (Player.Guild.AddRankName(2/*称号编号,不可重复*/, '猛虎队'/*称号名称,不可重复*/)) {
+            Player.MessageBox('称号添加成功');
+        }
+    }
+} 
+
+// 如何在行会指定的称号里面添加成员
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    if (Player.Guild) {
+        if (Player.Guild.AddMemberWithRank('猛虎队', '张三')) {//向称号"猛虎队"里面添加一个新成员"张三"
+            Player.MessageBox('行会成员添加成功');
+        }
+    }
+}
+
+// 修改行会帮主
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    if (Player.Guild) {
+        //将行会帮主改成"张三".注意:新行会帮主必须在线且不是其行会帮主,否则添加失败.
+        //修改之后原来的帮主成为普通成员
+        if (Player.Guild.ChangeChief('张三')) {
+            Player.MessageBox('行会帮主变更成功');
+        }
+    }
+}
+
+// 如何取得行会全部称号及全部成员信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let ARankNames: TStringList
+    let ANames: TStringList
+    if (Player.Guild) {
+        //取得全部称号名称
+        ARankNames = GameLib.CreateStringList()
+        try {
+            Player.Guild.GetRankNames(ARankNames); //ARankNames必须执行创建和释放  
+        } finally {
+            ARankNames.Free()
+        }
+        //取得某称号下全部成员
+        ANames = GameLib.CreateStringList()
+        try {
+            Player.Guild.GetRankMembers('猛虎队', ANames); //ANames必须执行创建和释放 
+        } finally {
+            ANames.Free()
+        }
+    }
+}
+
+// 如何删除或修改行会称号
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    if (Player.Guild) {
+        if (Player.Guild.DropRankName('猛虎队')) {//删除一个指定的称号,其下的全部成员进入普通成员
+            Player.MessageBox('称号删除成功');
+        }
+        if (Player.Guild.UpdateRankName('菜鸟队', '猛虎队')) {//将一个称号修改成新的称号,新的称号必须是不存在的
+            Player.MessageBox('称号修改成功');
+        }
+    }
+}

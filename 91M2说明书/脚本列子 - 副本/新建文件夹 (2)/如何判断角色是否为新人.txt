@@ -1,0 +1,10 @@
+如何判断角色是否为新人
+//该函数定义位于“系统固定NPC\ManagerNpc”中，角色登陆将触发该函数
+export function PlayerOnLogin(Npc: TNormNpc, Player: TPlayObject) {  
+    if (Player.IsNewHuman) {  //如果角色是新人
+        Npc.Give(Player, '乌木剑');  //给乌木剑1把
+        Npc.Give(Player, '金币', 100000);  //给金币10W
+        //广播新角色登陆
+        GameLib.BroadcastCenterMessage('欢迎玩家“{S=' + Player.Name + ';C=249}”来到{S=' + GameLib.ServerName + ';C=250}'); 
+    }
+}

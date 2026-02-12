@@ -1,0 +1,15 @@
+如何调整人物转生等级
+方法1：
+使用ChangeReNewLevel函数
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.ChangeReNewLevel(2, 200, 500);
+    Npc.MessageBox(Player, format('转生等级:%d 人物等级:%d 增加属性点:%d', [2, 200, 500]));
+}
+方法2：
+使用ReNewLevel 属性直接调整
+export function Main2(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.ReNewLevel = 2; //直接设置转生等级为2
+    Player.Level = 200; //设置人物等级为200
+    Player.BonusPoint = Player.BonusPoint + 500; //可分配属性点增加500
+    Npc.MessageBox(Player, format('转生等级:%d 人物等级:%d 增加属性点:%d', [2, 200, 500]));
+} 

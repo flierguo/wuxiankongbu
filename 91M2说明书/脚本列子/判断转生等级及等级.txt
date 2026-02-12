@@ -1,0 +1,29 @@
+判断转生等级及等级
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    switch (Player.ReNewLevel) {、
+        case 0:
+            switch (Player.Level) {
+                case 7:
+                    Player.SendMessage('7级', 0);
+                    break;
+                case 9:
+                    Player.SendMessage('9级', 0);
+                    break;
+            }
+            break;
+        case 1:
+            switch (Player.Level) {
+                case 7:
+                    Player.SendMessage('1转7级', 0);
+                    break;
+                case 9:
+                    Player.SendMessage('1转9级', 0);
+                    break;
+            }
+            break;
+        default:
+            if (Player.Level = 22)
+                Player.SendMessage('22级', 0);
+            break;
+    }
+}

@@ -1,0 +1,34 @@
+如何做一个感叹号提示
+ShowSighIcon有两个声明，分别对应两种不同的使用方法：
+
+//定义1：使用MethodID来做标记,点击客户端感叹号时触发QFunctionNpc中的ClickSighIcon函数。如:Player.ShowSighIcon(111, '打开看看吧');
+procedure ShowSighIcon(MethodID: Integer; const Hint: String);
+//定义2: 使用Method来指定客户端点击后执行的函数,相对定义1来说不需要触发QFunctionNpc中的函数,可以将函数触发和事件调用的地方放到相同的单元,同时Method支持参数。如:     Player.ShowSighIcon('@Q2.OnClick', '打开看看吧');
+procedure ShowSighIcon(const Method: String; const Hint: String);
+使用定义1的方法：
+1.首先在触发的地方创建感叹号，比如玩家点击NPC:
+
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //ShowSighIcon函数第一个参数表示唯一ID,第二个参数表示客户端鼠标移上去时的提示信息
+    Player.ShowSighIcon(111, '点开有惊喜哦！！！');
+}
+2.然后在QFunctionNPC的ClickSighIcon中实现该感叹号点击的事件：
+//QFunctionNpc中是有很多事件触发函数的,为了演示这里只提取了ClickSighIcon函数部分
+export function ClickSighIcon(Npc: TNormNpc, Player: TPlayObject, MethodID: number) {
+    //这个ID便是调用Player.ShowSighIcon时的第一个参数
+    switch (MethodID) {
+        case 111:
+            Player.MessageBox('你上当了,没有惊喜的。。。');
+            break
+    }
+}
+ 使用定义2的方法：
+export function Main2(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //ShowSighIcon函数第一个参数表示需要调用的函数(必须加上单元名,即 @单元.函数 格式),第二个参数表示客户端鼠标移上去时的提示信息
+    Player.ShowSighIcon(this.OnClickSighIcon, '点开有惊喜哦！！！');
+}
+    export function OnClickSighIcon(Npc: TNormNpc, Player: TPlayObject, MethodID: number) {
+    //和普通函数实现一样,可做普通点击触发也可做感叹号点击触发
+    Player.MessageBox('你上当了,没有惊喜的。。。');
+}
+通过两个示范可以发现，定义2的方法更简洁，但是定义1方便集中管理。作者建议使用定义2

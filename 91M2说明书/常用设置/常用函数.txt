@@ -1,0 +1,66 @@
+常用函数
+一些常用函数说明与示例
+
+// 关于除法的一些函数
+Math.ceil(count/pagesize);  //向上整除 4/3=2;
+Math.floor(count/pagesize); //向下整除 4/3=1;
+Math.round(5/2);            //四舍五入
+
+//字符串替换（参数1：需要被替换的字符串 参数2：被替换的部分 参数3：需要替换的值（可以是整数型或字符串））
+ function ReplaceStr(srcStr:string,oldPartten:string,newPartten:string|number):string;
+
+// 返回两个参数中比较大的值
+ function max(a:number,b:number):number;
+
+//比较字符串返回差异值
+ function CompareStr(a:string,b:string):number;
+
+//置随机数种子
+ function Randomize():void;
+
+//浮点型转换为字符串 保留小数点后两位数
+ function FloatToStr(value:number):string;
+
+//带下划线的表示兼容层 据需使用
+// _Copy(a,b,c)
+//参数1(字符串)：就是copy源 参数2(整数型)：从a中的第b位开始复制 参数3(整数型)：复制从第b位开始后的c个字符
+//示例：_Copy('123456789',3,4)  返回结果是：3456
+ function _Copy(str:string,startIndex:number,count:number):string;
+
+//_Pos(a,b) 返回查找字符串a中b首次出现的位置(整数型)
+//示例：_Pos('中华人民共和国','民'） 返回结果：4
+ function _Pos(subStr:string,srcStr:string):number;
+//查找字符串的两种方式
+
+//第一种 indexOf是用于返回[目标字符串]在[源字符串]中的位置。
+1、indexOf：返回特定子字符串第一次在源字符串中的位置。如果源字符中不存在目标字符，则返回-1。
+//indexOf函数两种用法和实现功能说明
+1、indexOf(String str): 返回指定字符str在字符串中（方法调用者）第一次出现处的起始索引，如果此字符串中没有这样的字符，则返回 -1。
+2、indexOf(String str, int index): 返回从 index 位置开始查找指定字符str在字符串中第一次出现处的起始索引，如果此字符串中没有这样的字符，则返回 -1。
+
+//第二种 includes 可以判断一个数组中是否包含某一个元素，并返回true 或者false
+示例1：
+['a','b','c'].includes('a') 返回 true
+['a','b','c'].includes(1)   返回 false
+//includes可以包含两个参数，第二个参数表示判断的起始位置
+//起始位置第一个数字是0。
+['a','b','c'].includes('b',2)  返回 false
+['a','b','c'].includes('b',1)  返回 true
+// 字符的asiic编码是否在指定范围
+ function CharCodeIn(src:string,low:string,high:string):number;
+
+// 比方如果你要过滤掉字符串中的所有阿拉伯数字 就可以这么写
+ function DeleteAllNumber(str: string) : string {
+    let result = '';
+    for(let i = 0; i < str.length - 1; i++) {
+        if(!CharCodeIn(str[i],'O','9') {
+          result += str[i]
+        }
+    }
+    return result
+}
+
+// 注意：
+// 但是要注意 你不能写 CharCodeIn(str[i],'9','0')
+// 因为在asiic码表里头 9 对应的代码是39
+// 0 是30 这样写就有问题

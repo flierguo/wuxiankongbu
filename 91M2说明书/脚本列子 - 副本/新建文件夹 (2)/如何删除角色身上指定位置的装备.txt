@@ -1,0 +1,4 @@
+如何删除角色身上指定位置的装备
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.DeleteUseItem(TItemWhere.wHelmet); //直接将头盔位置的物品彻底删除
+}

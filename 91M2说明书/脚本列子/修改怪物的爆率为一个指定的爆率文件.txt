@@ -1,0 +1,21 @@
+修改怪物的爆率为一个指定的爆率文件
+export function MonitorRevival(Npc: TNormNpc, Envir: TEnvirnoment, Actor: TActor, Tag: number) {
+    //注意:以下示范的爆率文件在示范版本中并不存在,此处只演示如何重新关联爆率文件
+    if (Actor.Level >= 0 || Actor.Level <= 10) {
+        Actor.DropName = '低级怪爆率文件';
+    } else if (Actor.Level >= 11 || Actor.Level <= 20) {
+        Actor.DropName = '基础怪爆率文件';
+    } else if (Actor.Level >= 21 || Actor.Level <= 40) {
+        Actor.DropName = '中级怪爆率文件';
+    } else if (Actor.Level >= 41 || Actor.Level <= 60) {
+        Actor.DropName = '高级怪爆率文件';
+    } else {
+        //如果大于60级且Tag标识为1000则设置爆率文件为"顶级爆率文件"
+        if (Tag == 1000) {
+            Actor.DropName = '顶级爆率文件';
+        }
+    }
+    //MonitorRevival定义于ManagerNpc单元,属于系统事件函数,可用来监控怪物刷新
+    //参数Actor为刷新的怪物
+    //参数Tag为怪物标识,在刷怪里面进行设置,和NPC标识一样,给怪设置唯一标识可用来区别于其他怪物 
+}

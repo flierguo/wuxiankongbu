@@ -1,0 +1,9 @@
+循环自身全部技能
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //SkillCount：技能个数
+    //Skills[n]: 第n个技能
+    for (let I = 0; I < Player.SkillCount; I++) {
+        Player.SendMessage(format('技能:%s, 等级:%d', [Player.GetSkills(I).Name, Player.GetSkills(I).Level]));
+        //Player.GetSkills(I).Level := 3; //修改技能信息
+    }
+}

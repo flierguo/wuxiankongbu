@@ -1,0 +1,945 @@
+GameLib 相关函数注释
+GetGVar(index: number): number;GVar:number;             / 获取服务器G变量
+GetAVar(index: number): string;AVar:string;             / 获取服务器A变量
+GetIVar(index: number): number;IVar:number;             / 获取服务器I变量
+GetUVar(index: number): string;UVar:string;             / 获取服务器U变量
+SetGVar(index: number,Value: number): void;             / 设置服务器G变量
+SetAVar(index: number,Value: string): void;             / 设置服务器A变量
+SetIVar(index: number,Value: number): void;             / 设置服务器I变量
+SetUVar(index: number,Value: string): void;             / 设置服务器U变量
+GetPlayCount(): number;PlayCount:number;                / 获取服务器当前在线人数
+GetPlayer(index: number): TPlayObject;                  / 获取一个在线玩家对象
+Kick(APlayName: string): void;                          / 把指定名称玩家踢下线
+KickAll(): void;                                        / 把所有玩家踢下线
+GetServerName(): string;ServerName:string;              / 获取服务器名称
+GetServerID(): number;ServerID:number;                  / 获取服务器ID
+GetDBEngine(): TDBEngine;DBEngine:TDBEngine;            / 获取数据库管理对象
+GetToptenz(): TToptenz;Toptenz:TToptenz;                / 获取服务器排行榜
+WriteLog(Log: string): void;                            / 写入服务器日志
+GetStartTime(): number;StartTime:number;                / 获取M2启动时间
+GetEnvirPath(): string;EnvirPath:string;                / 获取Envir文件夹路径
+GetPath(): string;Path:string;                          / 获取M2路径
+GetClientSpeed(): number;ClientSpeed:number;            / 获取客户端速度
+SetClientSpeed(Value: number): void;                    / 设置客户端速度
+RandomRange(Min: number,Max: number): number;           / 取2个数之间的随机值
+HasRobotRun(RobotName: string): boolean;                / 判断机器人是否正在执行中(版本管理器机器人)
+
+Lock(): void;                                           / 引擎互斥处理
+UnLock(): void;                                         / 引擎互斥处理
+ReLoadScriptEngine(): void;                             / 重载脚本引擎
+// 广播消息
+Broadcast(Msg: string): void;
+BroadcastSay(Msg: string,FontColor: number,Backgound: number): void;
+BroadcastTopMessage(Message: string): void;
+BroadcastCenterMessage: ( Message: string,DuraTick?: number) =>  void;
+BroadcastCountDownMessage(Message: string): void;
+// 示例：
+Gamelib.Broadcast('这里是消息内容'); //广播一个系统消息
+Gamelib.BroadcastSay('这里是消息内容', 249, 255); //广播一个系统消息，第二个参数为文字颜色，第三个参数为背景色
+Gamelib.BroadcastTopMessage('这里是消息内容'); //广播一个顶部滚动消息
+Gamelib.BroadcastCenterMessage('这里是消息内容'); //广播一条居中消息
+Gamelib.BroadcastCountDownMessage('这里是消息内容'); //广播一条底部消息
+// 开始提问（即在线玩家执行相同的函数，比如弹窗让玩家选择是否传送到某地）
+StartQuest(AQManagerMethod: string): void;
+
+// 查找物品定义
+FindStdItem(ItemIndex: number): TStdItem;
+// 查找物品序号
+FindItemIndex(Name: string): number;
+// 查找一个地图
+FindMap(AMap: string): TEnvirnoment;
+// 删除一个通过AddMapRoute增加的地图入口
+DelMapRoute(Name: string): boolean;
+// 创建一个副本地图，Name为副本地图名称，UsefulLife为副本时长（秒）
+CreateDuplicateMap(Name: string,UsefulLife: number): TEnvirnoment;
+// 关闭(删除)一个指定名称的副本地图
+CloseDuplicateMap(MapName: string): boolean;
+
+// 增加一个NPC。UnitName为NPC要调用的入口函数所在的单元
+AddNpc(Name: string,Map: string,MapX: number,MapY: number,Appr: number,AUnitName: string): TNormNpc;
+// 移除一个指定坐标位置的NPC
+RemoveNpc(Name: string,Map: string,MapX: number,MapY: number): boolean;
+
+// 添加一个怪物NPC
+// MonName: 怪物名称；NpcName: NPC名称；MapName: 目标地图名称；MapX, MapY: 刷新位置；AUnitName: 和怪物NPC关联的脚本单元名；
+// Camp: 阵营；Nation: 国别；AttackDiffCamp: 是否攻击不同阵营对象；AttackDiffNation: 是否攻击不同国别对象；AttackRed: 是否攻击红名；AttackMon: 是否攻击怪物
+AddMonNpc: ( MonName: string,NpcName: string,Map: string,MapX: number,MapY: number,AUnitName?: string,ACamp?: number,ANation?: number,AttackDiffCamp?: boolean,AttackDiffNation?: boolean,AttackRed?: boolean,AttackMon?: boolean,MissionX?: number,MissionY?: number,MissionRange?: number) =>  TActor;
+
+// 添加一个怪物NPC(同AddMonNpc，区别在于MapName改为地图对象Map)
+AddMonNpcEx: ( MonName: string,NpcName: string,Map: TEnvirnoment,MapX: number,MapY: number,AUnitName?: string,ACamp?: number,ANation?: number,AttackDiffCamp?: boolean,AttackDiffNation?: boolean,AttackRed?: boolean,AttackMon?: boolean,MissionX?: number,MissionY?: number,MissionRange?: number) =>  TActor;
+
+// 删除一个怪物NPC
+RemoveMonNpc(NpcName: string,Map: string,MapX: number,MapY: number): boolean;
+
+// 删除一个怪物NPC（RemoveMonNp，区别在于MapName改为地图对象Map）
+RemoveMonNpcEx(NpcName: string,Map: TEnvirnoment,MapX: number,MapY: number): boolean;
+
+// 清除地图怪物，NoDrop指定是否不爆出物品
+ClearMapMon: ( AMapName: string,ANoDrop?: boolean,AMonName?: string) =>  void;
+
+// 在地图上显示一个特效（可从UI特效中加载）
+// Map:地图ID，MapX MapY 播放的坐标，effect：自定义特效ID，IntervalTime：持续时间（单位：秒）
+// ShowEffect和ShowEffect2的区别在于最后一个参数 一个是持续时间 一个是播放次数
+ShowEffect(Map: string,MapX: number,MapY: number,Effect: number,IntervalTime: number): void;
+ShowEffect2(Map: string,MapX: number,MapY: number,EffectID: number,LoopCount: number): void;
+
+// 创建一个藏匿于地图上的攻击事件 (地图名称, X坐标, Y 坐标, 持续存在时间, 伤害间隔时间, 单次伤害值 ( 时间单位为毫秒 ),技能编辑器特效ID[可选参数]) 创建失败返回false
+CreateAttackEvent(Map: string,AMapX: number,AMapY: number,ATime: number,AInterval: number,ADamage: number): boolean;
+
+// 其功能与TActor.CreateAttackEvent一致。区别在于带2的特效ID是 UI设计中的特效ID
+CreateAttackEvent2(Map: string,AMapX: number,AMapY: number,ATime: number,AInterval: number,ADamage: number,UIEffectID: number): boolean;
+
+// 将地图上的玩家全部移到另外一个地图
+RecallMap(ASourceMap: string,ADestMap: string): void;
+
+// 在指定的地图上刷怪。
+// AMap 所在地图ID；AMonName 怪物名称；AMonCount, 刷怪数量； AMapX, AMapY, ARange 刷怪的坐标X ,坐标Y, 刷怪范围；
+// ACamp 阵营ID；ANation 国家ID； ATag 怪物标记；ARevivalEvent 是否 刷新触发；ADieEvent 是否死亡触发；
+// AKillerEvent 是否 杀人触发； ADamageEvent 是否 受到伤害触发；
+MonGen: ( AMap: string,AMonName: string,AMonCount: number,AMapX: number,AMapY: number,ARange: number,ACamp?: number,ANation?: number,ATag?: number,ARevivalEvent?: boolean,ADieEvent?: boolean,AKillerEvent?: boolean,ADamageEvent?: boolean) =>  TActorList;
+
+// 在指定的地图上刷怪。
+// AEnvir 所在地图对象： TEnvirnoment； AMonName 怪物名称；AMonCount, 刷怪数量； AMapX, AMapY, ARange 刷怪的坐标X ,坐标Y, 刷怪范围；
+// ACamp 阵营ID；ANation 国家ID ；ATag 怪物标记；ARevivalEvent 是否 刷新触发； ADieEvent 是否 死亡触发；
+// AKillerEvent 是否 杀人触发；ADamageEvent 是否 受到伤害触发；
+MonGenEx(AMap: TEnvirnoment,AMonName: string,AMonCount: number,AMapX: number,AMapY: number,ARange: number,ACamp: number,ANation: number,ATag: number,ARevivalEvent: boolean,ADieEvent: boolean,AKillerEvent: boolean,ADamageEvent: boolean): TActorList;
+
+// 在指定的地图上刷怪,并且向AMissionX、AMissionY坐标集中，AMissionX刷新后自动前往集中坐标X；AMissionY 刷新后自动前往集中坐标Y；AX,AY 刷新坐标X,Y；其他参数与Mongen一样
+MobPlace: ( AMissionMap: string,AMissionX: number,AMissionY: number,AMonName: string,AX: number,AY: number,ACount?: number,ARange?: number,ACamp?: number,ANation?: number,ATag?: number,ARevivalEvent?: boolean,ADieEvent?: boolean,AKillerEvent?: boolean,ADamageEvent?: boolean) =>  TActorList;
+
+// 在指定的地图上刷怪，AEnvir所在地图对象：TEnvirnoment；并且向AMissionX、AMissionY坐标集中， AMissionX刷新后自动前往集中坐标X；AMissionY刷新后自动前往集中坐标Y；AX, AY 刷新坐标X,Y；其他参数与Mongen一样
+MobPlaceEx(AMissionMap: TEnvirnoment,AMissionX: number,AMissionY: number,AMonName: string,AX: number,AY: number,ACount: number,ARange: number,ACamp: number,ANation: number,ATag: number,ARevivalEvent: boolean,ADieEvent: boolean,AKillerEvent: boolean,ADamageEvent: boolean): TActorList;
+
+// 增加一个地图入口。
+// Flag为入口唯一标记，Source为入口，Dest为出口。UsefulLife为入口存在时长（秒），Looks为在地图上显示的效果，-1不显示，该效果可从UI特效中加载。
+// ShowName指定是否在客户端显示入口名称（Flag）
+AddMapRoute(Name: string,Source: string,SourceX: number,SourceY: number,Dest: string,DestX: number,DestY: number,UsefulLife: number,Looks: number,ShowName: boolean): boolean;
+
+// 查找一个玩家对象
+FindPlayer(AName: string): TPlayObject;
+
+// 根据账号和角色名查找一个玩家对象
+FindPlayerEx(AAccount: string,AName: string): TPlayObject;
+
+// 创建一个行会（Name为行会名，Chief为创建人）
+CreateGuild(AName: string,AChief: string): TGuild;
+
+// 查找一个行会
+FindGuild(sGuildName: string): TGuild;
+// 获取行会人数
+GetGuildCount(): number;GuildCount:number;
+
+// 获取具体的行会对象
+GetGuildByIndex(index: number): TGuild;GuildByIndex:TGuild;
+
+// 删除一个行会
+DeleteGuild(sGuildName: string): boolean;
+
+// 强制删除行会
+DeleteGuildForce(sGuildName: string): boolean;
+
+// 添加一个行会战
+AddGuildWar(SourceGuild: string,DesTGuild: string): boolean;
+
+// 查找城堡，比如Gamelib.FindCastle('沙巴克')
+FindCastle(Name: string): TUserCastle;
+
+// 查找NPC
+FindNpc(NpcName: string): TNormNpc;
+
+// 查找一个商人
+FindMerchant(MapName: string,MerchantName: string): TNormNpc;
+
+// 根据Tag标志查找一个商人
+FindMerchantByTag(ATag: number): TNormNpc;
+
+// 将玩家信息保存到文件
+SavePlayerToFile(Source: TPlayObject,AFileName: string): void;
+
+// 克隆一个玩家
+AddClonePlayer(Source: TPlayObject,AName: string,Envir: TEnvirnoment,MapX: number,MapY: number): TActor;
+// 从玩家文件信息中克隆一个玩家
+AddClonePlayerFromFile(AFileName: string,AName: string,Envir: TEnvirnoment,MapX: number,MapY: number): TActor;
+
+// 给服务器增加一个时钟事件，触发TimeManageNpc中的onGlobalEventExecute函数
+DelayGoto(ID: number,AIntervalTime: number,Once: boolean): boolean;
+// 清除一个服务器的时钟
+ClearDelayGoto(ID: number): void;
+
+// 修改人物名称
+RenamePlayer(PlayObject: TPlayObject,NewName: string): void;
+
+// 在地图上爆出指定数量的物品。Owner表示可以拾取物品的角色，默认为null，即都可拾取
+ThrowItem: ( MapName: string,ItemName: string,MapX: number,MapY: number,Range: number,Count: number,Owner?: TActor,ForbidTime?: number) =>  boolean;
+// 在地图上爆出指定数量的物品。Owner表示可以拾取物品的角色，默认为nil，即都可拾取
+ThrowItemEx: ( Map: TEnvirnoment,ItemName: string,MapX: number,MapY: number,Range: number,Count: number,Owner?: TActor,ForbidTime?: number) =>  boolean;
+
+// 用于获取 GameLib.ThrowItem 和 GameLib.ThrowItemEx 丢出在地上的物品对象
+GetLastThrowItemList(): TUserItemListReadOnly;LastThrowItemList:TUserItemListReadOnly;
+
+// 随机升级物品属性
+RandomUpgrade(UserItem: TUserItem): boolean;
+// 随机升级物品附加属性
+RandomUpgradePoint(UserItem: TUserItem): boolean;
+// 随机升级强化等级属性
+RandomUpgradeLevel(UserItem: TUserItem): void;
+
+// 添加一个指定时间执行的机器人，执行一次后删除
+AddRobot(ExecTime: number,AMethod: string): void;
+
+// 指定宝宝叛变时间（单位：毫秒）
+SlaveMutiny(ATime: number): void;
+
+// 将一个字符串转化为物品对象
+LoadUserItemFromString(S: string): TUserItem;
+// 将一个物品对象转化为字符串
+SaveUserItemToString(UserItem: TUserItem): string;
+
+// 将物品保存本地物品库，并返回保存后的物品存储序号，EventType 表示物品存储进去的途径 可自定义
+SaveItemToStore(Item: TUserItem,ChrName: string,EventType: number,Param: string): string;
+
+// 批量删除存储的物品 。
+DeleteStoreItem(Index: string): void;
+
+// 拷贝物品(当从公共物品库取出物品 要添加到背包 或者需要放置到其他位置 需要拷贝一份。否则会内存错乱)
+CopyUserItem(Item: TUserItem): TUserItem;
+
+// 批量删除存储的物品 。返回删除的数量
+DeleteStoreItems(IndexList: TStringList): number;
+
+// 用于查询IP地址信息
+GetIPLocal(IP: string): string;IPLocal:string;
+
+// 获取获取当前震荡总数(两次震荡总数相减，就是两次间隔的CPU震荡次数) 
+// 用于获取超高精度的时间计算。可用于精确到纳秒的计时器 可以用于脚本中做性能测试分析。
+QueryPerformanceCounter(): number;
+// 获取CPU每秒震荡次数
+QueryPerformanceFrequency(): number;
+
+// 用于版本内可延迟加载DLL
+LoadLibrary(FileName: string): number;
+GetProcAddress(hModule: number,ProcName: string): number;ProcAddress:number;
+FreeLibrary(hModule: number): boolean;
+
+// 用于支持http提交json功能。
+// 参数说明: ident:请求标志 自定义数据 这个当httpost 完成或者错误的时候 此数据会原封不动传递到下文的OnAsyncHttpPostResult中
+// URL:远程服务器URL Json : 要提交的json字符串内容。 TimeOut: 超时时间 单位秒。
+ASyncHttpPostJson(Ident: string,URL: string,Json: string,TimeOut: number): void;
+// 异步提交HttpPost Json
+ASyncHttpPostJsonEx: ( url: string,postJson: string,timeout: number,cb: HttpAsyncResult) =>  void;
+
+// 用于支持httpget功能
+// 参数说明: ident:请求标志 自定义数据 这个当httpost 完成或者错误的时候 此数据会原封不动传递到下文的OnAsyncHttpGetResult中
+// URL:远程服务器URL TimeOut: 超时时间 单位秒。
+ASyncHttpGet(Ident: string,URL: string,TimeOut: number): void;
+// 异步 支持httpget功能
+ASyncHttpGetEx: ( url: string,timeout: number,cb: HttpAsyncResult) =>  void;
+
+// 尝试获取一个版本中的资源数据，如果不存在则返回nil，返回的资源不可释放
+TryGetResource(AName: string): TStringList;
+
+// 判断文件路径是否存在
+DirectoryExists(Name: string): boolean;
+
+// 检查指定路径的文件是否存在
+FileExists(Name: string): boolean;
+
+// 更新所有玩家的客户端速度  用于在调整客户端加速后 主动刷新所有玩家速度 通常在调试中用 使得玩家不需要小退即可刷新
+SendChangeClientSpeed(): void;
+
+// 逻辑线程阻塞一段时间 单位毫秒 用于调试    
+Sleep(MS: number): void;
+
+// 根据魔法名称获得对应的ID
+GetMagicIdByName(Name: string): number;
+
+// 创建磁盘目录 单一层级如 创建 D:\91\Data 必须保证 D:\91\目录是存在的否则无法创建
+CreateDir(Name: string): boolean;
+// 创建 TFastIiniFile对象
+CreateFastIniFile(AFileName: string): TFastIniFile;
+// 创建存放Actor的TActorList
+CreateActorList(): TActorList;
+
+// 获取全局的 ManagerNpc (通常不再使用 推荐使用QFunctionNPc)
+GetManagerNpc(): TNormNpc;ManagerNpc:TNormNpc;
+// 获取全局的 QFunctionNPc
+GetQFunctionNpc(): TNormNpc;QFunctionNpc:TNormNpc;
+
+// 创建磁盘目录 支持递归 如 D:\91\Data\Client\ 即使91目录不存在也会一直递归创建出来
+ForceDirectories(Path: string): boolean;
+// 删除磁盘文件
+DeleteFile(Path: string): boolean;
+// 创建文件流
+CreateFileStream(Path: string,Mode: number): TFileStream;
+
+// 删除地图传送点
+DeleteMapRoute(RouterName: string): boolean;
+
+// 获取设备开机到现在经过的毫秒数
+GetTickCount(): number;TickCount:number;
+
+// 从TStringList中的文本创建 TFastIniFile对象
+CreateFastIniFromStrings(List: TStringList): TFastIniFile;
+
+// 清除所有脚本创建的对象 包括 TStringList TFastIniFile 等。调试用
+ClearScriptCreateObject(): void;
+
+// 创建自定义物品容器
+CreateUserItemList(AName: string,SaveToDB: boolean): TUserItemList;
+
+// 获取自定义物品容器
+GetUserItemList(AName: string): TUserItemList;UserItemList:TUserItemList;
+
+// 删除物品自定义容器
+DeleteUserItemList(AName: string): void;
+
+// 根据数据库物品名创建一个物品
+CreateUserItemByName(ItemName: string): TUserItem;
+
+// 释放一个物品内存（危险） 此物品必须未添加到任何玩家或者怪物的背包中。否则会导致内存失效报错或者引擎崩溃
+DestoryUserItem(Item: TUserItem,Force: boolean): void；
+
+// 获取目录中的所有文件 Path 目录名称 Ext 文件后缀格式 如 .txt IncludeSubDir 是否包含子目录
+ReadDirFiles(Path: string,Ext: string,IncludeSubDir: boolean): TStringList;
+
+// 修改玩家对应的账号名 （修改角色归属账号）
+UpdatePlayerAccount(Account: string,PlayerName: string,NewAccount: string,Log: string): void;
+
+// 获取M2版本后台界面UI操作类
+GetAdminUI(): TProjectUIAdmin;AdminUI:TProjectUIAdmin;
+
+
+// 角色、行会及Gamelib均增加清除变量表函数ClearVarTable及删除具体变量函数RemoveVar（执行清空操作后的变量将被移除内存，减少内存占用）
+ClearVarTable(): void;
+RemoveVar(AName: string): void;
+
+// 服务器 V R 变量
+V:any;
+R:any;
+
+// 用来对字符串进行掩码处理
+// 针对客户端向服务端发送的字符串，经过服务器以聊天信息的方式转发给客户端，此时内容需要经过MakeMaskString处理，
+// 特殊字符进行转化，防止出现命令漏洞；
+// 同时经过掩码转换处理的字符串如果需要还原，则使用ConvertMaskString函数进行处理
+MakeMaskString(AStr: string): string;
+
+// 创建共享TStringList 其他地方可以使用 GetIdentStringList 获取
+CreateIdentStringList(Ident: string): TStringList;
+// 获取共享TStringList
+GetIdentStringList(Ident: string): TStringList;IdentStringList:TStringList;
+// 删除共享TStringList
+FreeIdentStringList(Ident: string): void;
+// 创建TStringList
+CreateStringList(): TStringList;
+
+// 定义一个全局的字符串型自定义变量
+DefString(AVarName: string): TVarValue;
+// 定义一个全局的整数型自定义变量
+DefInteger(AVarName: string): TVarValue;
+// 定义一个全局的时间类型自定义变量
+DefDateTime(AVarName: string): TVarValue;
+// 定义一个全局的浮点型自定义变量
+DefFloat(AVarName: string): TVarValue;
+// 定义一个全局的布尔型自定义变量
+DefBoolean(AVarName: string): TVarValue;
+// 全服广播顶部移动消息 Type 为滚动类型 目前只有1从左向右移动 DuraTick 持续时间 毫秒
+BroadcastMoveMessage(Message: string,_Type: number,DuraTick: number): void;
+
+// 从全局物品仓库中获得一件物品 （废弃）
+LoadItemFromStore(Index: string): TUserItem;
+// 从全局物品仓库中获得存储的类型 （废弃）
+GetStoreItemType(Index: string): number;StoreItemType:number;
+//获取某个玩家在全局物品仓库中的所有物品。 （废弃）
+GetAllStoreItem(ChrName: string): TStoreItemList;AllStoreItem:TStoreItemList;
+//从全局物品仓库中获得某个玩家对应的所有类型的物品(废弃)
+GetStoreItemsWithType(ChrName: string,EventType: number): TStoreItemList;StoreItemsWithType:TStoreItemList;
+// 从全局物品仓库中获得所有类型的物品(废弃)
+GetStoreItemsOnlyType(EventType: number): TStoreItemList;StoreItemsOnlyType:TStoreItemList;
+// 设定点击NPC触发回调
+onNpcClicked : (Npc : TNormNpc,PlayObject : TPlayObject,ClickLabel : string,AUnitName : string,AParams : string) =>void;
+
+// 人物升级触发
+onPlayerLevelUp : (PlayObject : TPlayObject,Level : number) =>void;
+
+// 玩家登录触发
+onPlayerLogin : (PlayObject : TPlayObject, OnlineAddExp : boolean) =>void;
+
+// 玩家数据初始化完成触发，此时不可向角色发送消息(只初始化一次，离线挂机后重新上线不执行初始化)
+onPlayerInitialization : (PlayObject : TPlayObject) =>void;
+
+// 人物小退触发  OnlineAddExp:是否离线挂机
+onPlayerReconnection : (PlayObject : TPlayObject,OnlineAddExp : boolean) =>void;
+
+// 人物离线触发 OnlineAddExp:是否离线挂机
+onPlayerOffLine : (PlayObject : TPlayObject,OnlineAddExp : boolean) =>void;
+
+// 发送消息触发
+onGetLineNoticeMessage : (PlayObject : TPlayObject,Message : string) =>string;
+
+// 点击帮助按钮触发
+onPlayerHelp : (PlayObject : TPlayObject) =>void;
+
+// 点击热点按钮触发
+onPlayerHot : (PlayObject : TPlayObject) =>void;
+
+// 玩家点击商城在线充值时执行
+onPlayerPayHome : (PlayObject : TPlayObject) =>void;
+
+// 怪物复活（怪物刷新）时触发: Envir地图环境,Actor怪物信息,Tag为怪物标志 
+onMonitorRevival : (Envir : TEnvirnoment,ActorObject : TActor,Tag : number) =>void;
+
+// 怪物死亡触发
+onMonitorDie : (Envir : TEnvirnoment,ActorObject : TActor, Killer : TActor,Tag : number) =>void;
+
+// 人物被杀死触发
+onMonitorKill : (Envir : TEnvirnoment,ActorObject : TActor,Player : TPlayObject,Tag : number) =>void;
+
+// 目标受到伤害触发（目标可以是玩家，也可以是怪物，可以是指定任意对象，大多数关于伤害算法功能可以在这里实现）
+onMonitorDamage : (ActorObject : TActor, ADamageSource : TActor,Tag : number, Value : number) =>void;
+
+// 目标受到伤害触发（目标可以是玩家，也可以是怪物，可以是指定任意对象，大多数关于伤害算法功能可以在这里实现）
+onMonitorDamageEx : (ActorObject : TActor, ADamageSource : TActor,Tag : number, SkillID : number, SkillLevel : number,Value : number) =>number;
+
+// 打开会员功能触发
+onOpenMember : (PlayObject : TPlayObject) =>void;
+
+// 玩家输入命令触发
+onProcessCommand : (Play : TPlayObject,Command : string, Params : string,Processed : boolean) =>boolean;
+
+// 行会初始化
+onGuildInitialize : (AGuild : TGuild) =>void;
+
+// 用于支持http提交json功能,结果触发函数,当成功或者失败会调用此函数
+onAsyncHttpPostResult : (Ident : string,URL : string,ResultText : string,ErrorStr : string) =>void;
+
+// 用于支持httpget功能，结果触发函数,当成功或者失败会调用此函数
+onAsyncHttpGetResult : (Ident : string,URL : string,ResultText : string,ErrorStr : string) =>void;
+
+// 检测游戏速度
+onPlayerSpeedException : (Play : TPlayObject,Kick : boolean) =>boolean;
+
+// 自定义UI中脚本按钮触发函数，Flag参数为脚本按钮中设置的标志字段
+onScriptButtonClick : (PlayObject : TPlayObject,Flag : string) =>void;
+
+// 人物复活触发
+onPlayerReAlive : (Player : TPlayObject) =>void;
+
+// 杀人触发
+onKillPlayer : (Killer : TPlayObject, Player : TPlayObject) =>void;
+
+// 宝宝杀人触发
+onSlaveKillPlayer : (Master : TPlayObject,Slave : TActor,Player : TPlayObject) =>void;
+
+// 人物死亡触发
+onPlayerDie : (Player : TPlayObject,Killer : TActor) =>void;
+
+// 人物杀怪触发
+onKillMonster : (Player : TPlayObject,Monster : TActor) =>void;
+
+// 宝宝杀怪触发
+onSlaveKillMonster : (Player : TPlayObject,Slave : TActor, Monster : TActor) =>void;
+
+// 决斗结束触发
+onDuelEnd : (Winner : TPlayObject, Loser : TPlayObject) =>void;
+
+// 背包事件触发
+// Item:和当前事件相关的物品; EventType: 事件类型{0:增加到背包,1:从背包中移出}; EventID：事件ID
+// EventType:0,
+// EventID:
+// 0:捡取
+// 1:怪物身上挖出
+// 2:挖矿挖出
+// 3:解包
+// 4:从身上取下
+// 5:商店购买
+// 6:元宝商城购买
+// 7:礼金商城购买
+// 8:玩家交易获得
+// 9:交易市场购买
+// 10:交易市场下架
+// 11:命令制造获得
+// 12:取仓库
+// 13:其他
+
+// EventType:1,
+// EventID:
+// 0:丢弃
+// 1:死亡爆出
+// 2:出售
+// 3:正常使用
+// 4:穿戴到身上
+// 5:交易给其他玩家
+// 6:到期销毁
+// 7:破损销毁
+// 8:上架到交易市场
+// 9:用脚本执行销毁或拿走
+// 10:存
+// 11:其他
+onBagItemEvent : (Player : TPlayObject,Item : TUserItem,EventType : number, EventID : number) =>void;
+
+// 购买商铺物品触发
+onBuyShopItem : (Player : TPlayObject,UserItem : TUserItem,Kind : number, ShopType : number, Count : number, Price : number) =>void;
+
+// 商铺购买完成时触发
+onBuyShopItemEnd : (Player : TPlayObject,ItemName : string,Kind : number, ShopType : number, Count : number, ActualCount : number, Price : number) =>void;
+
+// 客户端点击感叹号图标
+onClickSighIcon : (Player : TPlayObject,MethodID : number) =>void;
+
+// 打开宝箱触发
+onGetBoxItem : (Player : TPlayObject,Item : TUserItem,BoxID : number) =>void;
+
+// 用户执行进度条事件触发，只有脚本调用ShowProgress函数且最终执行其事件才会触发本函数
+onProgressEvent : (Player : TPlayObject,EventID : number) =>void;
+
+// 用户角度条执行失败触发
+onProgressFaild : (Player : TPlayObject,EventID : number) =>void;
+
+// 魂炼升级触发
+onItemSoulLevelUp : (Player : TPlayObject,UserItem : TUserItem) =>void;
+
+// 角色称号系统当前称号发生变化后触发
+onActiveTitleChanged : (Player : TPlayObject) =>void;
+
+// 左侧悬挂按钮功能触发
+onSideBarButtonClick : (Player : TPlayObject,AName : string) =>void;
+
+// 加入行会前触发
+onBeforeGuildAddMember : (Guild : TGuild,PlayObject : TPlayObject,boAccept : boolean) =>boolean;
+
+// 加入行会后触发
+onGuildAddedMember : (Guild : TGuild,Player : TPlayObject) =>void;
+
+// 退出行会前触发
+onBeforeGuildRemoveMember : (Guild : TGuild,Player : string,Accept : boolean) =>boolean;
+
+// 退出行会后触发
+onGuildRemovedMember : (Guild : TGuild,Player : string) =>void;
+
+// 有人加入队伍时触发
+onGroupAddedMember : (Owner : TPlayObject, Member : TPlayObject) =>void;
+
+// 队伍有人退出时触发
+onGroupRemovedMember : (Owner : TPlayObject, Member : TPlayObject) =>void;
+
+// PlayerAction函数，可以用来脚本封挂。Accept值为True 则执行动作，反之则不执行。默认为True
+// Action值代表不同的动作：1 攻击 2 魔法 3 骑马跑动 4 跑动 5 走路 6 转向 7 挖肉 8 点击脚本
+onPlayerAction : (PlayObject : TPlayObject,Action : number,Allow : boolean) =>boolean;
+
+// 热键触发
+onSendHotKey : (Player : TPlayObject,Akey : number,KeyCtrl : boolean, KeyAlt : boolean,ATargetActor : TActor,X : number, Y : number) =>void;
+
+// 人物掉落物品(扔物)触发(针对监视物品):Player：玩家,Item: 物品,ISUseItem:是否为身上穿戴的物品,Accept:是否允许掉落(当物品规则中指定死亡必掉物品此参数无效)
+onPlayerDropItem : (Player : TPlayObject,Item : TUserItem,X : number, Y : number,ISUseItem : boolean,Accept : boolean) =>boolean;
+
+// 人物丢下物品触发
+onPlayerThrowItem : (Player : TPlayObject,Item : TUserItem,X : number, Y : number,Accept : boolean) =>boolean;
+
+
+// 怪物掉落物品触发(针对监视物品)：Owner:物品所属玩家，Monster:掉落怪物,item:物品，Accept：是否允许掉落
+onMonDropItem : (Player : TPlayObject,Monster : TActor,UserItem : TUserItem,Envir : TEnvirnoment,X : number, Y : number,Accept : boolean) =>boolean;
+
+// 根据怪物名称爆出物品触发(针对监视物品)：Owner:物品所属玩家，Monster:怪物名称,item:物品，Accept：是否允许掉落
+onDropItemByMonName : (Player : TPlayObject,Monster : string,UserItem : TUserItem,Accept : boolean) =>boolean;
+
+// 【适用于鞭尸】
+// 用于在地图上丢弃怪物的爆率物品配置 , 当怪物爆率设置为触发脚本时 将会触发 GameLib.onDropItemByMonName
+// 如 Player.Map.ThrowMonItems(Player.MapX,Player.MapY,5,”黑野猪8”,null,10000,Player.AddedAbility.ItemRate)
+// 参数解释:
+// MapX ,MapY ,Range 坐标 XY 和范围。
+// MonName : 怪物名称
+// ItemOwner ：物品归属玩家 可为null
+// ForbidPickUpTime 禁止拾取时间， 如设置为10000表示掉落后10秒可以拾取。
+// AppendDropRatePercent:额外附加爆率百分比
+ThrowMonItems(MapX: number,MapY: number,Range: number,MonName: string,ItemOwner: TPlayObject,ForbidPickUpTime: number,AppendDropRatePercent: number): number;
+
+
+// 挖矿触发
+onMineDropItem : (Player : TPlayObject,UserItem : TUserItem,Envir : TEnvirnoment,X : number, Y : number,Accept : boolean) =>boolean;
+
+// 当玩家点击采集物时执行 Player:当前进行采集的玩家 Monster:被采集的资源对象 Accept:是否允许执行采集
+onBeforeCollect : (Player : TPlayObject,AMon : TActor,Accept : boolean) =>boolean;
+
+// 当玩家采集完成 Player:当前进行采集的玩家 Monster:被采集的资源对象 Accept:是否允许采集到物品
+onCollect : (Player : TPlayObject,AMon : TActor,Accept : boolean) =>boolean;
+
+// 从怪物升上挖掘道具触发:Accept表示该物品允许玩家拥有，默认为True
+onButchItem : (Player : TPlayObject,Monster : TActor,UserItem : TUserItem,Accept : boolean) =>boolean;
+
+// 使用物品时触发: StdMode=31,Accept:执行之后是否删除物品,默认为True,如果设置为False,则执行函数的同时不删除物品
+onStdModeFunc : (Player : TPlayObject,UserItem : TUserItem,Accept : boolean) =>boolean;
+
+// 玩家使用物品点击目标物品触发, 使用物品的StdMode=33,Accept:执行后是否删除使用物品，默认为是
+onItemClickItem : (Player : TPlayObject,Source : TUserItem, Dest : TUserItem,Accept : boolean) =>boolean;
+
+// 玩家使用物品点击身上穿戴的物品触发, 使用物品的StdMode=33,Accept:执行后是否删除使用物品，默认为是
+onItemClickUseItem : (Player : TPlayObject,ItemWhere : number,Source : TUserItem, Dest : TUserItem,Accept : boolean) =>boolean;
+
+// 穿戴装备触发
+onTakeOnItem : (Player : TPlayObject,UserItem : TUserItem,ItemWhere : number,Accept : boolean) =>boolean;
+// 穿戴装备且属性变化后触发
+onAfterTakeOnItem : (Player : TPlayObject,TakeOnUserItem : TUserItem,TakeOffItem : TUserItem,ItemWhere : number) =>void;
+
+// 脱装备触发
+onTakeOffItem : (Player : TPlayObject,UserItem : TUserItem,ItemWhere : number,Accept : boolean) =>boolean;
+// 脱装备且属性变化后触发
+onAfterTakeOffItem : (Player : TPlayObject,TakeOffItem : TUserItem,ItemWhere : number) =>void;
+
+// 获得经验触发
+onGetExp : (Player : TPlayObject,Exp : number,ResultExp : number) =>number;
+
+// 获得经验触发 增加一个参数ExpActor 用于获取经验来源是哪个怪物。 如果非杀怪途径获得ExpActor 将为 null
+onGetExpEx : (Player : TPlayObject,ExpActor: TActor,Exp : number,ResultExp : number) =>number;
+    // 玩家在摊位界面点击停止摆摊后触发
+    onAfterStopStall : (Player : TPlayObject) =>void;
+    // 摆摊上架之前触发
+    onStallPutOn : (Player : TPlayObject,Item : TUserItem,GoldPrice : number, GameGoldPrice : number, GamePoint : number,Accept : boolean) =>boolean;
+    // 摆摊下架之前触发
+    onStallPutOff : (Player : TPlayObject,Item : TUserItem,GoldPrice : number, GameGoldPrice : number, GamePoint : number,Accept : boolean) =>boolean;
+    // 购买市场物品触发
+    onStallBuyItem : (Player : TPlayObject,StallName : string,Item : TUserItem,Gold : number, GameGold : number, GamePoint : number,Accept : boolean) =>boolean;
+    // 修改摆摊价格触发
+    onStallUpdateItem : (Player : TPlayObject,Item : TUserItem,OldGold : number, OldGameGold : number, OldGamePoint : number, Gold : number, GameGold : number, GamePoint : number,Accept : boolean) =>boolean;
+    // 提取摆摊货款触发
+    onStallExtractGold : (Player : TPlayObject,Gold : number, GameGold : number, GamePoint : number,Accept : boolean) =>boolean;
+    //玩家在摊位界面点击开始摆摊时触发,如果Accpet设置为false则不允许摆摊
+    onBeforeStartStall : (Player : TPlayObject,Accept : boolean) =>boolean;
+// 邮件发送前触发 SendTo：收件人名字 Item：附件物品
+onMailBeforeSend : (Player : TPlayObject,SendTo : string,Item：附件物品 : TUserItem,Accept : boolean) =>boolean;
+
+// 邮件发送后触发
+onMailAfterSend : (Player : TPlayObject,SendTo : string) =>void;
+
+// 发送一封邮件 AFrom：发件人 ATo：收件人 ASubject：邮件主题 AContent：邮件内容
+SendMail(AFrom: string,ATo: string,ASubject: string,AContent: string): void;
+
+// 收到邮件触发 MailFrom：来自于xxx Subject：邮件主题
+onMailReceived : (Player : TPlayObject,MailFrom : string, Subject : string) =>void;
+
+
+// 宝宝升级触发 Master:BB属于谁(可能是人形怪) Slave:当前升级的BB NewLevel:将要升到的级数 Accept:是否允许升级,默认为true,如果设置为false则BB不可升级
+onSlaveLevelUp : (Master : TActor, Slave : TActor,NewLevel : number,Accept : boolean) =>boolean;
+
+// 学技能触发
+onPlayAddSkill : (Player : TPlayObject,Magic : TUserMagic,Accept : boolean) =>boolean;
+
+// 玩家释放魔法触发
+onMagicSpell : (Player : TPlayObject,UserMagic : TUserMagic,nTargetX : number, nTargetY : number,Target : TActor,Handled : boolean) =>boolean;
+
+// 人物攻击时触发
+onPlayerAttack : (Player : TPlayObject,UserMagic : TUserMagic,Target : TActor,Accept : boolean) =>boolean;
+
+// 点击开始骑马触发
+onRideOnHorse : (Player : TPlayObject,RideOn : boolean,Accept : boolean) =>boolean;
+
+// 自定义UI中通过脚本发送的命令
+onCustomMessage : (Player : TPlayObject,AMessageToken : number, AParam1 : number, AParam2 : number, AParam3 : number,AData : string) =>void;
+
+// 更改攻击模式触发
+onChangeAttatckMode : (Player : TPlayObject,OldMode : number,NewMode : number,ResultMode : number) =>number;
+
+// Ctrl+左键点击背包物品触发,Item为被点击的物品
+onAltAndLButtonClickBagItem : (Player : TPlayObject,Item : TUserItem) =>void;
+
+// 客户端骰子动画播放完毕触发处理事件 ATag:骰子标志 APoint: 骰子点数
+onDiceEvent : (Player : TPlayObject,ATag : number, APoint1 : number, APoint2 : number, APoint3 : number) =>void;
+
+// 玩家打开摊位前触发,如果Accpet设置为false则不允许打开摊位界面
+onBeforeOpenStall : (Player : TPlayObject,AAccept : boolean) =>boolean;
+
+// 变身开始触发函数
+onChangeToMonsterStart : (Actor : TActor,TargetMonName : string,nSec : number) =>void;
+
+// 变身结束触发函数
+onChangeToMonsterEnd : (Actor : TActor,TargetMonName : string) =>void;
+
+// 当对玩家或者怪物添加Buff时触发
+onAddBuff : (Actor : TActor,Buff : TBuff,Accept : boolean) =>boolean;
+
+// 移除Buff时触发
+onRemoveBuff : (Actor : TActor,Buff : TBuff) =>void;
+
+// 自定义间隔作用类Buff触发（只有当buff类型选择TBuffIntervalType.biCustom的时候触发）
+onCustomBuffAct : (Actor : TActor,Buff : TBuff) =>void;
+
+// 可进行消息过滤和特殊指令实现
+onChatMessage : (PlayObject : TPlayObject,Message : string,Allow : boolean) =>boolean;
+
+// Ctrl+左键点击穿戴物品触发,Item为被点击的物品,AItemWhere为穿戴位置
+onAltAndLButtonClickUseItem : (Player : TPlayObject,Item : TUserItem,AItemWhere : number) =>void;
+
+// 从地上拾取物品时触发
+onPickupItem : (Player : TPlayObject,Envir : TEnvirnoment,UserItem : TUserItem,Accept : boolean) =>boolean;
+// 从地上拾取物品前触发
+onPickUpItemChangePicker: (PickSender: TPlayObject, Item: TUserItem, Gold: number, WhoPicker: TPlayObject, ItemState: number) => [number,TPlayObject,number];
+
+// 玩家进入地图前触发:Accept表示是否允许进入,默认为True
+onCheckEnterMap : (Play : TPlayObject,SourceEnvir : TEnvirnoment, DestEnvir : TEnvirnoment,SourceX : number, SourceY : number, DestX : number, DestY : number,Accept : boolean) =>boolean;
+
+// 玩家进入地图后触发
+onPlayerEnterMap : (Play : TPlayObject,SourceEnvir : TEnvirnoment, DestEnvir : TEnvirnoment,SourceX : number, SourceY : number, DestX : number, DestY : number) =>void;
+
+// 完成任务时触发
+onMissionFinish : (Player : TPlayObject,AMission : TMissionItem) =>void;
+
+// 服务器添加一个时钟触发 时间单位：秒
+onGlobalEventExecute : (TimeID : number) =>void;
+// 服务器移除时钟时触发
+onGlobalEventRemove : (TimeID : number) =>void;
+
+// 个人的时钟事件 添加时钟触发
+onPrivyEventExecute : (Play : TPlayObject,TimeID : number) =>void;
+// 个人的时钟事件 移除时钟触发
+onPrivyEventRemove : (Play : TPlayObject,TimeID : number) =>void;
+
+// 内挂点击开始挂机触发
+onStartAutoFight : (Player : TPlayObject) =>void;
+
+// 内挂点击停止挂机触发
+onStopAutoFight : (Player : TPlayObject) =>void;
+
+// 玩家更名结果 state 0 成功 1失败
+onPlayerReNameState : (State : number,PlayObject : TPlayObject,OldName : string, Newname : string) =>void;
+
+//脚本释放(只有在引擎重载前或者关闭引擎的时候会触发)
+onScriptEngineFinal：(isReload : boolean) =>void;
+//引擎启动或重载时触发
+//如果isReload = false，只会在引擎启动的时候执行 
+//如果isReload = true，重载前会先执行  GameLib.onScriptEngineFinal  然后再执行  GameLib.onScriptEngineInit
+onScriptEngineInit：(isReload: boolean) =>void;
+
+// 逻辑线程每轮循环开始
+onLogicLoopBegin : () =>void;
+
+// 逻辑线程每轮循环结束
+onLogicLoopEnd : () =>void;
+
+// 客户端点击可扩展按钮 通过 Player.AddExtendButton Player.AddTopExtendButton 为客户端增加扩展按钮
+onExecuteExtendButton : (Play : TPlayObject,CommandText : string) =>void;
+
+// 点击行会扩展按钮触发  行会界面有一个扩展按钮
+onGuildExtendButtonClick : (Player : TPlayObject) =>void;
+
+// 玩家升级前触发  return  false 可拦截不让其进行升级 
+onScriptAllowLevelUp : (PlayObject : TPlayObject,Level : number,Allow : boolean) =>boolean;
+
+// 玩家点击了背包淬炼按钮 return false 可禁止其打开淬炼窗口
+onRefineButtonClick : (Player : TPlayObject,Handled : boolean) =>boolean;
+
+// 玩家淬炼物品触发 return true则引擎会删掉传递过来的三个物品。 return false 则表示引擎不做任何处理。
+onRefineItem : (Player : TPlayObject,Item1 : TUserItem, Item2 : TUserItem, Item3 : TUserItem,Handled : boolean) =>boolean;
+
+// 自定义进度条事件
+onCustomProgressEvent : (FunctionName : string,Npc : TNormNpc,Player : TPlayObject,Args : string) =>void;
+
+// 锁定客户端输入解锁密码触发
+onLockClientPassword : (FunctionName : string,Player : TPlayObject,Password : string,Args : string) =>void;
+
+// 副本地图关闭触发
+onCloseDuplicatesMap : (Envir : TEnvirnoment) =>void;
+
+// 删除传送点触发  GameLib.AddMapRoute 可添加传送点
+onDeleteRoute : (AName : string) =>void;
+
+// 扩展NPC远程http指令接受到后触发 M2上开启远控
+onExternalNpcExecCommand : (Command : string,Args : string) =>void;
+
+// 使用经验石头触发 return false 不让其使用
+onUseExpStoneItem : (Player : TPlayObject,Item : TUserItem,CanUse : boolean) =>boolean;
+
+// 点击商铺触发  return false 不打开商铺
+onClickGameShop : (PlayObject : TPlayObject,OpenDefalut : boolean) =>boolean;
+
+// 获取等级升级经验 返回为玩家新的等级升级经验 （在玩家升级后或者登录需要更新最大经验值的时候会调用）
+onGetLevelExp : (Level : number,Exp : number) =>number;
+
+// 用于脚本调节玩家升级经验。
+// 相对于onGetLevelExp将角色对象传递过来 更新后onGetLevelExp将只用于人形怪升级经验触发。
+onGetPlayerLevelMaxExp : (PlayObject : TPlayObject,Level : number,MaxExp : number) =>number;
+
+// 自定义技能触发脚本执行
+// ATarget 这个参数可能是攻击对象，也可能是施法者自身
+// 注意:当技能魔法对象为自身时，ATargetX,ATargetY的坐标为鼠标指向的坐标
+onMagicNpcExecute : (AMethod : string,ASource : TActor, ATarget : TActor,ATargetX : number, ATargetY : number, AMouseX : number, AMouseY : number,AList : TActorList,AMagic : TUserMagic,Processed : boolean) =>boolean;
+
+// 怪物攻击前选择魔法事件 返回魔法ID 怪物将会使用魔法ID 进行攻击。
+// 根据每个怪物独立的标志设定是否触发回调。
+// 在版本管理器内->刷怪配置->监视怪物状态->触发SelectMagic 是否勾选来执行这个触发回调。
+//（2022年8月10日更新之前只支持人形怪，现在根据怪物独立标志设定是否触发回调）
+onMonSelectMagicBeforeAttack : (AMon : TActor, ATarget : TActor,AMagicID : number) =>number;
+
+// 独立自定义技能执行脚本触发  Source是施法者 Target目标对象 nParam1 整数参数1  nParam2 整数参数2   SParam1 字符串参数1  SnParam2 字符串参数2（自定义技能->技能作用范围列表->作用列表->作用类型：执行脚本）
+onSkillActionExecute : (Source : TActor, Target : TActor,AMethod : string,nParam1 : number, nParam2 : number,sParam1 : string, sParam2 : string) =>void;
+
+// 独立自定义技能 目标是否选中 自定义脚本触发
+onSkillActorSelConditionCustom : (Source : TActor, Target : TActor,AMethod : string,N1 : number, N2 : number, N3 : number,Processed : boolean) =>boolean;
+
+// 独立自定义技能释放自定义条件触发
+// Consume：是否消耗检测 一个条件会执行两次 一次是检查够不够，这个时候 consume是true，第二次是扣除物品 这个时候 consume 是 false
+// Processed 返回值（不用管它）
+onSkillUseCondtionCustom : (Source : TActor,AMethod : string,N1 : number, N2 : number, N3 : number,Consume : boolean,Processed : boolean) =>boolean;
+
+// 自定义AI执行（谨慎使用，可能会造成服务器卡顿）
+// 根据每个怪物独立的标志设定是否触发回调。
+// 在版本管理器内->刷怪配置->监视怪物状态->触发AINPC 是否勾选来执行这个触发回调。
+onAINpcExecute : (Actor : TActor) =>void;
+
+// 当角色变成幽灵模式   人物下线后会变成幽灵 在一段时间后才会释放掉。 怪物死亡尸体消失后也会进入幽灵模式 等待一段时间后进行才会释放内存
+onActorGhost : (Actor : TActor) =>void;
+
+// ctrl + 鼠标右键 查看其他玩家装备信息时 触发
+onQueryUserState : (Player : TPlayObject,QueryTarget : TActor) =>void;
+
+// 异步查询数据库结果返回
+onAsyncDBQueryResult : (Ident : string,DBName : string,SQL : string,ErrorDesc : string,DataSet : TDataSet) =>void;
+
+// 异步执行SQL后返回
+onAsyncDBExecResult : (Ident : string,DBName : string,SQL : string,ErrorDesc : string,RowAffected : number) =>void;
+
+// 更改角色所属账户结果触发
+onUpdatePlayerAccountResult : (OldAccount : string,PlayerName : string,NewAccount : string,Sucess : boolean,ErrorDesc : string,Log : string) =>void;
+
+// 玩家登录后数据重置触发 通常在玩家离线挂机后登录 会清除掉 临时的不保存的自定义变量 。这个时候会同时触发这个函数
+onLoginResetData : (Player : TPlayObject,isOnlineAddExp : boolean) =>void;
+
+// M2版本后台自定义UI组件 按钮点击触发
+onAdminUIButtonClick : (ButtonName : string) =>void;
+
+// M2版本后台自定义UI输入框 编辑内容触发
+onAdminUIEditOk : (Name : string,InputText : string) =>void;
+
+// M2版本后台自定义UI复选框 状态修改触发
+onAdminUICheckBoxChange : (Name : string,Checked : boolean) =>void;
+
+// 鼠标点击背包物品事件触发
+onUIActivedBagItemEvent : (Player : TPlayObject,UIName:string , ClientItemBagIndex : number,Item : TUserItem,KeyCtrl : boolean,KeyAlt : boolean,MouseButton : TMouseButton) => void;
+
+// 背包未解锁格子触发
+onClickLockedBagGrid : (Player : TPlayObject,GridIndex : number) =>void;
+
+
+//当玩家对目标伤害为0时触发
+GameLib.onAttackActorDamageIsZero = (Attacker : TActor,Target : TActor,Reason : number,Damage : number) : number => {
+  //用于拦截当攻击者的攻击力 小于 被攻击者的防御, 这时候攻击会全是0 的问题
+  //以下修改 会造成最低伤害 为 1 （Reason伤害为0原因 目前只有0 表示目标的物理防御大于攻击者的最大攻击）
+  return 1
+}
+
+
+
+// 目标飘血触发
+// Player：玩家 Actor：受攻击者 DamageSource：攻击者 BleedNum：飘血量
+// NumType：客户端显示飘血类型（0：HP 1：MP） MagID：技能ID MagLv：技能等级
+// BleedType:飘血伤害类型
+   btNone = 0 ,                //未知
+   btNormal = 1,               //普通
+   btCritical = 2,             //会心一击(无视防御) + 会心额外伤害
+   btPunchHit = 3,             //致命一击(双倍伤害 + 致命额外伤害)
+   btMapDamageEvent = 4,       //地图伤害事件
+   btDamageRebound = 5,        //伤害反弹
+   btSpell = 6,                //施法
+   btMapRecovery = 7,          //地图自动恢复
+   btPoison = 8,               //中毒
+   btLevelChange = 9,          //等级变更
+   btUseMedicine = 10,         //使用药品
+   btAutoRecovery = 11 ,       //自动恢复 站立休息一定时间会恢复
+   btHealing = 12 ,            //治愈术
+   btHongMoSuit = 13,          //虹魔套装 吸血
+   btRunTired = 14 ,           //跑步掉血
+   btHealthStone = 15 ,        //血魔石增加
+   btHunger = 16 ,             //饥饿系统
+   btMagicProtected = 17 ,     //护身戒指生效减蓝
+// Allow 是否拦截本次飘血显示
+GameLib.onClientBleedNumber = (Player : TPlayObject,Actor : TActor, DamageSource : TActor,BleedNum : number,NumType : TDamageValueType , MagID : number,MagLv : number,BleedType : TBleedType , Allow : boolean):boolean =>{
+return false
+}
+
+//鼠标右键点击大地图触发
+GameLib.onRightClickMapPos : (Player:TPlayObject,MapX:number,MapY:Number) =>void;
+
+//宝宝叛变回调事件  
+GameLib.onSlaveRoyalOver : (Slave : TActor,Reason : number,Accept : boolean) =>boolean
+Slave 宝宝对象
+Reason 叛变原因和处理方式
+1:祈祷套装生效 宝宝叛变
+2:祈祷套装生效 宝宝死亡
+3:忠诚时间到达 宝宝叛变
+4:忠诚时间到达 宝宝死亡
+5:主人死亡 宝宝叛变
+6:主人死亡 宝宝死亡
+返回 true 表示允许引擎继续处理 返回 false 表示引擎不做任何事情。脚本中可以使用 Slave.Mutiny() 使其叛变。 
+或者Slave.Die() 将其杀死，或者使用 Slave.MakeGhost() 使其消失。
+但是需要注意如果忠诚时间到达一直不允许引擎对宝宝进行任何处理 那么引擎将会每10秒进行一次触发。
+建议在脚本设置不允许引擎操作的同时 修改忠诚过期时间。
+
+//当 Item.stdMode = 0, 1, 3 药品时 使用会触发此回调。 
+//返回值 true 表示继续使用引擎逻辑。返回 false 引擎将不进行任何处理。
+GameLib.onUseMedicine : (Player : TPlayObject,Item : TUserItem,Accept : boolean) =>boolean;
+
+//用于在 GameLib.ThrowItem 和 GameLib.ThrowItemEx 可对物品地面属性进行修改可以立即生效
+//如 名称 地面图标 以及 掉落光柱 和 颜色。
+//同时对 GameLib.ThrowItem 和 GameLib.ThrowItemEx 增加一个可选参数 CallBackIdent 
+//当 CallBackIdent > 0 时候将会触发 GameLib.onThrowItem 同时将CallBackIdent 带入到 GameLib.onThrowItem 触发参数中。
+GameLib.onThrowItem : (Map : TEnvirnoment,X : number,Y : number,CallBackIdent : number,Item : TUserItem,Owner : TActor) =>void;
+
+//开始攻城触发
+GameLib.onCastleStartWar : (Castle : TUserCastle) =>void;
+
+//结束攻城触发
+GameLib.onCastleStopWar : (Castle : TUserCastle) =>void;
+
+//城堡被占领触发 Guild 为占领行会
+//TUserCastle.StartWarTick //攻城开始毫秒时钟
+//TUserCastle.StopWarTick //攻城结束毫秒时钟
+GameLib.onCastleSeized : (Castle : TUserCastle,Guild : TGuild) =>void;
+
+//当宝宝发现一个可以拾取物品的时候触发 返回 True 表示允许宝宝拾取 返回False 表示不允许宝宝拾取
+GameLib.onSlaveCanPickUpItem : (Slave : TActor,Item : TMapItem,Accept : boolean) =>boolean;
+
+//当宝宝拾取物品时触发
+//:TPickUpResult.purPickUp 表示继续拾取,
+//:TPickUpResult.purPickStop 表示不拾取 物品还会停留在地图上
+//:TPickUpResult.purPickStopDelete 将不拾取物品，同时删除地图上的物品。
+//注意的是 TMapItem.UserItem 有可能为null。 需要先判断 TMapItem.MoneyType 是否等于 TMoneyType.mtNone。
+//当TMapItem.MoneyType === TMoneyType.mtNone 才表示是一个物品 。 否则表示掉落的是货币 。
+GameLib.onSlavePickUpItem : (Slave : TActor,Item : TMapItem , PickUpResult : TPickUpResult) =>TPickUpResult;
+
+//在玩家复活前触发。返回 true允许复活 返回false 不允许复活
+GameLib.onBeforePlayerReAlive : (Player : TPlayObject,Event : TReAliveEvent) =>boolean
+
+//鼠标右键点击大地图触发
+GameLib.onRightClickMapPos : (Player:TPlayObject,MapX:number,MapY:Number) =>void;
+
+//TActor.MissionToXY(X,Y,Range) 用于设置怪物往指定坐标点行走，当到达指定坐标点范围内时 将触发
+GameLib.onActorReachedMissionXY : (Actor:TActor,MissionX,MissionY,Range) => void;
+
+// 获取客户端快捷栏物品数量的接口 TPlayObject.QueryClientQuickBarItemCount(ident:string)。查询结果将触发
+GameLib.onQueryClientQuickBarItemCountResult : (Player:TPlayObject,Ident:string,Count:number) => void;
+
+// 可以动态创建地图阻挡点 并且显示特效。 参数说明(地图代码,X,Y,持续毫秒时间,UI特效ID)
+CreateBlockEvent(MapName: string,X: number,Y: number,Time: number,UIEffect: number): void;
+
+// 可以根据 TActor.Handle 获取TActor 对象的功能， 如果 TActor 对象不存在了，将返回 null。
+// Handle 是一个 整数，通过存储 Handle  方便脚本中查询 TActor 对象。
+GetActorByHandle(ActorHandle: number): TActor;
+// 以下六条引擎内部实现 将删除
+BuildDB(): void;
+Load(): void;
+Save(isStop: boolean): void;
+RefreshDBItems(): void;
+GetCustomSaveStr(): string;CustomSaveStr:string;
+SetCustomSaveStr(Value: string): void;
+// 调试用 无用
+DebugOutStringList(): void;
+// 获取引擎支持的文件流模式 引擎内部使用 待删除
+FileStreamOpenMode(): string;
+// 无效 引擎使用 待删除
+onEngineStart : (Text : string,NewText : number) =>number;
+// 引擎使用 待删除
+onScriptEngineError : (E : Error) =>void;
+// 引擎使用 待删除
+onPlayerSaveCustomSaveStr : (Player : TPlayObject,isOfflineSave : boolean) =>void;
+// 引擎使用 待删除
+onPlayerLoadCustomSaveStr : (Player : TPlayObject) =>void;
+// 引擎使用 待删除
+onEngineStop : (M2Core : TM2Core) =>void;

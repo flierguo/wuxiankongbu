@@ -1,0 +1,5 @@
+如何在客户端显示一个特效
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.ShowEffect(7); //客户端显示特效（7-14为烟花效果，其他的值将调用UI特效设计指定的ID）
+    GameLib.Broadcast('玩家' + Player.Name + '在' + Player.Map.Name + '上燃放烟花,大家赶紧前去围观吧！');
+} 

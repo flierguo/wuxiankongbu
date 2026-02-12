@@ -1,0 +1,19 @@
+地图传送
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+  let I: number = 0;
+  Player.RandomMove();//在当前玩家在所在的地图随机传送
+  Player.RandomMove('0'); //在地图名称为'0'的地图上随机传送
+  Player.RandomMoveEx(Player.Map); //在指定的地图对象上随机传送
+  Player.GuildMapMove('3', 600, 600); //行会成员传送到指定位置
+  Player.GroupMapMove('3', 300, 300);  //编组成员传送到指定位置
+  //循环服务器全部玩家
+  for (let i = GameLib.PlayCount - 1; i <= 0; i--) {
+    if ((i / 2) == 0) {
+        GameLib.GetPlayer(I).Camp = 1; //分到阵营1
+        GameLib.GetPlayer(I).MapMove('0', 300, 300); //传送到指定位置
+    } else {
+        GameLib.GetPlayer(I).Camp = 2; //分到阵营2
+        GameLib.GetPlayer(I).MapMove('0', 600, 600); //传送到指定位置
+    }
+  }
+}

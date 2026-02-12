@@ -1,0 +1,8 @@
+如何调整角色的HP、MP值
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.HP < Player.MaxHP)  //判断HP是否小于最高的HP
+        Player.HP = Player.MaxHP; //将HP设置为当前HP最高值
+    if (Player.MP < Player.MaxMP)
+        Player.MP = Player.MaxMP;
+    Npc.Say(Player, 'HP及MP调整到最高值！');
+}

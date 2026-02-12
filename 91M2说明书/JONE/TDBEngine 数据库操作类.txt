@@ -1,0 +1,81 @@
+TDBEngine 数据库操作类
+函数1：ExecSQL(Name: string,SQLText: string): number;
+这是一条普通执行语句，不需要返回
+示例：GameLib.DBEngine.ExecSQL(‘MySQL’, ‘UPDATE Players SET nGold=0’);
+
+MySQL 是数据库连接名称，如上图：
+UPDATE Players SET nGold=0 则是SQL执行的语句
+意思是将 MySQL 数据库中 Players 表里的 nGold 的值为 0
+
+更多SQL语句查询请点击
+
+函数2：Query(Name: string,SQLText: string): TDataSet;
+let ADataSet：TDataSet;
+// 示例：
+// 执行SQL查询并返回数据结果放到数据集
+ADataSet = GameLib.DBEngine.Query('MySQL', 'SELECT * FROM Players')
+// 得到ADataSet数据集之后可以进行操作
+if (ADataSet != null) { // 必须做此判断,因为当数据连接找不到的时候返回为null值
+    AList = GameLib.CreateStringList()
+    try {
+      ADataSet.Open(); // 打开数据集
+      if (!ADataSet.IsEmpty()) { // 如果数据集不为空的情况下
+         while(!ADataSet.Eof()) { // 如果没到数据集的末尾
+           // 直接将字段赋值到变量S中
+           S = ADataSet.FieldByName('sChrName').AsString;
+           // 将字段sChrName的值取出来放到AList中
+           AList.Add(ADataSet.FieldByName('sChrName').AsString);
+           ADataSet.Next(); // 数据集向后滚动,如果循环读取数据，此处必须，否则会死循环
+         }
+      }
+       Npc.MessageBox(Player, AList.Text);
+     }
+     finally {
+     }
+}
+函数3：ValueList(Name: string,SQLText: string): TStringList;
+let AList: TStringList;
+// 示例：
+// 直接将一个查询结果中的第一个字段的值填入到一个TStrings
+  AList = GameLib.DBEngine.ValueList('HumDB', 'SELECT sChrName FROM Players');
+// ValueList函数一定会返回一个TStrings实例
+  Npc.MessageBox(Player, AList.Text);
+ 函数4：BeginTran(Name: string): void;               // 开始一个事务
+ 函数5：CommitTran(Name: string): void;              // 提交事务
+ 函数6：RollbackTran(Name: string): void;            // 回滚事务
+
+// 异步查询语句
+// 异步返回在 GameLib.onAsyncDBQueryResult:(Ident : string,DBName : string,SQL : string,ErrorDesc : string,DataSet : TDataSet) =>void;
+ 函数7：QueryAsync(Ident: string,Name: string,SQLText: string): void;
+
+// 异步查询语句
+// 异步返回在 GameLib.onAsyncDBExecResult:(Ident : string,DBName : string,SQL : string,ErrorDesc : string,RowAffected : number) =>void;
+ 函数8：ExecAsync(Ident: string,Name: string,SQLText: string): void;
+
+// 函数9：增加一个数据库连接配置
+// Name：名称 DBSever：服务器IP或者域名 DBPort：端口 DBUser：数据库用户名  DBPassword：数据库密码 DataBase：数据库库名
+AddConection(Name: string,DBServer: string,DBPort: number,DBUser: string,DBPassword: string,DataBase: string): boolean;
+
+
+// 数据库异步查询函数(提示：比较常用，熟练掌握数据库异步操作可以实现很多花式功能)
+// 闭包风格的异步回调写法 (推荐) 除此之外的前面两种(阻塞和异步 都是为了兼容老版本写法)
+QueryAsyncEx: ( name: string,sql: string,cb: QueryDBAsyncResult) => void
+ExecAsyncEx: ( name: string,sql: string,cb: ExecDBAsyncResult) => void
+示例：
+GameLib.DBEngine.QueryAsyncEx('MySQL',`SELECT * FROM Players`,(error: string, dataset: TDataSet) => {
+ // 执行SQL语句成功返回数据集：dataset:TDataSet 出错返回：error:string
+ // 代码中的‘SELECT * FROM Players’就是SQL语句命令
+ // 意思是查询‘MySQL’数据库中Players这个表中的值，并将结果返回到dataset数据集中
+ // 成功执行返回数据集之后可以用函数：ConvertDataSetToArray(dataset, "date") 将数据集转换为数组
+ // 例如你要取出数据库中第一个玩家名字
+  let Adata = ConvertDataSetToArray(dataset, "date")
+ // 用 Adata[0].sChrName 就可以取出 MySQL数据库中Players表中sChrName字段中第一个的值
+}
+
+// QueryAsyncEx 回调函数原型
+declare type QueryDBAsyncResult = (error:string,dataset:TDataSet) => void
+// ExecAsyncEx 回调函数原型
+declare type ExecDBAsyncResult = (error:string,affectRow:number)=>void
+
+// ASyncHttpPostJsonEx 和 ASyncHttpGetEx http请求回调函数原型
+declare type HttpAsyncResult = (error:string,result:string)=>void

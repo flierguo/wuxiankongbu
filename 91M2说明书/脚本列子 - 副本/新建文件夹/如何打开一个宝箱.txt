@@ -1,0 +1,10 @@
+如何打开一个宝箱
+export function Main(Npc TNormNpc, Player TPlayObject, Args TArgs) void {
+    Player.OpenBox(101); 打开一个ID为101的宝箱,随机取得一个物品,宝箱结束
+    Player.OpenBoxEx(3, 101); 打开一个ID为101的宝箱,宝箱开启外观为3(可选1-5,分别是檀木宝箱、紫铜宝箱、白银宝箱、赤金宝箱和神秘宝箱)
+    Player.OpenShuffle(101); 打开一个ID为101的宝箱让客户端执行翻牌操作
+    三种方式的区别在于
+    OpenBox从宝箱中随机取出一个物品给玩家就结束了宝箱,类似开怪物宝箱;
+    OpenBoxEx将宝箱打开，并默认选中一个物品，允许玩家以付费或免费的形式重新选择其他物品
+    OpenShuffle则是执行翻牌动作,将物品呈现在玩家目前让玩家选择,只可开启一次的宝箱
+}

@@ -1,0 +1,5 @@
+如何获取角色在线时长
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.SendMessage(format('你已在线达%d分钟', [Math.round(Player.LogonTick / 1000 / 60)/*换算成分钟*/]));
+    //Player.LogonTick是角色登陆开始到目前共计有多少毫秒,
+} 

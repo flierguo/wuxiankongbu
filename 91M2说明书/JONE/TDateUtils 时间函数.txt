@@ -1,0 +1,301 @@
+TDateUtils 时间函数
+常用时间单位：
+year:number,                     // 年
+month:number,                    // 月
+day:number,                      // 日
+hour:number,                     // 小时
+minute:number,                   // 分钟
+second:number,                   // 秒
+msecond:number                   // 毫秒
+DateUtils时间单元说明
+CompareDate
+函数 比较两个日期时间值日期部分的大小 
+CompareDateTime 
+函数 比较两个日期时间值的大小 
+CompareTime 
+函数 比较两个日期时间值时间部分的大小 
+DateOf 
+函数 去除日期时间值的时间部分 
+DateTimeToJulianDate 
+函数 转换日期时间值为儒略日 
+DateTimeToModifiedJulianDate 
+函数 转换日期时间值为改进的儒略日 
+DateTimeToUnix 
+函数 转换日期时间值为Unix/Linus日期时间值 
+Day of week 函数 常量 *ISO 8601标准中一周各天顺序的 常量 
+DayOf 
+函数 返回一个日期时间值的天 
+DayOfTheMonth 
+函数 返回一个日期时间值的天 
+DayOfTheWeek 
+函数 返回一个日期时间值是那星期的第几天 
+DayOfTheYear 
+函数 返回一个日期时间值是那年的第多少天 
+DaysBetween 
+函数 返回两个日期时间值之间相差的整数天数 
+DaysInAMonth 
+函数 返回指定年、月的天数 
+DaysInAYear 
+函数 返回指定年的天数 
+DaysInMonth 
+函数 返回一个日期时间值的那个月的天数 
+DaysInYear 
+函数 返回一个日期时间值的那一年的天数 
+DaySpan 
+函数 返回两个日期时间值之间相差的小数天数 
+DecodeDateDay 过程 返回一个日期时间值的年份和是一年的第多少天 
+DecodeDateMonthWeek 过程 返回一个日期时间值的年、月、那个月的第几周、那周的第几天 
+DecodeDateTime 过程 返回一个日期时间值的年、月、日、时、分、秒、毫秒 
+DecodeDateWeek 过程 返回一个日期时间值的年、一年的第多少周、一周的第几天 
+HourODecodeDayOfWeekInMonth 过程 返回一个日期时间值的年、月、一周的第几天、那个月的第几个星期几 
+EncodeDateDay 
+函数 返回指定年和一年的第多少天的日期时间值 
+EncodeDateMonthWeek 
+函数 返回指定年、月、那个月的第几周、那周的第几天的日期时间值 
+EncodeDateTime 
+函数 返回指定年、月、日、时、分、秒，毫秒返的日期时间值 
+EncodeDateWeek 
+函数 返回指定年、那年的第多少周、那周的第几天的日期时间值 
+EncodeDayOfWeekInMonth 
+函数 返回指定年、月、那个月的第几个星期几的日期时间值 
+EndOfADay 
+函数 返回指定年、那年第多少天的最后一秒的日期时间值 
+EndOfAMonth 
+函数 返回指定年、月的最后一天最后一秒的日期时间值 
+EndOfAWeek 
+函数 返回指定年、那年第多少周、那周第几天的最后一秒的日期时间值 
+EndOfAYear 
+函数 返回指定年的最后一天最后一秒的日期时间值 
+EndOfTheDay 
+函数 返回指定日期时间值的那一天最后一秒的日期时间值 
+EndOfTheMonth 
+函数 返回指定日期时间值的那个月的最后一天最后一秒的日期时间值 
+EndOfTheWeek 
+函数 返回指定日期时间值的那一周的最后一天最后一秒的日期时间值 
+EndOfTheYear 
+函数 返回指定日期时间值的那一年最后一天最后一秒的日期时间值 
+HourOf 
+函数 返回指定日期时间值的小时部分 
+HourOfTheDay 
+函数 返回指定日期时间值的小时部分. 
+HourOfTheMonth 
+函数 返回从指定日期时间值的那个月的第一天0点到指定日期的小时已经度过的小时数 
+HourOfTheWeek 
+函数 返回从指定日期时间值中那一周第一天0点到指定日期的那个小时已经度过的小时数 
+fTheYear 
+函数 返回从指定日期时间值中那一年第一天0点到指定日期的那个小时已经度过的小时数 
+HoursBetween 
+函数 返回两个指定日期时间值之间相差的小时数 
+HourSpan 
+函数 返回两个指定日期时间值之间相差的小时数(包括小数部分) 
+IncDay 
+函数 返回日期时间值向后推移指定天数后的值 
+IncHour 
+函数 返回日期时间值向后推移指定小时数的值 
+IncMilliSecond 
+函数 返回日期时间值向后推移指定毫秒数的值 
+IncMinute 
+函数 返回日期时间值向后推移指定分钟数的值 
+IncSecond 
+函数 返回日期时间值向后推移指定秒数的值 
+IncWeek 
+函数 返回日期时间值向后推移指定星期数的值 
+IncYear 
+函数 返回日期时间值向后推移指定星期数的值 
+IsInLeapYear 
+函数 判断指定的日期时间值的年份是否为闰年 
+IsPM 
+函数 判断指定的日期时间值的时间是否是中午12:0:0之后 
+IsSameDay 
+函数 判断一个日期时间值与标准日期时间值是否是同一天 
+IsToday 
+函数 判断一个日期时间值是否是当天 
+IsValidDate 
+函数 判断指定的年、月、日是否是有效的日期 
+IsValidDateDay 
+函数 判断指定的年、该年的天数是否是该年有效的天数 
+IsValidDateMonthWeek 
+函数 判断指定的年、月、该月的第几周、该周的第几天是否是有效的日期 
+IsValidDateTime 
+函数 判断指定的年、月、日、时、分、秒、毫秒是否是有效的日期时间值 
+IsValidDateWeek 
+函数 判断指定的年、该年的第多少周、该周第几天是否是有效的日期 
+IsValidTime 
+函数 判断指定的时、分、秒、毫秒是否是有效的时间 
+JulianDateToDateTime 
+函数 转换儒略日期为日期时间值 
+MilliSecondOf 
+函数 返回指定日期时间值的毫秒部分 
+MilliSecondOfTheDay 
+函数 返回指定日期时间值的那天0时0分0秒0毫秒开始到其指定时间的毫秒数 
+MilliSecondOfTheHour 
+函数 返回指定日期时间值的那一小时0分0秒0毫秒开始到其指定时间的毫秒数 
+MilliSecondOfTheMinute 
+函数 返回指定日期时间值的那一分钟0秒0毫秒开始到其指定时间的毫秒数 
+MilliSecondOfTheMonth 
+函数 返回指定日期时间值的那个月1日分钟0秒0毫秒开始到其指定时间的毫秒数 
+MilliSecondOfTheSecond 
+函数 返回指定日期时间值的毫秒部分 
+MilliSecondOfTheWeek 
+函数 返回指定日期时间值的那周星期一0时0分0秒0毫秒到其指定时间的毫秒数 
+MilliSecondOfTheYear 
+函数 返回指定日期时间值的那年1月1日0时0分0秒0毫秒到其指定时间的毫秒数 
+MilliSecondsBetween 
+函数 返回两个指定日期时间值之间相差的毫秒数(整数) 
+MilliSecondSpan 
+函数 返回两个指定日期时间值 之间相差的毫秒数(小数) 
+MinuteOf 
+函数 返回指定日期时间值 分钟部分 
+MinuteOfTheDay 
+函数 返回指定日期时间值的那天0时0分开始到其指定时间的分钟数 
+MinuteOfTheHour 
+函数 返回指定日期时间值的分钟部分 
+MinuteOfTheMonth 
+函数 返回指定日期时间值的那个月1日0时0分开始到其指定时间的分钟数 
+MinuteOfTheWeek 
+函数 返回指定日期时间值的那周第1天0时0分开始到其指定时间的分钟数 
+MinuteOfTheYear 
+函数 返回指定日期时间值的那年1月1日0时0分开始到其指定时间的分钟数 
+MinutesBetween 
+函数 返回两个指定日期时间值之间相差的分钟数(整数) 
+MinuteSpan 
+函数 返回两个指定日期时间值之间相差的分钟数(包含小数) 
+ModifiedJulianDateToDateTime 
+函数 转换修正的儒略日为日期时间值 
+MonthOf 
+函数 返回指定日期时间值的月份部分 
+MonthOfTheYear 
+函数 返回指定日期时间值的月份部分 
+MonthsBetween 
+函数 返回两个指定日期时间值之间相差的月份(整数) 
+MonthSpan 
+函数 返回两个指定日期时间值之间相差的月份(包含小数) 
+NthDayOfWeek 
+函数 返回指定日期时间值该月的第几个星期几 
+OneHour 常量 Delphi与时间成反比的常量 
+OneMillisecond 常量 Delphi与时间成反比的常量 
+OneMinute 常量 Delphi与时间成反比的常量 
+OneSecond 
+常量 Delphi与时间成反比的常量 
+RecodeDate 
+函数 替换指定日期时间值的日期部分 
+RecodeDateTime 
+函数 选择替换指定日期时间值 
+RecodeDay 
+函数 替换指定日期时间值 的日部分 
+RecodeHour 
+函数 替换指定日期时间值 的小时部分 
+RecodeMilliSecond 
+函数 替换指定日期时间值的毫秒部分 
+RecodeMinute 
+函数 替换指定日期时间值的分钟部分 
+RecodeMonth 
+函数 替换指定日期时间值的月份部分 
+RecodeSecond 
+函数 替换指定日期时间值的秒部分 
+RecodeTime 
+函数 替换指定日期时间值的时间部分 
+RecodeYear 
+函数 替换指定日期时间值的年份部分 
+SameDate 
+函数 判断两个日期时间值的年、月、日部分是否相同 
+SameDateTime 
+函数 判断两个日期时间值的年、月、日、时、分、秒、毫秒是否相同 
+SameTime 
+函数 判断两个日期时间值的时、分、秒、毫秒部分是否相同 
+SecondOf 
+函数 返回指定日期时间值的秒部分 
+SecondOfTheDay 
+函数 返回从指定日期时间值那天0时0分0秒到其指定时间的秒数 
+SecondOfTheHour 
+函数 返回从指定日期时间值那小时0分0秒到其指定时间的秒数 
+SecondOfTheMinute 
+函数 返回从指定日期时间值那分钟0秒到其指定时间的秒数 
+SecondOfTheMonth 
+函数 返回从指定日期时间值那个月1日0时0分0秒到其指定时间的秒数 
+SecondOfTheWeek 
+函数 返回从指定日期时间值所在周的星期一0时0分0秒到其指定时间的秒数 
+SecondOfTheYear 
+函数 返回从指定日期时间值那年的1月1日0时0分0秒到其指定时间的秒数 
+SecondsBetween 
+函数 返回两个指定日期时间值之间相差的秒数(整数) 
+SecondSpan 
+函数 返回两个指定日期时间值之间相差的秒数(包含小数) 
+StartOfADay 
+函数 返回指定那天开始(0时0分0秒0毫秒)的日期时间值 
+StartOfAMonth 
+函数 返回指定年、月的第一天开始(0时0分0秒0毫秒)的日期时间值 
+StartOfAWeek 
+函数 返回指定年、第多少周、第几天开始(0时0分0秒0毫秒)的日期时间值 
+StartOfAYear 
+函数 返回指定年开始(1月1日0时0分0秒0毫秒)的日期时间值 
+StartOfTheDay 
+函数 返回指定日期时间值那天开始(0时0分0秒0毫秒)的日期时间值 
+StartOfTheMonth 
+函数 返回指定日期时间值那个月开始(1日0时0分0秒0毫秒)的日期时间值 
+StartOfTheWeek 
+函数 返回指定日期时间值那周开始(第一天0时0分0秒0毫秒)的日期时间值 
+StartOfTheYear 
+函数 返回指定日期时间值那年开始(1月1日0时0分0秒0毫秒)的日期时间值 
+TimeOf 
+函数 返回指定日期时间值的时间部分 
+Today 
+函数 返回当天的日期 
+Tomorrow 
+函数 返回下一天的日期 
+TryEncodeDateDay 
+函数 计算指定年、该年第多少天的日期时间值 
+TryEncodeDateMonthWeek 
+函数 计算指定年、月、该月第几周、该周第几天的日期时间值 
+TryEncodeDateTime 
+函数 转换指定年、月、日、时、分、秒、毫秒为日期时间值 
+TryEncodeDateWeek 
+函数 转换指定年、该第多少周、该周第几天为日期时间值 
+TryEncodeDayOfWeekInMonth 
+函数 转换指定年、月、该月第几个星期几为日期时间值 
+TryJulianDateToDateTime 
+函数 转换指定儒略日为日期时间值 
+TryModifiedJulianDateToDateTime 
+函数 转换指定修正儒略日为日期时间值 
+TryRecodeDateTime 
+函数 选择替换指定日期时间值的某些部分 
+UnixToDateTime 
+函数 转换Unix或Linux日期、时间值为Delphi日期时间值 
+WeekOf 
+函数 返回指定日期时间值是某年的第多少周 
+WeekOfTheMonth 
+函数 返回指定日期时间值是某月的第 几周 
+WeekOfTheYear 
+函数 返回指定日期时间值是某年的第多少周 
+WeeksBetween 
+函数 返回两个指定日期时间值 之间相差多少周(整数) 
+WeeksInAYear 
+函数 返回指定的年有多少周 
+WeeksInYear 
+函数 返回指定日期时间值的那年有多少周 
+WeekSpan 
+函数 返回两个指定日期时间值之间相差多少周(包含小数) 
+WithinPastDays 
+函数 判断两个日期之间相差 是否在指定天数的范围内 
+WithinPastHours 
+函数 判断两个日期时间值之间相差是否在指定小时的范围内 
+WithinPastMilliSeconds 
+函数 判断两个日期时间值之间相差是否在指定毫秒的范围内 
+WithinPastMinutes 
+函数 判断两个日期时间值之间相差是否在指定分钟的范围内 
+WithinPastMonths 
+函数 判断两个日期时间值之间相差是否在指定月份的范围内 
+WithinPastSeconds 
+函数 判断两个日期时间值之间相差是否在指定秒数的范围内 
+WithinPastWeeks 
+函数 判断两个日期时间值之间相差是否在指定星期数的范围内 
+WithinPastYears 
+函数 判断两个日期时间值之间相差是否在指定年数的范围内 
+YearOf 
+函数 返回指定日期时间值中年份部分 
+YearsBetween 
+函数 返回两个指定日期时间值之间相差的年份数(整数) 
+YearSpan 
+函数 返回两个指定日期时间值之间相差的年份数(包含小数) 
+Yesterday 
+函数 返回当前日期之前一天(昨天)的日期

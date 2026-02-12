@@ -1,0 +1,16 @@
+如何召唤下属
+export function RecallmobMon(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AMonName: string;
+    let ALvl: number;
+    //@召唤 白野猪
+    //@召唤 白野猪 7
+    AMonName = Args.Str[0]; //第一个参数为怪物名字
+    if (AMonName != '') {
+        ALvl = 3;
+        if (Args.Int[1] > 0) { //第二个参数为怪物召唤后的等级
+            ALvl = Args.Int[1];
+        }
+        Player.Recallmob(AMonName, ALvl);  //执行召唤 
+        //Player.Recallmob(AMonName, ALvl, 86400, 300, 300); 叛变时间86400秒(24小时),刷新在当前地图坐标300x300上
+    }
+}

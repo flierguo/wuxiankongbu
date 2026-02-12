@@ -1,0 +1,23 @@
+如何判断队伍中是否为不同职业的角色
+//判断以当前的5职业为例
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AJobFlags: boolean[]; //标记5个职业是否存在
+    //FillChar(AJobFlags, 5, #0); 将标记初始化为False,和下面的For循环结果是相同的
+    for (let I = 0; I <= 4; I++) {
+        AJobFlags[I] = false;
+    }
+    if (Player.GroupCount != 5) {  //判断队伍人数是否满足5人
+        Player.SendMessage('队伍必须要有5个人！')
+    } else {
+        for (let I = 0; I <= Player.GroupCount - 1; I++) {//循环队伍人员
+            if (Player.GetGroupMember(I) != null) { //如果人员存在
+                if (AJobFlags[Player.GetGroupMember(I).Job]) { //如果AJobFlags中对应的职业标记已经被标记了(即职业角色已存在)
+                    Player.SendMessage('队伍必须是由5个不同职业的人物组成！');
+                    return;  //一旦发现职业存在重复就退出,不需要继续后面的循环了
+                }
+                AJobFlags[Player.GetGroupMember(I).Job] = true; //将AJobFlags中对应的职业标记置为True
+            }
+        }
+        Player.SendMessage('当前队伍由5个不同职业的人物组成！');
+    }
+}

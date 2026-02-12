@@ -1,0 +1,12 @@
+如何操作Check状态检查
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //Player.Check状态的范围为1-1024,即Player.Check[1]到Player.Check[1024]都是被允许的
+    //小于1或大于1024返回为False,并且无法写入值
+    if (Player.GetCheck(100)) { //判断Check[100]是否为真
+        Player.SendMessage('Check[100]的值为True');
+        Player.SetCheck(100, false); //将Check[100]的值设置为False
+    } else {
+        Player.SendMessage('Check[100]的值为False');
+        Player.SetCheck(100, true); //将Check[100]的值设置为True
+    }
+} 

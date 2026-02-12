@@ -1,0 +1,8 @@
+宝宝叛变的启动和停止
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //指定一个叛变有效时长
+    GameLib.SlaveMutiny(360000);//360000{单位毫秒, 这里换算后为60分钟}
+
+    //停止叛变
+    GameLib.SlaveMutiny(0);
+}

@@ -1,0 +1,12 @@
+如何调整限时杀怪经验倍率
+
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //通过ChangeKillMonExpRate设置限时的经验倍率
+    Player.
+ChangeKillMonExpRate(10/*加0.1倍, 如原经验为100,加成后为110*/, 600/*10分钟*/
+);
+    //通过该函数调整的经验倍率对地图经验倍率、极品属性加成经验倍率、套装属性加成经验倍率、经验卷轴及脚本额外属性调整等无影响,加成效果是同时存在的       
+    //脚本额外属性经验加成
+    Player.AddedAbility.ExpRate = 
+50/*0.5*/; //,通过此方法调整的无时间限制(可通过机器人限制时间)
+}

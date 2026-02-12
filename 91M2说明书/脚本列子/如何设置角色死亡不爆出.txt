@@ -1,0 +1,7 @@
+如何设置角色死亡不爆出
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.NoDropItem = true; //不爆出背包物品,设置为False则允许爆出
+    Player.NoDropUseItem = true; //不爆出穿戴物品,设置为False则允许爆出
+} 
+
+// 注：针对怪物和人物均有效

@@ -1,0 +1,20 @@
+如何检查目标是否处于某种状态
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs):void {
+     if (Player.CheckState(5)) {
+         Player.MessageBox('你被麻痹了！！！');
+    }
+}
+
+     // CheckState可检查状态如下:
+     // 0: 中绿毒
+     // 1: 中红毒
+     // 2: 禁止释放魔法
+     // 3: 不能移动(蛛网,仅对玩家生效)
+     // 4: 不能移动(仅对玩家生效)
+     // 5: 麻痹
+     // 6: 陷阱(不能移动，玩家怪物都有效)
+     // 7: 护体神盾
+     // 8: 隐身
+     // 9: 神圣战甲术
+     // 10: 幽灵盾
+     // 11: 魔法盾

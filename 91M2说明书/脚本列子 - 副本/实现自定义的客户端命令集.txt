@@ -1,0 +1,23 @@
+实现自定义的客户端命令集
+客户端输入命令后，将触发ManagerNPC中的ProcessCommand函数，ProcessCommand函数定义为：
+
+export function ProcessCommand(Npc: TNormNpc, Player: TPlayObject, Command: String, Args: TArgs, Handled: boolean):boolean;
+// NPC指向ManagerNPC对象，Player为当前输入命令的玩家,Command为命令名,Args为参数，Handled表示是否处理
+// 以千里传音功能为例：
+ export function ProcessCommand(Npc: TNormNpc, Player: TPlayObject, Command: String, Args: TArgs, Handled: boolean):boolean {
+    Const Message = '发送一条千里传音';
+    if (Command = '千里传音') {//如果玩家输入的是 @千里传音 这个字符串
+        //如果玩家的宝石位装备有物品并且这个物品的名字叫“千里传音”
+        if ((Player.Charm != null) && Player.Charm.Name == '千里传音') { 
+            GameLib.BroadcastSay(Message, 0, 0);   //世界喊话  
+            //减掉物品1次使用次数
+            Player.Charm.Dura = Player.Charm.Dura - 1000; //将宝石位物品的持久减1000点（客户端显示持久减少1点）
+            Player.UpdateItem(Player.Charm); //发送消息到客户端，让客户端实时的更新宝石位物品
+        }
+        Handled = true; //表示此次操作完成，M2引擎将不继续处理此命令,如果不设置为True,M2可能会继续处理该命令
+    }
+    if (Player.IsAdmin) {
+        //如果玩家是管理员身份，则处理这里实现的命令部分
+    }
+    return Handled
+}

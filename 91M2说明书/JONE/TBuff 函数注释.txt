@@ -1,0 +1,66 @@
+TBuff 函数注释
+// Buff的标志
+GetTag(): number;Tag:number;
+
+// Buff的ID
+GetID(): number;ID:number;
+
+// Buff的唯一标记
+GetHandle(): number;Handle:number;
+
+// Buff创建时候的分组ID (同组所有的Buff只能存在一个)
+GetGroupID(): number;GroupID:number;
+
+// Buff增加的属性数值，仅当Buff类型为属性类Buff时有效
+GetBuffValue(): number;BuffValue:number;
+
+// Buff作用值是否为万分比(仅Buff为属性类Buff时有意义)
+GetValueRate(): boolean;ValueRate:boolean;
+
+// 获取自动销毁时间
+GetDestoryTick(): number;DestoryTick:number;
+
+// 设置自动销毁时间
+SetDestoryTick(value: number): void;
+
+// buff作用间隔
+AffectInterval(): number;
+
+// 获取BUFF释放者，可用于避免受buff持续伤害死亡无攻击者的情况
+GetActor(): TActor;Actor:TActor;
+
+// 设置BUFF释放者，可用于避免受buff持续伤害死亡无攻击者的情况
+SetActor(Value: TActor): void;
+
+// 设置自定义数据，提供给脚本中进行实现自定义数据标记
+SetCustomStr(Str: string): void;
+
+// 获取自定义数据
+GetCustomStr(): string;CustomStr:string;
+
+// 获取Buff类型
+GetCategory(): number;Category:number;
+
+// 获取属性buff类型，仅当Buff类型为属性类Buff时有效
+GetBuffAbilityType(): number;BuffAbilityType:number;
+
+// 获取状态buff类型，仅当Buff类型为状态类Buff时有效 
+GetBuffStatusType(): number;BuffStatusType:number;
+
+// 获取间隔作用buff类型,仅当Buff类型为状态类Buff时有效
+GetBuffIntervalType(): number;BuffIntervalType:number;
+
+// 参数1，对不同的Buff类型有不同的意义
+GetArgs1(): number;Args1:number;
+
+// 参数2，对不同的Buff类型有不同的意义
+GetArgs2(): number;Args2:number;
+
+// 设置buff分组
+SetGroup(value: number): void;
+
+// 获取自定义数据
+GetCustomInt(Index: number): number;CustomInt:number;
+
+// 设置自定义数据，提供给脚本中进行实现自定义数据标记
+SetCustomInt(Index: number,value: number): void;

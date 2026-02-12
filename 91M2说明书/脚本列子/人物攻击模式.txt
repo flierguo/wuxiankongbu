@@ -1,0 +1,32 @@
+人物攻击模式
+人物攻击模式 - TAttackMode
+
+参数名	说明
+amAll	全体攻击
+amPeaceful	和平攻击
+amDear	夫妻攻击
+amMaster	师徒攻击
+amGroup	编组攻击
+amGuild	行会攻击
+amRed	善恶攻击
+amNation	国家攻击
+amCamp	阵营攻击
+示例
+攻击模式调整将触发QFunctionNPC中的函数：
+
+// 更改攻击模式触发
+GameLib.onChangeAttatckMode = (Player: TPlayObject, OldMode: number, NewMode: number): number => {
+  switch(NewMode) {
+    case TAttackMode.amAll: Debug('您当前攻击模式更改为：全体攻击模式'); break
+  }
+  return NewMode
+}
+
+
+// 示例：
+    export function ChangeAttatckMode(Npc: TNormNpc, Player: TPlayObject, OldMode: TAttackMode, NewMode: TAttackMode): TAttackMode {
+        if (Player.Map.Duplicate && (Player.Camp > 0)) { //如果当前处于副本地图，并且有阵营
+            NewMode = TAttackMode.amCamp; //则不管角色怎么调整攻击模式，其模式始终只能为阵营攻击模式
+        }
+        return NewMode
+    }

@@ -1,0 +1,20 @@
+如何将地图上的角色全部随机传送到另外一个地图上
+// 如何将地图上的角色全部随机传送到另外一个地图上
+// 采用系统提供的函数
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    GameLib.RecallMap('0', '3');
+} 
+//循环在线玩家分别传送
+export function Main1(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AMap: TEnvirnoment;
+    AMap = GameLib.FindMap('0');
+    if (AMap) {
+        for (let I = 0; I <= GameLib.PlayCount - 1; I++) {
+            // 没有在死亡状态 并且 没有处于死亡后的清理状态
+            if (!GameLib.GetPlayer(I).Death && !GameLib.GetPlayer(I).Ghost && (GameLib.GetPlayer(I).Map == AMap)) {
+                GameLib.GetPlayer(I).RandomMove('3');
+                //GameLib.GetPlayer(I).MapMove('3', 333, 333);  //指定地点的传送
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+如何实现一个带参数的输入框
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const S =
+        `[[
+    <点击/@@InputString1(请输入：,参数1,参数2)>\\
+    <离 开/@exit>
+    ]]`
+    //InputString1中使用了3个参数这个,第一个为"请输入：",这个固定为客户端显示的标题,第二三个则是在调用InputString1时可访问到的参数
+
+    //InputString和InputInteger一样,如果一旦使用了参数,则第一个参数就是标题,有效参数从第二个开始,玩家输入的内容则在返回的参数中的最后一个
+
+    //比如这里,将会得到的参数为:参数1,参数2,输入的内容
+    Npc.Say(Player, S);
+}
+export function InputString1(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    for (let I = 0; I <= Args.Count - 1; I++) { //循环取出参数
+        Player.SendMessage(I.toString() + ':' + Args.Str[I]); //将内容发送到客户端供测试
+    }
+}

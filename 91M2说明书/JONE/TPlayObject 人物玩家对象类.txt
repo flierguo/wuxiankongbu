@@ -1,0 +1,544 @@
+TPlayObject 人物玩家对象类
+GetNotOnlineAddExp(): boolean; NotOnlineAddExp:boolean;     / 判断是否离线挂机 true为离线挂机玩家 false为正常在线
+GetStationTime(): number; StationTime:number;               / 原地站立不动时间  （玩家）
+GetStationTick(): number; StationTick:number;               / 站立不动的时间 （怪物）
+GetHomeMapName(): string; HomeMapName:string;               / 回城地图
+GetHomeX(): number; HomeX:number;                           / 回城地图X坐标
+GetHomeY(): number; HomeY:number;                           / 回城地图Y坐标
+GetAccount(): string; Account:string;                       / 获取帐号
+GetIsNewHuman(): boolean; IsNewHuman:boolean;               / 是否为新的角色
+GetLoginTime(): number; LoginTime:number;                   / 获取登录时间
+GetSessionID(): number; SessionID:number;                   / 获取会话ID
+GetDearName(): string; DearName:string;                     / 获取配偶名称
+SetDearName(Name: string): void;                            / 设置配偶名称
+GetMarried(): boolean; Married:boolean;                     / 是否已婚
+GetMasterName(): string; MasterName:string;                 / 获取师傅名字
+SetMasterName(Name: string): void;                          / 设置师傅名字
+GetISMaster(): boolean; ISMaster:boolean;                   / 是否是师傅
+GetMarryCount(): number; MarryCount:number;                 / 获取结婚次数
+GetReNewLevel(): number; ReNewLevel:number;                 / 获取转生等级
+SetReNewLevel(Value: number): void;                         / 设置转生等级
+GetBonusPoint(): number; BonusPoint:number;                 / 获取未使用的属性点数
+SetBonusPoint(Value: number): void;                         / 设置未使用的属性点数
+GetMemberType(): number; MemberType:number;                 / 获取会员类型
+SetMemberType(Value: number): void;                         / 设置会员类型
+GetMemberLevel(): number; MemberLevel:number;               / 获取会员等级
+SetMemberLevel(Value: number): void;                        / 设置会员等级
+GetGameGold(): number; GameGold:number;                     / 获取元宝数量
+SetGameGold(Value: number): void;                           / 设置元宝数量
+GetPaoDianPoint(): number; PaoDianPoint:number;             / 获取泡点值
+SetPaoDianPoint(Value: number): void;                       / 设置泡点值
+GetGamePoint(): number; GamePoint:number;                   / 获取礼券值
+SetGamePoint(Value: number): void;                          / 设置礼券值
+GetGameGlory(): number; GameGlory:number;                   / 获取荣誉值
+SetGameGlory(Value: number): void;                          / 设置荣誉点
+GetGameDiaMond(): number; GameDiaMond:number;               / 获取金刚石
+SetGameDiaMond(Value: number): void;                        / 设置金刚石
+GetGameGird(): number; GameGird:number;                     / 获取灵符值
+SetGameGird(Value: number): void;                           / 设置灵符值
+GetCreditPoint(): number; CreditPoint:number;               / 获取声望值
+SetCreditPoint(Value: number): void;                        / 设置声望值
+
+GoHome(): void;                                                 / 回城
+RecallHuman(AHumName: string): void;                            / 将指定角色传送到自己身边(AumName:角色名)
+OpenMarket(): void;                                             / 打开市场
+OpenBag(): void;                                                / 打开背包
+ReloadBag(): void;                                              / 刷新背包(3秒CD)
+OpenShop(): void;                                               / 打开商城
+OpenMailBox(): void;                                            / 打开邮箱
+OpenMapView(): void;                                            / 打开大地图
+OpenRefineBox(): void;                                          / 打开淬炼窗口
+GetFeature(): number; Feature:number;                           / 获取角色外观（示例版本中在天下第一用到）
+GetFeatureEx(): number; FeatureEx:number;                       / 角色效果
+GetStoragePwd(): string; StoragePwd:string;                     / 获取仓库密码
+SetStoragePwd(Value: string): void;                             / 设置仓库密码
+GetAllowDeal(): boolean; AllowDeal:boolean;                     / 查询是否允许交易
+SetAllowDeal(Value: boolean): void;                             / 设置是否允许交易
+GetAllowGuild(): boolean; AllowGuild:boolean;                   / 查询是否允许加入行会
+SetAllowGuild(Value: boolean): void;                            / 设置是否允许加入行会
+GetAllowGroup(): boolean; AllowGroup:boolean;                   / 查询是否允许加入队伍
+SetAllowGroup(Value: boolean): void;                            / 设置是否允许加入队伍
+GetAllowGroupReCall(): boolean; AllowGroupReCall:boolean;       / 查询是否允许组队传送
+SetAllowGroupReCall(Value: boolean): void;                      / 设置是否允许组队传送
+GetAllowGuildReCall(): boolean; AllowGuildReCall:boolean;       / 查询是否允许行会传送
+SetAllowGuildReCall(Value: boolean): void;                      / 设置是否允许行会传送
+GetAllowReAlive(): boolean; AllowReAlive:boolean;               / 查询是否允许复活
+SetAllowReAlive(Value: boolean): void;                          / 设置是否允许复活
+GetShowFashion(): boolean; ShowFashion:boolean;                 / 查询是否显示时装
+SetShowFashion(Value: boolean): void;                           / 设置是否显示时装
+GetRankLevelName(): string; RankLevelName:string;               / 获取称号
+SetRankLevelName(Value: string): void;                          / 设置称号 需要调用UpdateName通知客户端
+GetTitleName(): string; TitleName:string;                       / 获取顶戴
+SetTitleName(Value: string): void;                              / 设置顶戴花翎 支持文字处理 需要调用UpdateName通知客户端
+GetShowRankLevelName(): boolean; ShowRankLevelName:boolean;     / 获取当前称号是否显示
+SetShowRankLevelName(Value: boolean): void;                     / 设置是否显示称号
+UpdateName(): void;                                             / 向客户端发送显示名称更新信息(改名后要更新)
+GetContribution(): number; Contribution:number;                 / 获取贡献度
+SetContribution(Value: number): void;                           / 设置贡献度
+GetLogonTick(): number; LogonTick:number;                       / 获取在线时长
+GetIPAddress(): string; IPAddress:string;                       / 获取目标的IP地址 例如127.0.0.1
+GetIPLocal(): string; IPLocal:string;                           / 获取IP来源 例如查询127.0.0.1 来源：本机地址
+GetTimeRecall(): boolean; TimeRecall:boolean;                   / 设置泡点值
+GetPayMent(): number; PayMent:number;                           / 获取消费点
+GetGroupOwner(): TPlayObject; GroupOwner:TPlayObject;           / 获取队长对象
+GetGroupCount(): number; GroupCount:number;                     / 获取队伍人数
+GetGroupMember(Index: number): TPlayObject;                     / 获取队员对象(从0开始)
+GetISGroupMaster(): boolean; ISGroupMaster:boolean;             / 判断目标是否为队长
+GetAllowSendMessage(): boolean; AllowSendMessage:boolean;       / 查询是否允许聊天
+SetAllowSendMessage(Value: boolean): void;                      / 设置是否允许聊天
+GetMailCount(): number; MailCount:number;                       / 获取邮件总数
+GetMailUnreadCount(): number; MailUnreadCount:number;           / 获取未读邮件总数
+GetStorageItemsCount(): number; StorageItemsCount:number;       / 查询仓库存放物品数量
+GetStorageItem(Index: number): TUserItem;                       / 仓库存放的第index个物品，如果不存在返回为null
+GetMachineCode(): string; MachineCode:string;                   / 获取目标机器码
+AddTitle(ATitle: string): boolean;                              / 添加一个数据库称号
+RemoveTitle(ATitle: string): boolean;                           / 删除一个称号
+SetActiveTitle(ATitle: string): void;                           / 设置当前称号
+GetTitleCount(): number; TitleCount:number;                     / 获取目标称号数量
+GetTitleItems(AIndex: number): THumTitle; TitleItems:THumTitle; / 按照编号获取目标称号
+GetActiveTitle(): THumTitle; ActiveTitle:THumTitle;             / 获取目标当前设置的称号
+RestBonusPoint(): void;                                         / 重置角色属性点
+Kick(): void;                                                   / 将目标踢下线
+ReAlive(): void;                                                / 将目标复活
+LoadUI(UI: string): void;                                       / 动态加载UI文件，Player.LoadUI('UI2.91UI')；(UI文件需要放在91Resource文件夹)
+GetPlayerID(): number; PlayerID:number;                         / 获取玩家ID
+StartAutoFight(): void;                                         / 开始挂机
+StopAutoFight(): void;                                          / 停止挂机
+UpdateAssistantIni(IniText: string): void;                      / 更新内挂物品信息
+LockClient(Caption: string,CallBack: string): void;             / 锁定客户端
+UnLockClient(): void;                                           / 解锁客户端
+SetChatColor(Color: number): void;                              / 用于动态调整人物聊天字体颜色
+GetStallState(): number; StallState:number;                     / 获取摆摊状态
+GetProperties(): number; Properties:number;                     / 获取外观描述信息
+GetChatColor(): number; ChatColor:number;                       / 获取人物聊天字体颜色
+setMaxExp(Value: number): void;                                 / 设置最大经验(可读写)
+GetSVar(index: number): string;                                 / 获取S变量（人物临时字符串变量 下线清零）
+SetSVar(Index: number,Value: string): void;                     / 设置S变量
+GetNVar(index: number): number;                                 / 获取N变量 (永久整型变量人物0-299 怪物0-99)
+SetNVar(Index: number,Value: number): void;                     / 设置N变量
+GetPVar(index: number): number;                                 / 获取P变量 (人物临时整型变量 怪物无 下线清零)
+SetPVar(Index: number,Value: number): void;                     / 设置P变量
+VarString(AVarName: string): TVarValue;                         / 声明自定义字符串变量
+VarInteger(AVarName: string): TVarValue;                        / 声明自定义整数型变量
+VarDateTime(AVarName: string): TVarValue;                       / 声明自定义时间变量
+VarFloat(AVarName: string): TVarValue;                          / 声明自定义浮点型变量
+VarBoolean(AVarName: string): TVarValue;                        / 声明自定义布尔型变量
+
+V:any;                                                          / V 变量
+R:any;                                                          / R 变量
+// V会保存到数据库 玩家上下线值会以json格式保存在player表中的customSaveStr字段中
+// Player.R 玩家下线就会清空
+
+// 设置(Atick：单位分钟)传送回城
+SetTimeRecall(Value: boolean,ATick: number): void;
+// 设置多久后传送到某个地图
+SetTimeRecallEx(AMap: string,ATick: number,MapX: number,MapY: number): void;
+
+// 在自定义的UI中 CustomItemCount 表示获取放入的道具数量
+GetCustomItemCount(): number; CustomItemCount:number;
+// 获取自定义的UI中的一个道具（从0开始）
+GetCustomItem(Index: number): TUserItem;
+
+// 客户端显示特效（7-14为烟花效果，其他的值将调用版本管理器->UI设计->自定义特效->特效ID）
+ShowEffect(EffectID: number): void;
+
+// 查看文本是否包含在指定的文件中(有返回True,无返回False)
+CheckTextList(ATextFile: string,AText: string): boolean;
+
+// 查看角色名字是否包含在指定的文件中(有返回True,无返回False)
+CheckNameList(ATextFile: string): boolean;
+
+// 查看账号是否包含在指定的文件中(有返回True,无返回False)
+CheckAccountList(ATextFile: string): boolean;
+
+// 清除指定的文件内容
+ClearList(ATextFile: string): void;
+
+// 将文本增加到指定的文本中(ATextFile:文件名, AText:内容)
+AddTextList(ATextFile: string,AText: string): void;
+
+// 将角色名增加到指定的文本文件中
+AddNameList(ATextFile: string): void;
+
+// 将账号增加到指定的文本文件中
+AddAccountList(ATextFile: string): void;
+
+// 将行会增加到指定的文本文件中
+AddGuildList(ATextFile: string): void;
+
+// 将IP增加到指定的文本文件中
+AddIPList(ATextFile: string): void;
+
+// 将文本从指定的文件中删除（ATextFile:文件名, AText:内容;只删除最先匹配到的一条记录）
+DelTextList(ATextFile: string,AText: string): void;
+
+// 将角色名从指定的文本文件中删除
+DelNameList(ATextFile: string): void;
+
+// 将角行会从指定的文本文件中删除
+DelGuildList(ATextFile: string): void;
+
+// 将帐号从指定的文本文件中删除
+DelAccountList(ATextFile: string): void;
+
+// 将IP从指定的文本文件中删除
+DelIPList(ATextFile: string): void;
+
+// 传送(MapName:地图名; MapX:地图X坐标 MapY:地图Y坐标)
+MapMove(MapName: string,MapX: number,MapY: number): void;
+
+// 传送(Envir:地图对象; MapX:地图X坐标 MapY:地图Y坐标)
+MapMoveEx(Envir: TEnvirnoment,MapX: number,MapY: number): void;
+
+// 传送(MapName:地图对象; MapX:地图X坐标 MapY:地图Y坐标)
+// 此函数可以使得离线挂机人物可以被执行地图传送
+ForceMapMove(Envir: TEnvirnoment,MapX: number,MapY: number): void;
+
+// 从角色所在的城堡拿走指定数量的金币（建议直接通过城堡对象操作）
+TakeCastGold(AGold: number): void;
+
+// 设置角色在指定的地图自动增加经验值
+// Amap:地图ID Atime:间隔时间，单位秒 Apoint:每次增加经验值 IsSafeZone:是否只在安全区有效
+AutoGetExp(AMap: string,ATime: number,APoint: number,IsSafeZone: boolean): void;
+
+// 停止自动增长经验
+StopAutoGetExp(): void;
+
+// 设置离线挂机（ AIntervalTime:时间 AExpPoint:经验值; 间隔时间以分钟为单位）
+OffLinePlay(AIntervalTime: number,AExpPoint: number): void;
+
+// 开始离线挂机，人物离线
+KickOffLine(): void;
+
+// 设置个人时钟。
+// ID：时钟标志 AIntervalTime：间隔时间（秒） ChangeMapDeleteItemDeleteItem：离开地图删是否除本时钟 Once：是否指执行一次。
+// 时钟设置成功返回True 否则返回 False
+// 个人时钟执行时候调用 GameLib.onPrivyEventExecute 函数
+// 个人时钟移除时调用 GameLib.onPrivyEventRemove 函数
+DelayGoto(ID: number,AIntervalTime: number,AChangeMapDelete: boolean,Once: boolean): boolean;
+
+// 移除一个个人时钟，通过此函数移除的时钟不触发 GameLib.onPrivyEventRemove 函数
+ClearDelayGoto(ID: number): void;
+
+// 延时调用函数命令
+// AMethod：要调用的函数名；AIntervalTime 延迟时间，单位毫秒； AChangeMapDelete：切换地图是否删除延时调用
+DelayCallMethod(AMethod: string,AIntervalTime: number,AChangeMapDelete: boolean): void;
+// 删除一个延迟调用（调用的函数）
+DeleteDelayCallMethod(AMethod: string): void;
+
+// 客户端播放声音文件(ASoundFile:文件名)
+// 例如：Player.PlaySound('Wav\\0001.wav')；首先从Resources目录下搜索,如果文件不存在再找游戏的Wav目录
+PlaySound(ASoundFile: string): void;
+
+// 未实现 - 客户端播放视频文件(ASoundFile:文件名)
+PlayVideo(AVideoFile: string): void;
+
+// 召唤一个怪物作为宝宝(AMonName: 怪物名 ; MonLvl: 等级; RoyaltySec: 叛变时间（秒）; X: 坐标X; Y:坐标Y)
+Recallmob( AMonName: string,MonLvl?: number,RoyaltySec?: number,X?: number,Y?: number) =>  TActor;
+
+// 组队传送(Envir:地图对象; MapX:地图X坐标； MapY:地图Y坐标；boForce：是否强制传送)
+GroupMoveEx(Envir: TEnvirnoment,MapX: number,MapY: number,boForce: boolean): void;
+
+// 组队传送(MapName:地图名; MapX:地图X坐标； MapY:地图Y坐标)
+GroupMapMove(MapName: string,MapX: number,MapY: number): void;
+
+// 行会传送(Envir:地图对象; MapX:地图X坐标； MapY:地图Y坐标)
+GuildMapMoveEx(Envir: TEnvirnoment,MapX: number,MapY: number): void;
+
+// 行会传送(MapName:地图名; MapX:地图X坐标； MapY:地图Y坐标)
+GuildMapMove(MapName: string,MapX: number,MapY: number): void;
+
+// 在指定的地图ID上随机传送，当MapName为空时则在当前地图上随机传送
+RandomMove( MapName?: string) =>  void;
+
+// 在指定的地图对象上随机传送，当AEnvir为空时则在当前地图上随机传送
+RandomMoveEx(AEnvir: TEnvirnoment): void;
+
+// 开始自动增加元宝，Apoint:增加数量，Ainterval:间隔时间（秒）
+StartAutoAddGameGold(APoint: number,AInterval: number): void;
+// 停止自动增加元宝
+StopAutoAddGameGold(): void;
+
+// 开始自动减少元宝，Apoint:增加数量，Ainterval:间隔时间（秒）
+StartAutoSubGameGold(APoint: number,AInterval: number): void;
+// 停止自动减少元宝
+StopAutoSubGameGold(): void;
+
+// 修改转生等级，Value为新的转生等级，NewLevel为转生后的人物等级，BounsuPoint为属性点
+ChangeReNewLevel(Value: number,NewLevel: number,BounsuPoint: number): void;
+
+// 向客户端发送物品更新消息(装备属性修改要更新)
+UpdateItem(Item: TUserItem): void;
+
+// 删除指定的物品（可叠加物品直接删除指定的数量，数量为0则删除物品本身）
+DeleteItem( Item: TUserItem,Count?: number) =>  void;
+
+// 删除背包物品，与 TPlayObject.DeleteItem 的 差别是 前者只会删除背包物品 后者会删除背包以及穿戴的物品。
+DeleteBagItem( Item: TUserItem,Count: number) =>  void;
+
+// 向客户端发送技能更新消息
+UpdateMagic(Magic: TUserMagic): void;
+
+// 加入队伍时触发
+// 第一个参数对加入队伍的对象
+// 第二个参数为是否显示对话框,如果为false,则直接加入队伍,如果为true,则对方会收到组队邀请或申请
+JoinGroup(APlayer: TPlayObject,ShowDialog: boolean): void;
+// 如果目标是队长，则解散队伍，否则离开队伍
+LeaveGroup(): void;
+
+// 查询标记，无特殊意义，在脚本中用来做某个操作的锁定标
+GetLocked(): boolean; Locked:boolean;
+// 设置标记，无特殊意义
+SetLocked(Value: boolean): void;
+
+// 获取额外增加的角色属性
+GetAddedAbility(): TAddedAbility; AddedAbility:TAddedAbility;
+// 动态爆某个怪物的爆率 物品到玩家背包
+GetMonDropItems(MonName: string): void;
+
+// 客户端增加1个扩展按钮，AddExtendButton:位于药品栏下方，AddTopExtendButton:位于小地图左侧 
+// Name：按钮名称 不可重复；Hint:提示信息；Command:点击按钮后要执行的函数；ImageIndex:按钮图片
+// 按钮按下时图片为ImageIndex+1，鼠标经过的 图片为ImageIndex+2，图片从Icons.data中加载
+AddExtendButton ( Name: string,Hint: string,Command: string,ImageIndex: number,X: number,Y: number) => void;
+AddTopExtendButton(Name: string,Hint: string,Command: string,ImageIndex: number,X: number,Y: number): => void;
+// 在客户端中移除通过AddExtendButton增加的按钮
+RemoveExtendButton(Name: string): void;
+
+// 显示一个感叹号，玩家点击感叹号后触发QFunctionNpc的 GameLib.onClickSighIcon 函数
+ShowSighIcon(MethodID: number,Hint: string): void;
+
+// 显示一个感叹号，玩家点击感叹号后执行Method：函数名称,Hint:提示信息
+ShowSighIcon1(Method: string,Hint: string): void;
+
+// 给予物品(ItemName: 物品名,Count为数量，Upgrade指定是否刷新极品属性)
+Give ( ItemName: string,Count: number,Upgrade: boolean) =>  void;
+
+// 发放物品,并且返回该物品对象，如果刷新失败返回为nil(ItemName: 物品名,Upgrade指定是否刷新极品属性)
+GiveItem ( ItemName: string,Upgrade?: boolean) => TUserItem;
+
+// 根据物品数据库ID给予物品并返回该物品对象，如果刷新失败返回为null
+GiveItemByIndex: ( ItemIndex: number,Upgrade?: boolean) =>  TUserItem;
+
+// 弹出一个NPC对话框
+// 当使用Player.Say 或者 Player.SayEx 时，出现点击点击npc没反应时
+// 造成问题原因可能是你登陆游戏后没有跟任意NPC进行过对话，当前npc对象为空
+// 可以修改用 GameLib.QFunctionNpc.Say 或者 GameLib.QFunctionNpc.SayEx 解决
+Say(Msg: string): void;
+// 弹出一个自定义NPC对话框(版本管理器->UI设计->自定义窗口->窗口名称)
+SayEx(UIName: string,Msg: string): void;
+// 弹出对话框
+MessageBox(Msg: string): void;
+
+// 更新自定义界面的文字描述
+UpdateSay(UIName: string,Msg: string): void;
+
+// 执行CloseWindow后,如果客户端开启了UI里面的"自定义窗口"则会关闭该窗口
+// UI设计里设置窗口为手动关闭后,配合此函数可以达到按照特定的条件显示和关闭一个自定义窗口
+CloseWindow(UIName: string): void;
+
+// 示例：Player.Question('确定执行吗?', 'Q2.YMethod', 'Q2.NMethod');
+// 参数1：对话信息；参数2：函数名称，之后的参数被作为第二个参数在被作为函数调用时的参数。
+// 在客户端弹出一个提示窗口，玩家选择确定则调用参数里的函数，点击取消则不做任何处理
+Question(Msg: string,YMethod: string,NMethod: string): void;
+
+// 打开一个指定的宝箱(BoxID: 数据库AniCount编号 )
+// Player.OpenBox(101); 打开一个ID为101的宝箱,随机取得一个物品,宝箱结束
+// Player.OpenBoxEx(3, 101); 打开一个ID为101的宝箱,宝箱开启外观为3(可选1-5,分别是檀木宝箱、紫铜宝箱、白银宝箱、赤金宝箱和神秘宝箱)
+// Player.OpenShuffle(101); /打开一个ID为101的宝箱让客户端执行翻牌操作
+// 三种方式的区别在于:
+// OpenBox从宝箱中随机取出一个物品给玩家就结束了宝箱,类似开怪物宝箱;
+// OpenBoxEx将宝箱打开，并默认选中一个物品，允许玩家以付费或免费的形式重新选择其他物品
+// OpenShuffle则是执行翻牌动作,将物品呈现在玩家目前让玩家选择,只可开启一次的宝箱
+OpenBox(BoxID: number): void;
+OpenBoxEx(Shape: number,BoxID: number): void;
+OpenShuffle(BoxID: number): void;
+
+// 显示一个进度条
+// Caption:进度条显示信息；Atime：进度条显示的时间,单位秒；EventID：进度条标记;
+// ActCancel：是否在角色 移动、攻击或被被攻击的时候取消进度条事件。进度条计时结束后调
+// 用QFunctionNpc单元中的 GameLib.onProgressEvent 函数，其中可根据EventID 进行事件处理
+// ShowProgress 和 ShowProgressEx 的区别在于，如果当前存在进度条则返回True,不存在返回False
+ShowProgress(Caption: string,ATime: number,EventID: number,ActCancel: boolean): boolean;
+ShowProgressEx(Caption: string,ATime: number,NPC: TNormNpc,SucessFunction: string,FailFunction: string,ActCancel: boolean): boolean;
+
+// 关闭当前的进度条
+CloseProgress(): void;
+
+// 给物品升级魂炼（如果魂炼经验足够则升级，反之则不做任何处理）
+CheckItemSoulLevelUp(AItem: TUserItem): void;
+
+// 将一个指定的物品存到仓库。成功返回True,失败返回False
+AddItemToStorage(AItem: TUserItem): boolean;
+
+// 删除仓库指定位置的物品(Index: 编号)成功返回True,失败返回False
+DeleteStorageItem1(Index: number): boolean;
+// 删除仓库指定位置的物品(AItem: 物品对象)成功返回True,失败返回False
+DeleteStorageItem2(AItem: TUserItem): boolean;
+
+// 取出仓库指定位置的物品(Index: 编号)成功返回True,失败返回False
+TakebackStorageItem(Index: number): boolean;
+
+// 无限仓库物品数量
+GetBigStorageItemsCount(): number; BigStorageItemsCount:number;
+
+// 无限仓库存放的第index个物品，如果不存在返回为null
+GetBigStorageItem(Index: number): TUserItem;
+
+// 将一个指定的物品存到无限仓库(AItem: 物品名称)成功返回True,失败返回False
+AddItemToBigStorage(AItem: TUserItem): boolean;
+
+// 删除无限仓库指定位置的物品(Index: 编号)成功返回True,失败返回False
+DeleteBigStorageItem1(Index: number): boolean;
+// 删除无限仓库指定位置的物品(AItem: 物品对象)成功返回True,失败返回False
+DeleteBigStorageItem2(AItem: TUserItem): boolean;
+
+// 取出无限仓库指定位置的物品(Index: 编号)成功返回True,失败返回False
+TakebackBigStorageItem(Index: number): boolean;
+
+// 为防止玩家窗口不在游戏时可能会忽略本次事件,给顽疾发送一个标题栏闪动,如果客户端处于激活状态则该闪动无效
+FlashWindow(): void;
+
+// 玩家的任务信息
+GetMissions(): TMissions; Missions:TMissions;
+
+// 角色增加LockMoveItem、UnLockMoveItem及LockMoveItem1用来锁定客户端物品移动
+LockMoveItem(): void;
+UnLockMoveItem(): void;
+LockMoveItem1(ATime: number): void;
+
+// Player.PlayDice 增加一个参数 表示延迟关闭时间 单位是毫秒
+// Player.PlayDice(100{骰子标志}, 4{骰子点数1}, 1{骰子点数2}, 6{骰子点数3},3000{显示骰子数目3秒后自动关闭界面});
+PlayDice( ATag: number；APoint1: number；APoint2：number；APoint3：number；AutoCloseTime: number) =>  void;
+
+// 在客户端左侧增加一个按钮(ACaption:按钮显示文字, AName: 名称 )
+// 例:Player.AddSidebarButton(' 实验按钮', 'AAA');
+// 在QFunctionNpc文件OnSideBarButtonClick里的 'AAA': Q1.Main (Npc,Player,Args);
+AddSidebarButton(ACaption: string,AName: string): void;
+
+// 在客户端左侧删除一个按钮（参数1：按钮名称）
+DeleteSidebarButton(AName: string): void;
+/ 清理侧边栏按钮(如果有增加的话)
+ClearSidebarButton(): void;
+
+// 设置聊天输入框内容
+SetChatText(AValue: string): void;
+
+// 查询TFunctionFlag值状态
+GetFunctionState( ff: TFunctionFlag) =>  boolean;
+// 设置TFunctionFlag值状态 例如首饰盒 生肖盒
+// Player.SetFunctionState(TFunctionFlag.ffZodiac,true) 开启生肖盒
+SetFunctionState( ff: TFunctionFlag,boState: boolean) =>  void;
+
+SendControlVisible(Name: string,Visible: boolean,Auto: boolean): void;
+GetTotalExpRate(): number; TotalExpRate:number;
+
+UIGuide(UIName: string,Hint: string,GuideIdent: string): void;
+// 用于脚本内放置物品到自定义物品框中(UniTag:自定义UI可控道具唯一值不可冲突,Item:物品对象,Count:数量)
+MoveItemToUIContainer(UniTag: number,Item: TUserItem,Count: number): void;
+
+// 用于从UI物品框中移除物品（参数1：唯一标记）
+RemoveItemFromUIContainer(UniTag: number): void;
+
+// 获取对应的推广标识。通过此功能可以实现统计哪些渠道来了多少玩家。
+GetPromotionFlag(): string; PromotionFlag:string;
+
+// 角色、行会及Gamelib均可以用 ClearVarTable 来清除变量表
+ClearVarTable(): void;
+// 执行清空操作后的变量将被移除内存，减少内存占用
+RemoveVar(AName: string): void;
+
+// 可以一次性修改多个UI的多个属性。分隔符为@
+// Player.SetClientUIProperty('UINAME1@UINAME2@UINAME3','UIProperty1@UIProperty2@UIProperty3');
+// 注意:每个UIProperty都可以设置多个属性，每个属性设置用分号;分开,属性值用=赋值。
+// 例子：Player.SetClientUIProperty('活动提示框@NPC大对话框','Visible=True;Caption.text=BOSS来袭@visible=False');
+// 客户端将会为相应的UI控件赋值。
+SetClientUIProperty(UIName: string,UIProperty: string): void;
+
+// 打开一个指定的URL网址(AUrl:网址,Width:宽度, Height:高度)
+OpenURL(AUrl: string,Width: number,Height: number): void;
+
+// 客户端请求URL(不弹出窗口)
+RequestURL(AUrl: string): void;
+
+// 函数调用（Method：单元名.函数名(参数)）
+CallMethod(Npc: TActor,Method: string): void;
+
+// 发送行会消息
+SendGuildMessage(Msg: string): void;
+
+// 发送顶部移动消息（Mode:0-自己 1-所有人 2-行会 3-当前地图）
+SendTopMessage(Message: string,Mode: number): void;
+
+// 发送屏幕中央消息（Mode:0-自己 1-所有人 2-行会 3-当前地图,DuraTick:时长毫秒）
+SendCenterMessage ( Message: string,Mode: number,Time: number) =>  void;
+
+// 发送底部消息（Mode:0-自己 1-所有人 2-行会 3-当前地图所有玩家可见）
+Falg 为消息标志 可以用 DeleteCountDownMessage 来删除消息
+ChangMapDelete 切换地图是否删除消息
+SendCountDownMessage( Message: string,Mode: number,Falg: number,ChangMapDelete: boolean) =>  void;
+
+// 注：SendCountDownMessage和Gamelib.BroadcastCountDownMessage可以发送底部倒计时消息
+// 格式为<$Time:倒计时秒数$>
+// 所有消息内容都支持文字属性处理</A>，比如{S=文字消息;C=249}
+
+// 删除一个底部消息
+DeleteCountDownMessage(Falg: number): void;
+
+// 服务器列表增加入口标识，用于区分是从登录器的哪个选项进入的游戏
+// 脚本内通过 TPlayObject.ServerEntryFlag进行获取
+GetServerEntryFlag(): string;
+ServerEntryFlag:string;
+
+// UI设计元素 输入框 增加唯一标志设置 ，使得其内容可以脚本修改。
+// 例如Player.UpdateUIEditText(1003,’文本已经修改’) 1003 为设置的输入框元素的唯一标志
+UpdateUIEditText(UniTag: number,Text: string): void;
+
+// 关于自定义飘血显示的更新
+// 区别在于 ShowBleedNumber 和 ShowBleedNumberForDebug 是广播给所有人
+// 而Player.SendBleedNumber Player.SendBleedNumberForDebug 是对单个玩家发送
+SendBeedNumberForDebug(BleedActor: TActor,ImgFile: string,NumImgIndex: number,Prefix: string,BleedNumber: number,Suffix: string,DuraTime: number,StartX: number,StartY: number,StopX: number,StopY: number): void;
+SendBleedNumber(BleedActor: TActor, TemplateID: number,BleedNumber: number, DelayMS?: number): void;
+
+//用于判定自身是否有设定的定时器(时钟)在执行
+HasRobotRun(Name:string):boolean;
+
+//获取客户端分辨率的高和宽
+GetClientScreenWidth(): number;
+GetClientScreenHeight(): number;
+
+//用于更新 TUserMagic.Opened（用于脚本修改开关状态） 状态到客户端
+ UpdateMagicOpenState(Magic: TUserMagic): void;
+
+//自定义技能编辑器拾取物品作用 [拾取过滤] 选项
+//勾选后将不会拾取客户端内挂设置为不拾取的物品
+
+//设置/获取 物品是否自动拾取
+GetItemFliterShowName(Idx: number): boolean;
+SetItemFliterShowName(Idx: number,Value: boolean): void;
+//设置/获取 物品是否显示名称
+GetItemFliterAutoPickUp(Idx: number): boolean;
+SetItemFliterAutoPickUp(Idx: number,Value: boolean): void;
+//设置/获取 物品是否特殊显示
+GetItemFliterSpecialShow(Idx: number): boolean;
+SetItemFliterSpecialShow(Idx: number,Value: boolean): void;
+//更新拾取过滤配置到客户端
+UpdateItemFliter(): void;
+
+//判断当前客户端是否为H5(移动端)
+GetIsH5Client(): boolean;
+
+//设置客户端技能冷却时间功能 (技能对象,冷却时间[单位毫秒])
+//执行后客户端将以当前时间 开始进入冷却。
+SetClientMagicUseTime(Magic: TUserMagic,Value: number): void;
+
+//设置客户端技能冷却时间偏移功能(技能对象,冷却时间[单位毫秒])
+//执行后客户端将根据 冷却时间 进行增减。
+SetClientMagicOffsetUseTime(Magic: TUserMagic,Value: number): void;
+
+//获取上一次使用的技能ID和等级
+GetLastUseMagicID(): number;
+GetLastUseMagicLevel(): number;
+
+// 获取客户端快捷栏物品数量
+// 查询结果将触发 GameLib.onQueryClientQuickBarItemCountResult(Player:TPlayObject,Ident:string,Count:number)
+QueryClientQuickBarItemCount(ident:string):viod;

@@ -1,0 +1,22 @@
+如何创建一个副本地图
+// 如何创建一个副本地图
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AMap = GameLib.CreateDuplicateMap('Dota对战', 300); //创建一个Dota副本，副本持续时间为300秒
+    if (AMap != null) { //如果创建成功，则不为nil
+        AMap.RunMon = false; //设置地图为不允许穿过怪物的模式
+        for (let I = 0; I <= Player.GroupCount - 1; I++) {//循环当前玩家所在的队伍
+            if (Player.GetGroupMember(I) != null) {
+                Player.GetGroupMember(I).MapMoveEx(AMap, 100, 100); //将队员传送到副本的指定坐标
+                Player.SendCountDownMessage('离副本关闭还有{$Time:300$}', 0); //向队员发送一个倒计时信息
+            }
+        }
+    } else{
+        Npc.MessageBox(Player, '副本创建失败！！');
+    }
+}
+
+// 如何删除一个副本地图
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.Map.Duplicate) //如果玩家当前处于副本地图中
+        GameLib.CloseDuplicateMap(Player.Map.Name); //关闭副本,人物都回城,副本地图怪物清理掉
+}

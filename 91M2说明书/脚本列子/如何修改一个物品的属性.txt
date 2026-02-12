@@ -1,0 +1,20 @@
+如何修改一个物品的属性
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let Item: TUserItem; //定义一个物品变量
+    Item = Player.Wepon; //将物品设置为角色装备的武器
+    if (Item) { //如果物品存在（角色没穿戴武器则不存在物品）
+        // 设置一个物品的时间期限 （物品到期时间设置）
+        Item.MaxDate = DateUtils.IncDay(DateUtils.Now(), 7); //设置物品的最大有效期限为从现在开始向后7天，IncDay函数为日期操作函数，可将一个日期加减指定的天数
+        Item.Bind = true; //设置为绑定状态
+        Item.GetAddPoint(0).ValueType = 1; //第一个附加属性的属性类型为1（伤害吸收）
+        Item.GetAddPoint(0).Value = 10; //第一个附加属性的值为10，即伤害吸收10%
+        Item.GetAddLevel(0).ValueType = 2; //第一个强化属性的属性类型为2（伤害反弹）
+        Item.GetAddLevel(0).Value = 5; //第一个强化属性的值为5，即伤害反弹5%
+        if (Item.GetAddHold(0) == 0) {  //如果装备的第一个孔已经开孔，并且还没镶嵌物品（-1为没开孔，大于0则是镶嵌了物品表示镶嵌物的物品序号）  
+            Item.SetAddHold(0, 714);   //给第一个孔指定一个镶嵌物品的序号+1（比如一个宝石的物品库序号为713，则指定后显示为该宝石的信息） 
+        }
+        Item.AddDC = Item.AddDC + 2;  //普通附加属性的物理攻击在原有值上加2
+        Player.UpdateItem(Item); //发送到客户端更新该物品
+    }
+}
+注：根据物品TUserItem的定义，可以自行修改很多属性，具体内容可参考TUserItem的说明

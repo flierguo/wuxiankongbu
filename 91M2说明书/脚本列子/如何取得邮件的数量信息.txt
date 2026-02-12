@@ -1,0 +1,4 @@
+如何取得邮件的数量信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.MessageBox(format('你当前共有%d封邮件,其中%d封未读!', [Player.MailCount/*邮件数量*/, Player.MailUnreadCount/*未读邮件数量*/]));
+} 

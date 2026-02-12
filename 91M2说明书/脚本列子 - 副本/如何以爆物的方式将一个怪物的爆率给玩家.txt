@@ -1,0 +1,4 @@
+如何以爆物的方式将一个怪物的爆率给玩家
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.GetMonDropItems('白野猪'); //将白野猪爆率以怪物死亡爆出的计算方式直接爆出到玩家背包
+} 

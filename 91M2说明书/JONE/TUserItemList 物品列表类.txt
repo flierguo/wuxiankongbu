@@ -1,0 +1,9 @@
+TUserItemList 物品列表类
+//直接获取对象不拷贝。 如果需要添加到其他的UserItemList 首选需要MakeCopy （高风险函数，请慎用）
+DontAddToOtherListIfWantNeedMakeCopyGet(Index: number): TUserItem;
+// 添加到列表的同时并且复制（高风险函数，请慎用）
+MakeCopyAndAdd(Item: TUserItem): number;
+// 删除列表内的物品并且释放其内存（高风险函数，请慎用）
+DeleteAndFreeItem(Index: number): void;
+// 获取物品列表内元素的数量
+GetCount(): number;Count:number;

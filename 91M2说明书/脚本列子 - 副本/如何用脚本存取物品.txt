@@ -1,0 +1,32 @@
+如何用脚本存取物品
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    const S = `[[
+    <存/@Save>\\
+    <取/@Take>\\
+    <离 开/@exit>
+    ]]`
+    Npc.Say(Player, S);
+}
+export function Save(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let AItem: TUserItem;
+    //存储的前提是该物品位于玩家背包
+    AItem = Player.GiveItem('裁决之杖'); //发放一个物品给玩家
+    if (AItem)
+        Player.AddItemToStorage(AItem); //将该物品存到普通仓库(可在仓库管理员处查看)
+    AItem = Player.GiveItem('屠龙'); //发放一个物品给玩家
+    if (AItem)
+        Player.AddItemToBigStorage(AItem); //将该物品存到无限仓库
+}
+export function Take(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //取回全部普通仓库的物品
+    for (let I = Player.StorageItemsCount - 1; I >= 0; I--) {
+        if (Player.MaxBagSize > Player.ItemSize)
+            Player.TakebackStorageItem(I); //取回普通仓库某个存放位置的物品 
+    }
+    //取回全部无限仓库的物品
+    for (let I = Player.BigStorageItemsCount - 1; I >= 0; I--) {
+        if (Player.MaxBagSize > Player.ItemSize) {
+            Player.TakebackBigStorageItem(I); //取回无限仓库某个存放位置的物品 
+        }
+    }
+}

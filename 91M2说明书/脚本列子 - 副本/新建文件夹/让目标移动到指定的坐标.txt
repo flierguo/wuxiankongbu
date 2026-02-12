@@ -1,0 +1,9 @@
+让目标移动到指定的坐标
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let AList: TActorList;
+    Player.MoveTo(300, 300); //当前玩家移动到300x300坐标位置上,如果玩家自行控制则取消  
+    AList = Player.Map.GetActorListAt(100, 100); //获取玩家所在地图100x100坐标上的全部怪物、人物及NPC  
+    for (let I = 0; I < AList.Count; I++) {//循环取得的列表
+        AList[I].MoveTo(300, 300, 10);//将列表中的每一个对象移动到300x300的坐标上,在这个坐标10格范围内就算移动到位
+        }
+}

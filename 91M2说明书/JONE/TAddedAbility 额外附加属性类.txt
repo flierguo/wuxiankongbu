@@ -1,0 +1,104 @@
+TAddedAbility 额外附加属性类
+// 额外增加的角色属性类
+GetHP(): number;HP:number;                             / 获取角色额外附加的HP值
+SetHP(Value: number): void;                            / 设置角色额外附加的HP值
+GetMP(): number;MP:number;                             / 获取角色额外附加的MP值
+SetMP(Value: number): void;                            / 设置角色额外附加的MP值
+GetAC(): number;AC:number;                             / 获取角色额外附加的防御下限
+SetAC(Value: number): void;                            / 设置角色额外附加的防御下限
+GetACMax(): number;ACMax:number;                       / 获取角色额外附加的防御上限
+SetACMax(Value: number): void;                         / 设置角色额外附加的防御上限
+GetMAC(): number;MAC:number;                           / 获取角色额外附加的魔防下限
+SetMAC(Value: number): void;                           / 设置角色额外附加的魔防下限
+GetMACMax(): number;MACMax:number;                     / 获取角色额外附加的魔防上限
+SetMACMax(Value: number): void;                        / 设置角色额外附加的魔防上限
+GetDC(): number;DC:number;                             / 获取角色额外附加的攻击下限
+SetDC(Value: number): void;                            / 设置角色额外附加的攻击下限
+GetDCMax(): number;DCMax:number;                       / 获取角色额外附加的攻击上限
+SetDCMax(Value: number): void;                         / 设置角色额外附加的攻击上限
+GetMC(): number;MC:number;                             / 获取角色额外附加的魔法下限
+SetMC(Value: number): void;                            / 设置角色额外附加的魔法下限
+GetMCMax(): number;MCMax:number;                       / 获取角色额外附加的魔法上限
+SetMCMax(Value: number): void;                         / 设置角色额外附加的魔法上限
+GetSC(): number;SC:number;                             / 获取角色额外附加的道术下限
+SetSC(Value: number): void;                            / 设置角色额外附加的道术下限
+GetSCMax(): number;SCMax:number;                       / 获取角色额外附加的道术上限
+SetSCMax(Value: number): void;                         / 设置角色额外附加的道术上限
+GetTC(): number;TC:number;                             / 获取角色额外附加的箭术下限
+SetTC(Value: number): void;                            / 设置角色额外附加的箭术下限
+GetTCMax(): number;TCMax:number;                       / 获取角色额外附加的箭术上限
+SetTCMax(Value: number): void;                         / 设置角色额外附加的箭术上限
+GetPC(): number;PC:number;                             / 获取角色额外附加的刺术下限
+SetPC(Value: number): void;                            / 设置角色额外附加的刺术下限
+GetPCMax(): number;PCMax:number;                       / 获取角色额外附加的刺术上限
+SetPCMax(Value: number): void;                         / 设置角色额外附加的刺术上限
+GetWC(): number;WC:number;                             / 获取角色额外附加的武术下限
+SetWC(Value: number): void;                            / 设置角色额外附加的武术下限
+GetWCMax(): number;WCMax:number;                       / 获取角色额外附加的武术上限
+SetWCMax(Value: number): void;                         / 设置角色额外附加的武术上限
+GetLuck(): number;Luck:number;                         / 获取角色额外附加的幸运值
+SetLuck(Value: number): void;                          / 设置角色额外附加的幸运值
+GetHitPoint(): number;HitPoint:number;                 / 获取角色额外附加的准确
+SetHitPoint(Value: number): void;                      / 设置角色额外附加的准确
+GetHitSpeed(): number;HitSpeed:number;                 / 获取角色额外附加的攻击速度
+SetHitSpeed(Value: number): void;                      / 设置角色额外附加的攻击速度
+GetAntiPoison(): number;AntiPoison:number;             / 获取角色额外附加的毒物躲避
+SetAntiPoison(Value: number): void;                    / 设置角色额外附加的毒物躲避
+GetPoisonRecover(): number;PoisonRecover:number;       / 获取角色额外附加的中毒恢复
+SetPoisonRecover(Value: number): void;                 / 设置角色额外附加的中毒恢复
+GetHealthRecover(): number;HealthRecover:number;       / 获取角色额外附加的体力恢复
+SetHealthRecover(Value: number): void;                 / 设置角色额外附加的体力恢复
+GetSpellRecover(): number;SpellRecover:number;         / 获取角色额外附加的魔力恢复
+SetSpellRecover(Value: number): void;                  / 设置角色额外附加的魔力恢复
+GetAntiMagic(): number;AntiMagic:number;               / 获取角色额外附加的魔法躲避
+SetAntiMagic(Value: number): void;                     / 设置角色额外附加的魔法躲避
+GetDamageAbsorb(): number;DamageAbsorb:number;         / 获取角色额外附加的伤害减免
+SetDamageAbsorb(Value: number): void;                  / 设置角色额外附加的伤害减免
+GetDamageAdd(): number;DamageAdd:number;               / 获取角色额外附加的伤害加成
+SetDamageAdd(Value: number): void;                     / 设置角色额外附加的伤害加成
+GetPunchHit(): number;PunchHit:number;                 / 获取角色额外附加的致命一击
+SetPunchHit(Value: number): void;                      / 设置角色额外附加的致命一击
+GetCriticalHit(): number;CriticalHit:number;           / 获取角色额外附加的会心一击
+SetCriticalHit(Value: number): void;                   / 设置角色额外附加的会心一击
+GetRebound(): number;Rebound:number;                   / 获取角色额外附加的伤害反弹
+SetRebound(Value: number): void;                       / 设置角色额外附加的伤害反弹
+GetExpRate(): number;ExpRate:number;                   / 获取角色额外附加的经验加成
+SetExpRate(Value: number): void;                       / 设置角色额外附加的经验加成
+GetGoldRate(): number;GoldRate:number;                 / 获取角色额外附加的金币加成
+SetGoldRate(Value: number): void;                      / 设置角色额外附加的金币加成
+GetItemRate(): number;ItemRate:number;                 / 获取角色额外附加的爆率加成
+SetItemRate(Value: number): void;                      / 设置角色额外附加的爆率加成
+GetAppendDamage(): number;AppendDamage:number;         / 获取角色额外附加的固定伤害
+SetAppendDamage(Value: number): void;                  / 设置角色额外附加的固定伤害
+GetSpeedPoint(): number;SpeedPoint:number;             / 获取角色额外附加的躲避概率
+SetSpeedPoint(Value: number): void;                    / 设置角色额外附加的躲避概率
+GetCriticalHitDef(): number;CriticalHitDef:number;     / 获取角色额外附加的会心抵抗
+SetCriticalHitDef(Value: number): void;                / 设置角色额外附加的会心抵抗
+GetPunchHitDef(): number;PunchHitDef:number;           / 获取角色额外附加的致命抵抗
+SetPunchHitDef(Value: number): void;                   / 设置角色额外附加的致命抵抗
+GetAppendDamageDef(): number;AppendDamageDef:number;   / 获取角色额外附加的固定伤害抵抗
+SetAppendDamageDef(Value: number): void;               / 设置角色额外附加的固定伤害抵抗
+GetHPRate(): number;HPRate:number;                     / 获取角色额外附加的HP百分比
+SetHPRate(Value: number): void;                        / 设置角色额外附加的HP百分比
+GetMPRate(): number;MPRate:number;                     / 获取角色额外附加的MP百分比
+SetMPRate(Value: number): void;                        / 设置角色额外附加的MP百分比
+GetWeaponStrong(): number;WeaponStrong:number;         / 获取角色额外附加的武器强度
+SetWeaponStrong(Value: number): void;                  / 设置角色额外附加的武器强度（0-6 设置6不掉持久）
+GetHoly(): number;Holy:number;                         / 获取角色额外附加的神圣
+SetHoly(Value: number): void;                          / 设置角色额外附加的神圣（物理攻击怪物真伤）
+GetWearWeight(): number;WearWeight:number;             / 获取角色额外附加的当前穿戴负重
+SetWearWeight(Value: number): void;                    / 设置角色额外附加的最大穿戴负重
+GetMaxWeight(): number;MaxWeight:number;               / 获取角色额外附加的当前背包负重
+SetMaxWeight(Value: number): void;                     / 设置角色额外附加的最大背包负重
+GetFatalHit(): number;FatalHit:number;                 / 获取角色额外附加的致命一击
+SetFatalHit(Value: number): void;                      / 设置角色额外附加的致命一击
+GetPunchHitAppendDamage(): number;                     / 获取角色额外附加的致命一击额外伤害
+SetPunchHitAppendDamage(Value: number): void;          / 设置角色额外附加的致命一击额外伤害
+GetCriticalHitAppendDamage(): number;                  / 获取角色额外附加的会心一击额外伤害
+SetCriticalHitAppendDamage(Value: number): void;       / 设置角色额外附加的会心一击额外伤害
+
+// 用于在脚本中动态调整生物的暴击伤害加成
+GetPunchHitWRate(): number;                            / 获取角色暴击额外加成万分比
+SetPunchHitWRate(Value: number): void;                 / 设置角色暴击额外加成万分比
+
+// 注意：以上AddedAbility属性修改后需要调用 TActor.RecalcAbilitys() 重算属性,否则要在下一次触发重算才会生效。

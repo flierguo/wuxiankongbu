@@ -1,0 +1,38 @@
+TDataSet 数据集操作类
+Open(): void;                                  / 打开数据集
+IsEmpty(): boolean;                            / 判断数据集是否为空
+Eof(): boolean;                                / 判断是否到了数据集末尾
+Next(): void;                                  / 数据集向后滚动,如果循环读取数据，会死循环
+FieldByName(Name: string): TField;             / 取出数据集中名为Name的值
+GetRecordCount(): number;RecordCount:number;   / 取出数据集的数据条数
+GetFieldCount(): number;FieldCount:number;     / 取出数据集的字段数量
+GetField(Index: number): TField;               / 取出数据集的字段信息
+Free(): void;                                  / 释放数据集
+//示例：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let ADataSet: TDataSet;
+    let AList: TStringList;
+    //普通执行语句不需要返回
+    GameLib.DBEngine.ExecSQL('HumDB', 'UPDATE Players SET nGold=0 WHERE nGold < 0');
+    GameLib.DBEngine.ExecSQL('HumDB', 'UPDATE Players SET nGold=10000 WHERE sChrName="' + Player.Name + '"'); //这里需要注意引号的使用
+    //查询数据并将结果放到数据集，然后从数据集读取数据
+    ADataSet = GameLib.DBEngine.Query('HumDB', 'SELECT * FROM Players');
+    if (ADataSet != null) { //必须做此判断,因为当数据连接找不到的时候返回为null值
+        AList = GameLib.CreateStringList()
+        try {
+            ADataSet.Open(); //打开数据集  
+            if (!ADataSet.IsEmpty()) { //如果数据集不为空的情况下
+                while (!ADataSet.Eof()) { //如果没到数据集的末尾
+                    //S := ADataSet.FieldByName('sChrName').AsString; //直接将字段赋值到变量S中
+                    AList.Add(ADataSet.FieldByName('sChrName').AsString);  //将字段sChrName的值取出来放到AList中
+                    ADataSet.Next(); //数据集向后滚动,如果循环读取数据，此处必须，否则会死循环
+                }
+            }
+            Npc.MessageBox(Player, AList.Text);
+        } finally {
+        }
+    }
+    //直接将一个查询结果中的第一个字段的值填入到一个TStrings
+    AList = GameLib.DBEngine.ValueList('HumDB', 'SELECT sChrName FROM Players');  //ValueList函数一定会返回一个TStrings实例，并且需要自己释放
+    Npc.MessageBox(Player, AList.Text);
+ }

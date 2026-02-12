@@ -1,0 +1,5 @@
+如何踢出在线人物
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    GameLib.Kick('张三'); //踢出一个玩家
+    GameLib.KickAll(); //踢出全部玩家
+}

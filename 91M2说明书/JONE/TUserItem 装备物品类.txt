@@ -1,0 +1,257 @@
+TUserItem 装备物品类
+GetName(): string;Name:string;                                                  / 获取物品在数据库的名称
+GetDisplayName(): string;DisplayName:string;                                    / 获取物品在客户端显示的名称
+Rename(NewName: string): boolean;                                               / 装备改名，返回改名是否成功
+RevertName(): boolean;                                                          / 将已改名的装备还原为物品数据库的名称
+GetColor(): number;Color:number;                                                / 获取物品名称的颜色
+SetColor(Value: number): void;                                                  / 设置物品名称的颜色
+MakeHole(): boolean;                                                            / 开一个孔，最多可以开5个孔
+OpenSoul(): boolean;                                                            / 开启魂炼功能
+CopyFrom(Source: TUserItem): boolean;                                           / 从另外一个物品拷贝属性
+GetStdMode(): number;StdMode:number;                                            / 获取物品Stdmode类型
+GetNeed(): number;Need:number;                                                  / 获取物品穿戴需要的条件类型
+SetNeed(Value: number): void;                                                   / 设置物品穿戴需要的条件类型
+GetNeedLevel(): number;NeedLevel:number;                                        / 获取物品穿戴需要的等级
+SetNeedLevel(Value: number): void;                                              / 获取物品穿戴需要的等级
+GetPrice(): number;Price:number;                                                / 获取物品卖到商店的价格（固定价格）
+GetPrice2(): number;Price2:number;                                              / 物品当前卖出价格（受持久、极品属性及数量等因素影响）
+GetShape(): number;Shape:number;                                                / 获取物品Shape的属性
+SetShape(Value: number): void;                                                  / 设置物品Shape的属性
+GetLook(): number;Look:number;                                                  / 获取物品内观图标的编号（Items.wzl内的编号）
+SetLook(Value: number): void;                                                   / 设置物品内观图标的编号（Items.wzl内的编号）
+GetAniCount(): number;AniCount:number;                                          / 获取物品AniCount的属性
+SetAniCount(Value: number): void;                                               / 设置物品AniCount的属性
+GetSource(): number;Source:number;                                              / 获取物品Source的属性
+GetJob(): number;Job:number;                                                    / 获取物品使用的限定的职业
+GetMakeIndex(): number;MakeIndex:number;                                        / 获取物品唯一ID编号
+GetItemIndex(): number;ItemIndex:number;                                        / 物品数据库中此物品的序号
+GetDura(): number;Dura:number;                                                  / 获取物品当前持久
+SetDura(Value: number): void;                                                   / 设置物品当前持久
+GetDuraMax(): number;DuraMax:number;                                            / 获取物品持久上限
+SetDuraMax(Value: number): void;                                                / 设置物品持久上限
+GetMaxDate(): number;MaxDate:number;                                            / 获取物品到期时间
+SetMaxDate(Value: number): void;                                                / 设置物品到期时间（0为无限制）
+GetAddAC(): number;AddAC:number;                                                / 获取物品增加的防御上限
+SetAddAC(Value: number): void;                                                  / 设置物品增加防御上限
+GetAddMAC(): number;AddMAC:number;                                              / 获取物品增加的魔防上限
+SetAddMAC(Value: number): void;                                                 / 设置物品增加魔防上限
+GetAddDC(): number;AddDC:number;                                                / 获取物品增加的攻击上限
+SetAddDC(Value: number): void;                                                  / 设置物品增加攻击上限
+GetAddMC(): number;AddMC:number;                                                / 获取物品增加的魔法上限
+SetAddMC(Value: number): void;                                                  / 设置物品增加魔法上限
+GetAddSC(): number;AddSC:number;                                                / 获取物品增加的道术上限
+SetAddSC(Value: number): void;                                                  / 设置物品增加道术上限
+GetAddTC(): number;AddTC:number;                                                / 获取物品增加的箭术上限
+SetAddTC(Value: number): void;                                                  / 设置物品增加箭术上限
+GetAddPC(): number;AddPC:number;                                                / 获取物品增加的刺术上限
+SetAddPC(Value: number): void;                                                  / 设置物品增加刺术上限
+GetAddWC(): number;AddWC:number;                                                / 获取物品增加的武术上限
+SetAddWC(Value: number): void;                                                  / 设置物品增加武术上限
+GetAddLAC(): number;AddLAC:number;                                              / 获取物品增加的防御下限
+SetAddLAC(Value: number): void;                                                 / 设置物品增加防御下限
+GetAddLMAC(): number;AddLMAC:number;                                            / 获取物品增加的魔防下限
+SetAddLMAC(Value: number): void;                                                / 设置物品增加魔防下限
+GetAddLDC(): number;AddLDC:number;                                              / 获取物品增加的攻击下限
+SetAddLDC(Value: number): void;                                                 / 设置物品增加攻击下限
+GetAddLMC(): number;AddLMC:number;                                              / 获取物品增加的魔法下限
+SetAddLMC(Value: number): void;                                                 / 设置物品增加魔法下限
+GetAddLSC(): number;AddLSC:number;                                              / 获取物品增加的道术下限
+SetAddLSC(Value: number): void;                                                 / 设置物品增加道术下限
+GetAddLTC(): number;AddLTC:number;                                              / 获取物品增加的箭术下限
+SetAddLTC(Value: number): void;                                                 / 设置物品增加箭术下限
+GetAddLPC(): number;AddLPC:number;                                              / 获取物品增加的刺术下限
+SetAddLPC(Value: number): void;                                                 / 设置物品增加刺术下限
+GetAddLWC(): number;AddLWC:number;                                              / 获取物品增加的武术下限
+SetAddLWC(Value: number): void;                                                 / 设置物品增加武术下限
+GetBind(): boolean;Bind:boolean;                                                / 判断物品是否绑定状态
+SetBind(Value: boolean): void;                                                  / 设置物品是否绑定状态
+GetNeverDrop(): boolean;NeverDrop:boolean;                                      / 判断物品是否永不掉落
+SetNeverDrop(Value: boolean): void;                                             / 设置物品是否永不掉落
+GetNoRepair(): boolean;NoRepair:boolean;                                        / 判断物品是否禁止修理
+SetNoRepair(Value: boolean): void;                                              / 设置物品是否禁止修理
+GetNoStore(): boolean;NoStore:boolean;                                          / 判断物品是否禁止存仓
+SetNoStore(Value: boolean): void;                                               / 设置物品是否禁止存仓
+GetAddHitPoint(): number;AddHitPoint:number;                                    / 获取物品增加的准确
+SetAddHitPoint(Value: number): void;                                            / 设置物品增加准确
+GetAddHitSpeed(): number;AddHitSpeed:number;                                    / 获取物品增加的攻击速度
+SetAddHitSpeed(Value: number): void;                                            / 设置物品增加攻击速度
+GetAddSpeedPoint(): number;AddSpeedPoint:number;                                / 获取物品增加的敏捷
+SetAddSpeedPoint(Value: number): void;                                          / 设置物品增加敏捷
+GetAddAntiMagic(): number;AddAntiMagic:number;                                  / 获取物品增加的魔法躲避
+SetAddAntiMagic(Value: number): void;                                           / 设置物品增加魔法躲避
+GetAddAntiPoison(): number;AddAntiPoison:number;                                / 获取物品增加的中毒躲避
+SetAddAntiPoison(Value: number): void;                                          / 设置物品增加中毒躲避
+GetAddHealthRecover(): number;AddHealthRecover:number;                          / 获取物品增加的体力恢复
+SetAddHealthRecover(Value: number): void;                                       / 设置物品增加体力恢复
+GetAddSpellRecover(): number;AddSpellRecover:number;                            / 获取物品增加的魔力恢复
+SetAddSpellRecover(Value: number): void;                                        / 设置物品增加魔力恢复
+GetAddPoisonRecover(): number;AddPoisonRecover:number;                          / 获取物品增加的中毒恢复
+SetAddPoisonRecover(Value: number): void;                                       / 设置物品增加中毒恢复
+GetAddLuck(): number;AddLuck:number;                                            / 获取物品增加的幸运值
+SetAddLuck(Value: number): void;                                                / 设置物品增加幸运值
+GetUpgrade(): number;Upgrade:number;                                            / 获取物品增加的已强化次数
+SetUpgrade(Value: number): void;                                                / 设置物品增加已强化次数
+GetMaxUpgrade(): number;MaxUpgrade:number;                                      / 获取物品增加的最大可强化次数
+SetMaxUpgrade(Value: number): void;                                             / 设置物品增加最大可强化次数
+SetFromDateTime(Value: number): void;                                           / 设置物品产出时间
+GetFromDateTime(): number;FromDateTime:number;                                  / 获取物品产出时间
+GetOpenedSoul(): boolean;OpenedSoul:boolean;                                    / 判断物品是否开启魂炼系统
+
+
+// 附加属性值 Idx为0-20，表示一共可指定最大21个附加属性
+GetAddPoint(Idx: number): TAddPointItem;
+// 强化属性 Idx为0-20，表示一共可支持21个强化属性
+GetAddLevel(Idx: number): TAddLevelItem;
+
+// 获取物品打孔状态 Idx最多支持0-4 共5个孔
+// 例如: Item.GetAddHold(2) 就是获取这个物品的第三个孔值，
+// 如果等于-1，说明没开孔；
+// 等于0，说明开孔未镶嵌宝石；
+// 大于0表示镶嵌的宝石的数据库序号
+GetAddHold(Idx: number): number;
+// 设置物品打孔状态
+// 例如：Item.SetAddHold(2，1001) 设置这个物品第三个孔为开孔状态，并且镶嵌了物品数据库中序号为1000的宝石
+SetAddHold(Idx: number,Value: number): void;
+
+// ↑↑↑意思同上↑↑↑
+GetAddHole(Idx: number): number;
+SetAddHole(Idx: number,Value: number): void;
+
+// 获取物品描述
+GetCustomDesc(): string;CustomDesc:string;
+// 设置物品描述
+SetCustomDesc(Value: string): void;
+// 这个物品描述和物品数据库的最后一个字段描述优先级不一样，默认显示这个，如果这里为空，才显示数据库的描述。
+
+// 获取物品当前魂炼等级
+GetSoulLevel(): number;SoulLevel:number;
+// 设置物品当前魂炼等级
+SetSoulLevel(Value: number): void;
+// 获取物品当前魂炼经验值
+GetSoulExp(): number;SoulExp:number;
+// 设置物品当前魂炼经验值
+SetSoulExp(Value: number): void;
+// 设置物品当前魂炼经验值上限
+SetSoulMaxExp(Value: number): void;
+// 获取物品当前魂炼经验值上限
+GetSoulMaxExp(): number;SoulMaxExp:number;
+// 获取物品显示特效
+GetEffectType(): number;EffectType:number;
+// 设置物品显示特效
+SetEffectType(Value: number): void;
+// 获取物品战斗力
+GetTotalAbility(): number;TotalAbility:number;
+// 复制一个物品
+MakeCopy(): TUserItem;
+
+
+// 新版本用GetOutWay1 和 SetOutWay1代替了，此函数为了兼容之前的旧版本使用。
+GetItemOutWay(): number;ItemOutWay:number;
+SetItemOutWay(Value: number): void;
+
+// 修改物品的产出途径 对应的文字提示在 版本管理器 扩展数据库
+// 物品产出类型对照表 即可对其进行编辑 ,支持(0-40)共41条
+// 如果输入文本中有{Line},将自动画一条装备属性背景中的分割线
+GetOutWay1(Index: number): number;OutWay1:number;
+SetOutWay1(Index: number,Value: number): void;
+
+// outway2(0..40)的值必须在物品自定义备注对照表中添加关键字Value才会显示。
+// 举例说明Item.outway(0)=100; 对照表中此处文字为 {S=神力附体 HP+：$OUTWAY2$;c=251};
+// 则客户端会自动解析outway2(0)的值替换$OUTWAY2$这一关键字给客户端显示(提示：这个必须要用大写字母)
+GetOutWay2(Index: number): number;OutWay2:number;
+SetOutWay2(Index: number,Value: number): void;
+// 用法同 outway2 一样
+GetOutWay3(Index: number): number;OutWay3:number;
+SetOutWay3(Index: number,Value: number): void;
+
+// 将装备格式化为属性字符串，供客户端显示用
+// MakeString protobuf编码，MakeString2，zlib压缩。一般默认用 MakeString()
+MakeString(): string;
+MakeString2(): string;
+
+// 获取物品自定义特效ID
+GetCustomEffect(): number;CustomEffect:number;
+// 设置自定义特效。使用版本管理器内的特效配置ID进行修改。
+SetCustomEffect(Value: number): void;
+
+-------------------------------------------------------------------------------
+// 获取物品自定义字符串字段
+GetCustomCaption(Index: number): string;
+// 设置物品自定义字符串字段设置 支持 0-2 一共三条
+SetCustomCaption(Index: number,Value: string): void;
+GetCustomText(Index: number): string;
+SetCustomText(Index: number,Value: string): void;
+//例如 ：通过TUserItem.CustomCaption(0) TUserItem.CustomText(0) 总共支持3组设置 0-2
+//    TUserItem.CustomCaption(0) = '掉落怪物'; TUserItem.CustomText(0) = '白野猪';
+//    TUserItem.CustomCaption(1) = '击杀者'; TUserItem.CustomText(1) = '王八蛋';
+//    TUserItem.CustomCaption(2) = '掉落地图'; TUserItem.CustomText(2) = '猪洞7层';
+// 需要在客户端物品提示界面打开物品来源显示。
+-------------------------------------------------------------------------------
+
+// 更新增加UserItem.SetCustomValue() 为自定义值 方便对物品做额外标记操作
+// 物品自定义来源中 使用 $CUSTOM0$ 至 $CUSTOM10$ 用来格式化输出 UserItem.GetCustomValue（0-20）
+// 对应的内容实现更多自定义化
+GetCustomValue(Index: number): number;CustomValue:number;
+SetCustomValue(Index: number,Value: number): void;
+
+// 获取物品地面显示特效ID(一般指光柱)
+GetDropEff(): number;DropEff:number;
+// 设置物品地面显示特效ID(一般指光柱)
+SetDropEff(Value: number): void;
+// 地面掉落特效，取DropEff.data文件中每10个图片为一组,显示为地面掉落特效 从1开始 0为无特效
+
+-------------------------------------------------------------------------------
+
+// 物品特殊设置类，详情查看下列TItemState类
+GetState(): TItemState;State:TItemState;
+
+GetDisableMake(): boolean;DisableMake:boolean;                                 / 判断物品是否禁止GM制造
+SetDisableMake(Value: boolean): void;                                          / 设置物品是否禁止GM制造
+GetWriteLog(): boolean;WriteLog:boolean;                                       / 判断物品是否记录日志
+SetWriteLog(Value: boolean): void;                                             / 设置物品是否记录日志
+GetDropHint(): boolean;DropHint:boolean;                                       / 判断是否开启掉落提示
+SetDropHint(Value: boolean): void;                                             / 设置是否开启掉落提示
+GetButchHint(): boolean;ButchHint:boolean;                                     / 判断是否开启挖取提示
+SetButchHint(Value: boolean): void;                                            / 设置是否开启挖取提示
+GetNoPickUp(): boolean;NoPickUp:boolean;                                       / 判断客户端是否禁止拾取
+SetNoPickUp(Value: boolean): void;                                             / 设置客户端是否禁止拾取
+GetBoxHint(): boolean;BoxHint:boolean;                                         / 判断是否开宝箱提示
+SetBoxHint(Value: boolean): void;                                              / 设置是否开宝箱提示
+GetShowNameClient(): boolean;ShowNameClient:boolean;                           / 判断客户端是否显示物品名称
+SetShowNameClient(Value: boolean): void;                                       / 设置客户端是否显示物品名称
+GetSpecialShow(): boolean;SpecialShow:boolean;                                 / 判断客户端是否特殊显示物品
+SetSpecialShow(Value: boolean): void;                                          / 设置客户端是否特殊显示物品
+GetAutoPickUp(): boolean;AutoPickUp:boolean;                                   / 判断客户端是否自动拾取
+SetAutoPickUp(Value: boolean): void;                                           / 设置客户端是否自动拾取
+GetNerverDrop(): boolean;NerverDrop:boolean;                                   / 判断是否物品永不掉落
+SetNerverDrop(Value: boolean): void;                                           / 设置是否物品永不掉落
+GetBind(): boolean;Bind:boolean;                                               / 判断物品是否绑定
+SetBind(Value: boolean): void;                                                 / 设置物品是否绑定
+GetNoRepair(): boolean;NoRepair:boolean;                                       / 判断是否禁止修理
+SetNoRepair(Value: boolean): void;                                             / 设置是否禁止修理
+GetNoStore(): boolean;NoStore:boolean;                                         / 判断是否禁止物品存仓
+SetNoStore(Value: boolean): void;                                              / 设置是否禁止物品存仓
+GetOfflineFree(): boolean;OfflineFree:boolean;                                 / 判断物品是否下线销毁
+SetOfflineFree(Value: boolean): void;                                          / 设置物品是否下线销毁
+GetNoDrop(): boolean;NoDrop:boolean;                                           / 判断物品是否禁止丢弃
+SetNoDrop(Value: boolean): void;                                               / 设置物品是否禁止丢弃
+GetDeathFree(): boolean;DeathFree:boolean;                                     / 判断物品是否死亡销毁
+SetDeathFree(Value: boolean): void;                                            / 设置物品是否死亡销毁
+GetDeathDrop(): boolean;DeathDrop:boolean;                                     / 判断物品是否死亡比爆出
+SetDeathDrop(Value: boolean): void;                                            / 设置物品是否死亡比爆出
+GetNoTakeOff(): boolean;NoTakeOff:boolean;                                     / 判断物品是否穿戴后不允许取下
+SetNoTakeOff(Value: boolean): void;                                            / 设置物品是否穿戴后不允许取下
+GetAutoBindAfterTakeOn(): boolean;                                             / 判断是否穿戴后自动绑定
+SetAutoBindAfterTakeOn(Value: boolean): void;                                  / 设置是否穿戴后自动绑定
+GetCallMethodOnMonDrop(): boolean;                                             / 判断是否怪物掉落后触发脚本
+SetCallMethodOnMonDrop(Value: boolean): void;                                  / 设置是否怪物掉落后触发脚本
+GetCallMethodOnPlayerDrop(): boolean;                                          / 判断是否玩家掉落后触发脚本
+SetCallMethodOnPlayerDrop(Value: boolean): void;                               / 设置是否玩家掉落后触发脚本
+GetCallMethodOnButch(): boolean;                                               / 判断是否挖取后触发脚本
+SetCallMethodOnButch(Value: boolean): void;                                    / 设置是否挖取后触发脚本
+GetCallMethodOnPickUp(): boolean;                                              / 判断是否拾取后触发脚本
+SetCallMethodOnPickUp(Value: boolean): void;                                   / 设置是否拾取后触发脚本
+GetCanInQuickBar(): boolean;                                                   / 判断是否可以放入快捷栏
+SetCanInQuickBar(Value: boolean): void;                                        / 设置是否可以放入快捷栏
+GetCanInJewelryBox(): boolean;                                                 / 判断是否可以放入首饰盒
+SetCanInJewelryBox(Value: boolean): void;                                      / 设置是否可以放入首饰盒

@@ -1,0 +1,20 @@
+如何读写个人变量、行会变量及全局变量
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //个人变量读写
+    if (Player.VarDateTime('最后登陆时间').AsDateTime < DateUtils.Now()) { //如果最后登陆时间小于当前系统时间
+        Player.VarDateTime('最后登陆时间').AsDateTime = DateUtils.Now(); //将最后登陆时间置为当前时间
+        Player.VarDateTime('最后登陆时间').Save(); //保存
+}
+    Player.VarString('黄金黑店元宝刷新累计').AsInteger = Player.VarString('黄金黑店元宝刷新累计').AsInteger + 100;
+    Player.VarString('黄金黑店元宝刷新累计').Save();
+    //行会变量读写
+    if (Player.Guild != null) {
+        Player.Guild.VarInteger('帮会资金').AsInteger = Player.Guild.VarInteger('帮会资金').AsInteger + 10000; //帮会变量"帮会资金"增加
+        Player.Guild.VarInteger('帮会资金').Save(); //保存
+    }
+    //系统变量读写
+    GameLib.VarString('天下第一战').AsString = 'CC';
+    GameLib.VarString('天下第一战').Save();
+    //声明变量但不保存,则该变量只在M2运行期有效
+    GameLib.VarString('临时变量').AsString = 'xxxx'; //该变量不调用Save函数将不会被保存到文件
+}

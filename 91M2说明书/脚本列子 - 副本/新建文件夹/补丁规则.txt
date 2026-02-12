@@ -1,0 +1,79 @@
+补丁规则
+补丁规则
+
+1.主界面素材 从 资源路径\data\Prguse.data 中读取
+
+2.物品规则 Looks值小于10000，从盛大Items.wzl(wil）中读取，大于等于10000的则从 资源路径\data\items.data中读取，StateItem.data和DnItems.data分别读取对应的素材
+
+3.角色名字中的图片（如称号）从 资源路径\data\Title.Data 中读取
+
+4.小地图读取 小地图ID小于等于0表示无小地图；1-9999从盛大MMap.wzl中读取（ID-1为实际序号，如101表示比奇省，对应MMap.wzl中的序号为100）；10000及以上从 资源路径\Data\MMap.Data 中读取，地图ID减10000为资源序号
+
+5.扩展功能按钮 素材图从 资源路径\Data\Icons.data 中读取，每3个表示一组按钮，第一个为正常状态，第二个为按下状态，第三个为鼠标经过状态
+
+6.地图读取原则 以 资源路径\Map 路径为优先读取路径，如果此路径不存在文件，再从盛大地图中读取
+
+7.装备Shape填写
+
+衣服补丁文件	对应Shape值
+Data\Hum.wzl	0..11
+Data\Hum2.wzl	12..23
+Data\Hum3.wzl
+
+24..47
+Data\Hum4.wzl
+
+48..90
+Data\Hum5.wzl
+
+91..149
+从Data\Hum6.wil	150开始 每50编号为一个文件 支持到Hum20.wil
+　	　
+武器补丁文件	对应Shape值
+Data\Weapon.wzl	0..37
+Data\Weapon2.wzl	38..58
+Data\Weapon3.wzl	59..85
+Data\Weapon4.wzl	86..112
+Data\Weapon5.wzl	113..149
+从Data\Weapon6.wil	150开始 每50编号为一组 支持到 Weapon20.wil
+　	　
+服装武器特效文件	对应Anicount值
+Data\HumEffect.wzl	1..20
+Data\HumEffect2.wzl	21..44
+Data\HumEffect3.wzl	45+
+怪物补丁：
+
+盛大补丁从 Data\Mon1.wzl 至 Mon50.wzl
+
+Mon-kulou.wil : Appr从990-992
+
+资源文件\Data\Mon1.data..Mon50.data
+
+Appr设置方法：
+
+一个文件10个怪 如90表示Mon10.wzl的第一个怪物，91表示Mon10.wzl的第二个怪物,370表示Mon38.wzl的第一个怪
+
+一个文件100个怪 如900表示Mon10.wzl的第一个怪物，901表示Mon10.wzl的第二个怪物,3700表示Mon38.wzl的第一个怪，3720表示Mon38.wzl的第21个怪
+
+两种设置方式前10个怪的形象是完全一样的，100个怪的设置方式需要注意避开990、991及992三个值
+
+**地图素材补丁
+
+**支持的补丁文件
+Data\Objects.wil 至 Objects255.wil
+资源文件\Data\Objects1.data 至 Objects255.data
+
+Npc素材补丁
+
+外观代码	类型	文件	说明
+0-99	盛大素材	Data\Npc.wzl	素材并不限制一定为某格式，只要是wzl、wil、data中的一种即可
+100-199	Data\Npc2.wzl
+200-299	Data\Npc3.wzl
+300-399	Data\Npc4.wzl
+400-499	Data\Npc5.wzl
+500-599	91资源路径素材	91Resource\Data\Npc.data
+600-699	91Resource\Data\Npc2.data
+700-799	91Resource\Data\Npc3.data
+800-899	91Resource\Data\Npc4.data
+900-999	91Resource\Data\Npc5.data
+注：默认情况下npc素材为60张表示一个Npc，参考npc.wzl中的第一个npc形象

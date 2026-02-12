@@ -1,0 +1,21 @@
+判断队伍信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+ let P: TPlayObject
+ let S: string
+ if (Player.GroupOwner) {//如果存在队长
+    S = '';
+    //循环队伍里面的角色,Player.GroupCount为当前角色所在队伍的人数(包含当前角色)
+    for (let I = 0; I <= Player.GroupCount - 1; I++) {
+        P = Player.GetGroupMember(I); //取出一个角色
+        if (P) {//如果角色不为空值
+            if (S != "") {
+                S += ';'
+                //将当前角色的信息拼接到字符串
+                S = S + format('职业:%d，等级:%d，名称：%s', [P.Job, P.Level, P.Name]);
+            }
+        }
+        if (S != '')
+            Npc.MessageBox(Player, S); //如果字符串不为空则弹出对话框显示
+    }
+  }
+ }

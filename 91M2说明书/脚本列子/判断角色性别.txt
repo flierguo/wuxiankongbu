@@ -1,0 +1,8 @@
+判断角色性别
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.Gender == 0) {
+        Player.SendMessage('你是一个男人', 0);
+    } else if (Player.Gender == 1) {
+        Player.SendMessage('你是一个女人', 0);
+    }
+}

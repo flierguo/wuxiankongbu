@@ -1,0 +1,11 @@
+如何调整装备属性下限
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.Weponl) { //如果有武器在手
+        Player.Wepon.AddLDC = random(10); //武器下限取10以内的随机数
+        Player.Wepon.AddDC = random(15); //武器上限取15以内的随机数
+        Player.UpdateItem(Player.Wepon); //更新武器到客户端
+    }
+    //注意下限与上限的命名区别为下限为AddL+属性名,如AddLDC,AddLAC,AddLMC等等
+} 
+
+ // 注意：下限属性在脚本中始终可调整，但是只有在M2中开启属性下限后才生效

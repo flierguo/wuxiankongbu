@@ -1,0 +1,6 @@
+如何查看玩家IP来源
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    Player.SendMessage('你的IP地址是:' + Player.IPAddress);
+    Player.SendMessage('你的IP地址来源是:' + Player.IPLocal);
+    Player.SendMessage('你的机器码是:' + Player.MachineCode);
+}

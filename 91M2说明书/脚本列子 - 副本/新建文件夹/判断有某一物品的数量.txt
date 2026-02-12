@@ -1,0 +1,9 @@
+判断有某一物品的数量
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let I = Player.GetItemCount('蜡烛');
+     if (I > 0) {
+        Npc.MessageBox(Player, '你一共有' + I + '根蜡烛')
+    } else {
+        Npc.MessageBox(Player, '你没有蜡烛');
+    }
+}

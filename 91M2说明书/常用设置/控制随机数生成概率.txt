@@ -1,0 +1,80 @@
+控制随机数生成概率
+基本思路：把Math.random()生成的数看着百分比，然后定义每个整数值取值范围。
+
+'use strict';
+class GL {
+    /**
+     * 构造函数
+     * @param {object} opt
+     * @param {number} opt.min 最小整数值
+     * @param {number} opt.max 最大整数值
+     * @param {Map} opt.fenpei 自定义概率 
+     */
+    constructor({ min, max, fenpei = new Map() }) {
+        this.min = min;
+        this.max = max;
+        this.fenpei = fenpei;
+    }
+
+    /**
+     * 可分配百分比
+     */
+    get baifenbi() {
+        return (1 - this.peizhi) / (this.max - this.min - this.fenpei.size);
+    }
+
+    /**
+     * 匹配百分比
+     */
+    get peizhi() {
+        let result = 0;
+        for (let i of this.fenpei.values()) {
+            if (0 < i && i < 1) result += i;
+        }
+        return result;
+    }
+
+
+    /**
+     * 随机数
+     * @returns {number} [min,max)
+     */
+    random() {
+        let t = 0, r = Math.random();
+        for (let i = this.min; i < this.max; i++) {
+            this.fenpei.has(i) ? t += this.fenpei.get(i) : t += this.baifenbi;
+            if (t > r) return i;
+        }
+        return null;
+    }
+}
+
+  export default GL;
+//module.exports = GL;
+// 引用gl
+import GL from './src/index.js';
+//const GL = require('./src');
+
+// 随机生成 1 ~ 8 之间的数(不包含8) 
+let gl = new GL({
+    min: 1,
+    max: 8,
+    fenpei: new Map([
+        [1, 0.1],   // 1 生成概率为 10%
+        [2, 0.5],   // 2 生成概率为 50%
+        [5, 0.2],   // 5 生成概率为 20%
+    ])
+});
+
+{
+    // 循环10000次看下概率分配情况
+    let map = {};
+    for (let i = 0; i < 10000; i++) {
+        let num = gl.random();
+        typeof map[num] !=='undefined' ? map[num] += 1 : map[num] = 0 ;
+    }
+
+    for (let key in map) {
+        console.log(`${key} = ${map[key] / 10000}`);
+    }
+}

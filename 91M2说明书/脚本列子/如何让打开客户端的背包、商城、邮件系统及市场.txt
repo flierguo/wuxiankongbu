@@ -1,0 +1,8 @@
+如何让打开客户端的背包、商城、邮件系统及市场
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.OpenBag(); //打开背包,等同于F9 
+    Player.OpenMailBox();  //打开邮箱
+    Player.OpenMarket(); //打开市场
+    Player.OpenShop(); //打开商城
+
+} 

@@ -1,0 +1,162 @@
+其他函数注释
+// List 列表类：
+//获取列表内元素的数量
+GetCount(): number;Count:number;
+// 按序号取列表内的元素
+Items(index: number): Object;
+
+// Magic 技能魔法类：
+// 数据库的Spell配置
+GetwSpell(): number;wSpell:number;
+// 数据库的DefSpell配置
+GetbtDefSpell(): number;btDefSpell:number;
+
+// TTimeStamp 时间类：
+// 获取从0点开始经过的毫秒数
+GetTime(): number; Time:number;
+// 设置从0点开始经过的毫秒数
+SetTime(Value: number): void;
+// 获取从公元 0001年1月1日 开始经过的天数
+GetDate(): number;Date:number;
+// 设置从公元 0001年1月1日 开始经过的天数
+SetDate(Value: number): void;
+
+
+// TField 文件类：
+// 获取字段的名称
+GetFieldName(): string;FieldName:string;
+// 将字段内容以转换为字符串格式
+GetAsString(): string;AsString:string;
+// 将字段内容以转换为Integer格式
+GetAsInteger(): number;AsInteger:number;
+// 将字段内容以转换为TDateTime格式
+GetAsDateTime(): number;AsDateTime:number;
+// 将字段内容以转换为Boolean格式
+GetAsBoolean(): boolean;AsBoolean:boolean;
+// 将字段内容以转换为Float格式
+GetAsFloat(): number;AsFloat:number;
+// 判断字段原始类型是否为整数
+IsInt(): boolean;
+// 判断字段原始类型是否为小数
+IsFloat(): boolean;
+// 获取字段类型 0.未知 1.整数 2.小数 3 布尔 4.DateTime
+GetFieldType(): number;FieldType:number;
+// 字段原始类型 引擎使用
+GetRawFieldType(): number;RawFieldType:number;
+// 判断字段原始类型是否为DateTime
+IsDateTime(): boolean;
+
+// TMissionLinkItem 任务类：
+// 获取任务类型 0主线 1.支线 2.日常 3.赏金
+GetKind(): number;Kind:number;
+// 设置任务类型 0主线 1.支线 2.日常 3.赏金
+SetKind(Value: number): void;
+
+// 获取任务唯一ID 版本管理器内设置的值
+GetMisssionID(): string;MisssionID:string;
+// 设置任务唯一ID 版本管理器内设置的值
+SetMisssionID(Value: string): void;
+
+// 获取任务主题
+GetSubject(): string;Subject:string;
+// 设置任务主题
+SetSubject(Value: string): void;
+
+// 获取任务内容
+GetContent(): string;Content:string;
+// 设置任务内容
+SetContent(Value: string): void;
+
+// 获取需要等级
+GetLevel(): number;Level:number;
+// 设置需要等级
+SetLevel(Value: number): void;
+
+// 获取需要转生等级
+GetReLevel(): number;ReLevel:number;
+// 设置需要转生等级
+SetReLevel(Value: number): void;
+
+// 获取目标NPC唯一ID
+GetTargetNpc(): number;TargetNpc:number;
+// 设置目标NPC唯一ID
+SetTargetNpc(Value: number): void;
+
+// 删除此任务
+Delete(): void;
+
+// declare class TProjectUIAdmin
+// 添加一个页签  PageName:名称 CWidth:单个组件的宽度 CHeight:高度  CRowCount:每行组件数量
+AddPage(PageName: string,CWidth: number,CHeight: number,CRowCount: number): void;
+
+// 添加一个按钮 PageName:所属页签 ControlName:组件名称 Hint:鼠标移动提示 confirm:点击是否弹出确认执行
+AddButton: (PageName: string,ControlName: string,Hint?: string,confirm?: boolean) =>  void;
+
+// 添加一个复选框 PageName:所属页签 ControlName:组件名称 Checked:是否勾选 Hint:鼠标移动提示
+AddCheckBox: ( PageName: string,ControlName: string,Checked: boolean,Hint?: string) =>  void;
+
+// 添加一个输入框 PageName:所属页签 ControlName:组件名称 Text:输入框内容 Hint:鼠标移动提示 confirm:点击OK按钮时候是否弹出确认框
+AddEdit: ( PageName: string,ControlName: string,Text: string,Hint?: string,confirm?: boolean) =>  void;
+
+// 添加一个日志页签
+AddLogPage(PageName: string): void;
+
+// 往日志页签添加日志 PageName:日志页签名称 LogText:日志内容
+AddLog(PageName: string,LogText: string): void;
+
+// 设置输入框内容 ControlName：组件名称 LogText：内容
+UpdateInputText(ControlName: string,LogText: string): void;
+
+// 设置复选框是否被勾选 组件名称是否勾选
+UpdateCheckBoxState(ControlName: string,Checked: boolean): void;
+
+// 清空某个日志页签的内容
+ClearLogPage(PageName: string): void;
+
+// TUserItemListReadOnly
+// 只读物品列表 此列表内的物品只允许读取 不允许修改。否则会造成引擎错误
+// 获取下标的物品
+GetItem(Index: number): TUserItem;
+// 获取列表内的物品数量
+GetCount(): number;Count:number;
+// TMonster extends TActor 怪物对象类：
+// 关联引擎AI怪物执行逻辑 比较复杂 暂无注释
+Run(): void;
+// 
+AttackTarget(): boolean;
+// 
+SearchTarget(): void;
+// 
+DelTargetCreat(): void;
+// 
+SelectTarget(): void;
+// 
+Initialize(): void;
+// 
+MakeGhost(): void;
+// 
+OnSetTargetCreat(Target: TActor): void;
+// 
+OnDelTargetCreat(Target: TActor): void;
+// 
+Say(PMessage: string): void;
+// 
+InViewRange(Target: TActor): boolean;
+// 
+ReAlive(): void;
+// 
+RecalcAbilitys(): void;
+// 
+Die(): void;
+// 
+ReadAddedAbility(PAblity: TAddedAbility): void;
+// 
+IsProtectTarget(Target: TActor): boolean;
+// 
+IsAttackTarget(Target: TActor): boolean;
+// 
+IsProperTarget(Target: TActor): boolean;
+// 
+IsProperFriend(Target: TActor): boolean;
+// 
+GetCustomRace(): number;CustomRace:number;

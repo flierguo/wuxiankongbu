@@ -1,0 +1,9 @@
+如何复活
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let APlayer: TPlayObject;
+    APlayer = GameLib.FindPlayer(Args.Str[0]); //找出想要复活的玩家
+    if ((APlayer) && APlayer.Death) { //如果找到玩家并且玩家已死亡
+        APlayer.ReAlive(); //将玩家复活 
+        APlayer.GoHome(); //将玩家传送回城
+    }
+} 

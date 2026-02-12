@@ -1,0 +1,9 @@
+如何实现自定义装备爆出提示
+export function MonDropItem(Npc: TNormNpc, Owner: TPlayObject, Monster: TActor, Item: TUserItem, Map: TEnvirnoment, X: number, Y: number, Accept: Boolean) {
+    GameLib.Broadcast(format('%s在地图%s(%d,%d)掉落了[{U=%s}]', [Monster.Name, Map.Name, X, Y, Item.MakeString]));
+    //Gamelib.Broadcast: 世界喊话
+    //{U=%s}: 通过Format函数将物品信息填充到信息里
+    //Item.MakeString: 将当前爆出的物品生成字符串      
+    //注意{U=%s}的用法,采用Format函数实现字符串处理，也可以通过 '{U=' + Item.MakeString + '}';       
+    //通过这段函数的处理,玩家看到信息里将出现爆出物品的名称,并且鼠标移上去会显示该物品的详细信息,和玩家聊天栏发送装备信息效果一样
+}

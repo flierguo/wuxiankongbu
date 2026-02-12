@@ -1,0 +1,18 @@
+TUserMagic 技能魔法类
+GetName(): string;Name:string;                                    / 获取技能名称
+GetMagID(): number;MagID:number;                                  / 获取技能在数据库的ID
+GetMagIdx(): number;MagIdx:number;                                / 获取技能在数据库中的序号
+GetJob(): number;Job:number;                                      / 获取技能的职业
+GetLevel(): number;Level:number;                                  / 获取技能等级
+SetLevel(Value: number): void;                                    / 设置技能等级
+GetStrengthen(): number;Strengthen:number;                        / 获取强化技能等级
+SetStrengthen(Value: number): void;                               / 设置强化技能等级（最高255）
+GetTranPoint(): number;TranPoint:number;                          / 获取技能当前修炼的点数
+SetTranPoint(Value: number): void;                                / 设置技能当前修炼的点数
+GetUseTime(): number;UseTime:number;                              / 获取技能上次使用的时间
+SetUseTime(): number;UseTime:number;                              / 设置技能上次使用的时间 
+SetOpened(Value: boolean): void                                   / 设置技能开关状态(比如刺杀、半月)
+GetOpened(): boolean;Opened:boolean;                              / 获取技能开启状态(比如刺杀、半月)
+GetMagicInfo(): TMagic;MagicInfo:TMagic;                          / 技能数据库结，可访问技能的基础定义
+
+// TUserMagic.SetOpened() 用于脚本修改开关状态后需要TPlayObject.UpdateMagicOpenState 用于更新状态到客户端

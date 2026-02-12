@@ -1,0 +1,8 @@
+如何收取城堡金币
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.TakeCastGold(10000); //将城堡的金币-10000
+    //直接针对城堡对象的操作方法
+    if (Player.Castle) {
+        Player.Castle.TotalGold = Player.Castle.TotalGold - 10000;
+    }
+} 

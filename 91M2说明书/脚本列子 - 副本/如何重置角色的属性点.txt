@@ -1,0 +1,4 @@
+如何重置角色的属性点
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.RestBonusPoint(); //将属性点重置,便于重新分配
+}

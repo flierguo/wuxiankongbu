@@ -1,0 +1,19 @@
+首饰盒和生肖
+人物首饰盒和生肖 - TFunctionFlag
+
+ffJewelryBox 首饰盒
+ffZodiac 十二生肖
+
+使用示例
+
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs):void {
+// 开启人物首饰盒
+ Player.SetFunctionState(TFunctionFlag.ffJewelryBox,true)
+// 关闭人物首饰盒
+ Player.SetFunctionState(TFunctionFlag.ffJewelryBox,false)
+
+// 开启人物十二生肖
+ Player.SetFunctionState(TFunctionFlag.ffZodiac,true)
+// 关闭人物十二生肖
+ Player.SetFunctionState(TFunctionFlag.ffZodiac,false)
+}

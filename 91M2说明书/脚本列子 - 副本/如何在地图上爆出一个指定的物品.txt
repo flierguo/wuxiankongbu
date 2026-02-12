@@ -1,0 +1,10 @@
+如何在地图上爆出一个指定的物品
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //所有爆出超过时间限制后任何人均可拾取
+    GameLib.ThrowItem('3', '乌木剑', 300, 300, 3, 1, Player); //在地图300x300的3格坐标范围内爆出一把乌木剑,当前的Player可拾取 
+    GameLib.ThrowItem('3', '乌木剑', 300, 300, 3, 1, null); //在地图300x300的3格坐标范围内爆出一把乌木剑,任何人都可以拾取,无时间限制
+    GameLib.ThrowItemEx(Player.Map, '乌木剑', 300, 300, 3, 1, Player); //在地图300x300的3格坐标范围内爆出一把乌木剑,当前的Player可拾取       
+    GameLib.ThrowItem('3', '乌木剑', 300, 300, 3, 1, Player, 30000); //在地图300x300的3格坐标范围内爆出一把乌木剑,当前的Player可拾取,或者30秒后任意拾取 
+    GameLib.ThrowItem('3', '乌木剑', 300, 300, 3, 1, null, 30000); //在地图300x300的3格坐标范围内爆出一把乌木剑,30秒内任何人不可拾取,30秒后任意拾取
+    GameLib.ThrowItemEx(Player.Map, '乌木剑', 300, 300, 3, 1, Player, 30000); //在地图300x300的3格坐标范围内爆出一把乌木剑,当前的Player可拾取,或者30秒后任意拾取
+} 

@@ -1,0 +1,17 @@
+判断角色所在的地图信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+let AMap: TEnvirnoment;
+//普通访问模式
+Npc.MessageBox(Player, format('你当前位于地图%s坐标%d,%d', [Player.MapName, Player.MapX, Player.MapY]));
+//高级模式,利用地图对象可以进行更多的操作
+AMap = Player.Map; //取出玩家所在的地图对象
+if (AMap != null) { //如果地图存在（正常情况下，玩家都会位于地图上）
+    if (AMap.Duplicate) {//如果地图是副本
+        Npc.MessageBox(Player, '你位于副本地图中');
+    }
+    AMap.ClearMon(true, '白野猪'); //清除地图上的全部白野猪，并且不让白野猪死亡的时候爆出物品
+    if (AMap.HumCount > 100) { //如果地图人数大于100人
+        Npc.MessageBox(Player, '这个地图的人还不少');
+    }
+ }
+}

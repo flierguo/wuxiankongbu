@@ -1,0 +1,14 @@
+如何初始化全局变量
+// 全局变量初始化在任意使用到的脚本单元中执行都可以，在脚本的initialization和finalization中处理即可：
+let g_Names: TStringList
+
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.MessageBox('hello!');
+}
+export function InitNames() {
+    g_Names = GameLib.CreateStringList()
+    g_Names.Add('xxxx');
+}
+export function FinalNames() {
+    g_Names.Free()
+}

@@ -1,0 +1,20 @@
+如何增加一个扩展按钮
+// 增加一个扩展按钮到客户端，AddExtendButton函数增加的位于药品栏下方，
+// 增加一个扩展按钮到客户端，AddTopExtendButton函数增加的位于小地图左侧
+
+// 按钮指向的函数位于ManagerNpc单元中，声明格式为（同常见的入口函数）： 
+procedure FuncName(Npc: TNormNpc; Player: TPlayObject; Args: TArgs);
+
+//玩家登录时触发 GameLib.onExecuteExtendButton （CommandText是下列的第三个参数）
+export function PlayerOnLogin(Npc: TNormNpc, Player: TPlayObject) {
+    //在X100 Y100增加一个充值按钮在客户端界面顶部小地图旁边
+    Player.AddExtendButton('邮件系统', '邮件系统', '@ExtendButtonMail', 0, 100, 100); 
+    //在X100 Y100增加一个充值按钮在客户端界面底部操作区
+    Player.AddTopExtendButton('攻城车', '攻城车租用', '@ExtendButtonXX', 3, 100, 100); 
+}
+
+// 如何删除一个扩展按钮
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.RemoveExtendButton('邮件系统'); //删除一个名为“邮件系统”的按钮
+    //注意:删除时是顶部和底部的按钮都会处理,所以在增加的时候就不应该让按钮同名  
+} 

@@ -1,0 +1,49 @@
+TNormNpc Npc对象类
+// 通知客户端关闭对话框 (关闭窗口)
+CloseDialog(PlayObject: TPlayObject): void;
+
+//和玩家对话
+Say(PlayObject: TPlayObject,Msg: string): void;
+//和玩家对话。UIName指定采用一个自定义的对话框来显示消息
+SayEx(PlayObject: TPlayObject,UIName: string,Msg: string): void;
+//用来更新自定义界面的文字描述
+UpdateSay(PlayObject: TPlayObject,UIName: string,Msg: string): void;
+
+//向玩家发送一个弹出对话框消息
+MessageBox(PlayObject: TPlayObject,Msg: string): void;
+
+// 示例：Npc.Question('确定执行吗?', 'Q2.YMethod', 'Q2.NMethod');
+// 参数1：对话信息；参数2：函数名称，之后的参数被作为第二个参数在被作为函数调用时的参数。
+// 在客户端弹出一个提示窗口，玩家选择确定则调用参数里的函数，点击取消则不做任何处理
+Question(PlayObject: TPlayObject,Msg: string,YMethod: string,NMethod: string): void;
+
+// 给予物品(ItemName: 物品名,Count为数量，Upgrade指定是否刷新极品属性)
+Give ( ItemName: string,Count: number,Upgrade: boolean) =>  void;
+// 发放物品,并且返回该物品对象，如果刷新失败返回为nil(ItemName: 物品名,Upgrade指定是否刷新极品属性)
+GiveItem ( ItemName: string,Upgrade?: boolean) => TUserItem;
+// 根据物品数据库ID给予物品并返回该物品对象，如果刷新失败返回为null
+GiveItemByIndex( ItemIndex: number,Upgrade?: boolean) =>  TUserItem;
+
+// 收取玩家的物品
+// 参数1：收取的对象 参数2：被收取物品名称 参数3：收取的数量
+Take(Actor: TActor,ItemName: string,Count: number) =>  void;
+
+// 收取玩家的物品
+// 参数1：收取的对象 参数2：被收取物品对象
+TakeItem(Actor: TActor,Item: TUserItem): boolean;
+
+// 修复目标指定位置装备的持久 参数1：目标玩家 参数2：装备所在位置
+RepairActorItem(Actor: TActor,ItemWhere: number): void;
+// 修复目标全身装备的持久
+RepairActorAllItem(Actor: TActor): void;
+
+//设置NPC的外观效果（可参见示例版本的天下第一雕像设置）
+SetEffigyState(Job: number,Properties: number,Feature: number,FeatureEx: number,Offset: number): void;
+
+// 获取NPC的标志
+GetTag(): number;Tag:number;
+
+// 获取NPC的称号
+GetRankLevelName(): string;RankLevelName:string;
+// 设置NPC的称号
+SetRankLevelName(Value: string): void;

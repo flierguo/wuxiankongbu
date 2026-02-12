@@ -1,0 +1,32 @@
+物品穿戴位置
+物品穿戴位置 - TItemWhere
+
+位置代码	说明
+wDress	衣服
+wWeapon	武器
+wRightHand	蜡烛
+wNecklace	项链
+wHelmet	头盔
+wArmringL	左手镯
+wArmringR	右手镯
+wRingL	左戒指
+wRingR	右戒指
+wBujuk	物品(毒符)
+wBelt	腰带
+wBoots	鞋
+wCharm	宝石
+wMask	面纱
+wFashion	时装
+wMount	坐骑
+wShield	盾牌
+wJewelry1..6	首饰盒（1-6）
+wZodiac1..12	十二生肖（1-6）
+示例
+
+// 如果装备了武器，则先修复然后取下武器
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs):void {
+  if(Player.Wepon) {
+    Player.RepairItem(Weapon);
+    Player.TakeOffItem(Weapon);
+  }
+｝

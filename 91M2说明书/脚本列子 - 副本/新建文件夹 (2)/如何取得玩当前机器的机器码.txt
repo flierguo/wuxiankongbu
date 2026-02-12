@@ -1,0 +1,12 @@
+如何取得玩当前机器的机器码
+//机器码格式为： XXXX-XXXX-XXXX-XXXX
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let APlay: TPlayObject;
+    Player.SendMessage('你的机器码是:' + Player.MachineCode);
+    APlay = GameLib.FindPlayer('张三');  //查找一个玩家
+    if (APlay) { //如果玩家存在(在线)
+        if (APlay.MachineCode = Player.MachineCode) { //如果当前玩家和查找到的玩家的机器码相同
+            Player.SendMessage('你和张三在同一电脑上游戏！！！');
+        }
+    }
+}

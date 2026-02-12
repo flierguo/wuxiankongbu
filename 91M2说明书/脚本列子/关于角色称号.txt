@@ -1,0 +1,40 @@
+关于角色称号
+// 获取角色当前使用的称号
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.ActiveTitle) {
+        //ActiveTitle即人物当前设置的称号
+    }
+} 
+
+// 设置当前称号
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.AddTitle('初入江湖'); //添加一个称号
+    Player.SetActiveTitle(''); //设置当前称号为空
+    Player.SetActiveTitle('初入江湖5'); //将称号"初入江湖5"设置为当前称号
+    Player.RemoveTitle('初入江湖1');  //删除一个称号 
+} 
+
+// 添加一个称号
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //AddTitle函数执行时会判断是否已经拥有该称号,如果没拥有才可以添加
+    if (Player.AddTitle('初入江湖')) {
+        Player.MessageBox('获得了称号“初入江湖”');
+    }
+} 
+
+// 删除一个称号
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let ATitle: THumTitle;
+    //TitleCount 表示称号个数
+    for (let i = 0; i <= Player.TitleCount - 1; i++) {
+        ATitle = Player.GetTitleItems(i);//取得一个具体的称号
+        //访问ATitle的属性,称号的属性是只读的,不可修改,其值根据数据库设置获取
+    }
+} 
+
+// 获取人物当前获得的称号信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.ActiveTitle) {
+        //ActiveTitle即人物当前设置的称号
+    }
+}

@@ -1,0 +1,5 @@
+如何开启及停止自动增加经验值
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.AutoGetExp('3'/*自动增加经验的地图*/, 5/*间隔时间*/, 1000/*每次增加的经验值*/, true/*是否只在安全区才增加经验值*/); //开启自动增加经验值 
+    Player.StopAutoGetExp();  //停止自动增加经验值
+} 

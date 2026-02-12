@@ -1,0 +1,54 @@
+判断及操作角色金币、元宝及礼金等数量
+// 原检测角色货币脚本示例：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+if (Player.GameGold < 100) {
+    Npc.MessageBox(Player, '你的元宝数量不足100');
+}
+if (Player.Gold < 10000) {
+    Player.Gold = Player.Gold + 50000; //金币数量直接+5W
+    Player.GoldChanged(); //所有的金币、元宝及礼金数量发生变化后都调用此函数让客户端刷新
+    Npc.MessageBox(Player, '你太穷了，我送了5W金币');
+ }
+}
+
+新货币操作示示例:
+货币系统以及日志,加上日志消耗的所有可能的渠道,不再建议直接操作TPlayObject.Gold 和 GameGold 以及 GamePoint 等货币类型对象直接修改货币值  未来 这些字段将被移除。
+货币类型：
+  GAME_MONEY_TYPE_GOLD = 1;      //金币
+  GAME_MONEY_TYPE_GAMEGOLD = 2;  //元宝
+  GAME_MONEY_TYPE_GAMEPOINT = 3; //游戏点
+  GAME_MONEY_TYPE_GAME_GIRD = 4; //灵符
+  GAME_MONEY_TYPE_DIAMOND = 5;   //金刚石
+ TPlayObject 增加 货币扣减以及检查函数
+1.function TPlayObject.GetGameMoney(Type:Byte):Cardinal;  //获取对应货币的数量
+2.procedure TPlayObject.SetGameMoney(Type:Byte;Value:Cardinal;const Log:String); //设置货币的数量。 Log 为日志描述
+3.function TPlayObject.CanTakeGameMoney(Type:Byte;Value:Cardinal):Boolean; //是否可以扣减玩家对应数量的货币 Value 为需要增加货币的数量
+4.function TPlayObject.CanAddGameMoney(Type:Byte;Value:Cardinal):Boolean;  //是否可以给玩家增加货币 Value 为需要增加的货币数量
+5.function TPlayObject.AddGameMoney(Type:Byte;Value:Cardinal; const Log:String):Boolean; //给玩家增加 对应数量的货币 Log 为日志描述 成功则为返回True 失败返回False;
+6.function TPlayObject.TakeGameMoney(Type:Byte;Value:Cardinal;const Log:String):Boolean; //扣除玩家对应数量的货币  成功返回True 失败返回False;
+
+export function CanTake(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+if (Player.CanTakeGameMoney(1, 100000000))
+    Player.SendMessage('可以拿走')
+else
+    Player.SendMessage('不可以拿走');
+}
+export function CanAdd(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+if (Player.CanAddGameMoney(1, 100000000))
+    Player.SendMessage('可以给')
+else
+    Player.SendMessage('不可给');
+}
+
+export function Take(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+if (Player.TakeGameMoney(1, 100000000, '流浪汉拿走'))
+    Player.SendMessage('扣除成功')
+else
+    Player.SendMessage('扣除失败');
+}
+export function Add(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+if (Player.AddGameMoney(1, 100000000, '流浪汉给与')
+    Player.SendMessage('给与成功')
+else
+    Player.SendMessage('给与失败');
+}

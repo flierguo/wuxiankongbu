@@ -1,0 +1,32 @@
+TMissionItem 系统任务类
+GetRecordID(): string;RecordID:string;                         / 获取任务系列ID
+GetKind(): number;Kind:number;                                 / 获取任务类别（0主线 1支线 2日常 3悬赏）
+GetMissionID(): string;MissionID:string;                       / 获取任务ID
+GetSubject(): string;Subject:string;                           / 获取任务主题
+SetSubject(AValue: string): void;                              / 设置任务主题
+GetContent(): string;Content:string;                           / 获取任务描述
+SetContent(AValue: string): void;                              / 设置任务描述
+GetRewards(): string;Rewards:string;                           / 获取任务奖励
+SetRewards(AValue: string): void;                              / 设置任务奖励
+GetNeedType(): number;NeedType:number;                         / 获取任务需求类型
+SetNeedType(AValue: number): void;                             / 设置任务需求类型
+GetNeedName(): string;NeedName:string;                         / 获取任务需求为怪名或物品名
+SetNeedName(AValue: string): void;                             / 设置任务需求为怪名或物品名
+GetNeedQuality(): number;NeedQuality:number;                   / 获取任务需求辅助
+SetNeedQuality(AValue: number): void;                          / 设置任务需求辅助
+GetNeedMax(): number;NeedMax:number;                           / 获取任务需求进度总数
+SetNeedMax(AValue: number): void;                              / 设置任务需求进度总数
+GetNeedProgress(): number;NeedProgress:number;                 / 获取任务需求进度
+SetNeedProgress(AValue: number): void;                         / 设置任务需求进度
+GetTargetNPC(): number;TargetNPC:number;                       / 获取任务关联的Npc
+SetTargetNPC(AValue: number): void;                            / 设置任务关联的Npc
+GetStart(): number;Start:number;                               / 获取任务开始时间
+SetStart(AValue: number): void;                                / 设置任务开始时间
+GetLimit(): number;Limit:number;                               / 获取任务限时(秒)
+SetLimit(AValue: number): void;                                / 设置任务限时(秒)
+GetState(): number;State:number;                               / 获取任务当前状态
+SetState(AValue: number): void;                                / 设置任务当前状态
+Update(): void;                                                / 更新任务信息,比如脚本修改了进度需要客户端更新显示
+Submit(): void;                                                / 提交任务(会触发MissionsNpc的OnMissionFinish事件)
+Cancel(): void;                                                / 取消任务
+Delete(): void;                                                / 删除任务

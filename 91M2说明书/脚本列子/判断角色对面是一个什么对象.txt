@@ -1,0 +1,26 @@
+判断角色对面是一个什么对象
+//检查对面站的是否是一个可结婚的对象
+export function CheckPoseCreateCanMarry(Player: TPlayObject): Boolean {
+let APoseCreate: TActor;
+APoseCreate = Player.PoseCreate; //取得站立在对面的对象
+return (APoseCreate != null) //如果对象存在
+    && APoseCreate.IsPlayer //并且是一个玩家
+    && (Player.Gender != APoseCreate.Gender) //并且是异性
+    && !Player.Married //并且是没有结婚的
+    && !((APoseCreate as TPlayObject).Married) //并且自己也没结婚
+}
+export function RevMarry(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+const S =
+    `[[
+    {S=<$UserName$>;C=251}：\\
+    　　{S=<$PoseName$>;C=251}已经向你求婚！你是否愿意嫁给他？\\\\
+    <我愿意/@agreeMarry> \\\\
+    <我不愿意/@disagreeMarry>
+    ]];`
+let AMessage: string;
+if (CheckPoseCreateCanMarry(Player)) {//检查结婚对象
+    AMessage = ReplaceStr(S, '<$UserName$>', Player.Name);  //将消息中的标识位替换成当前玩家的名字
+    AMessage = ReplaceStr(AMessage, '<$PoseName$>', Player.PoseCreate.Name); //将消息中的标识位替换成当前玩家对面站立的角色的名字
+    Npc.Say(Player, AMessage); //将消息发给玩家
+ }
+}

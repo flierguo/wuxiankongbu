@@ -1,0 +1,8 @@
+如何给客户端发送一个标题栏闪动
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    let P = GameLib.FindPlayer('张三'); //查找玩家
+    if (P) {
+        P.MapMove('3', 100, 100); //将玩家传送到指定的位置
+        P.FlashWindow; //为防止玩家窗口不在游戏时可能会忽略本次事件,给顽疾发送一个标题栏闪动,如果客户端处于激活状态则该闪动无效
+    }
+}

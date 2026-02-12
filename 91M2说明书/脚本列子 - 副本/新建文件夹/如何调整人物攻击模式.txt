@@ -1,0 +1,7 @@
+如何调整人物攻击模式
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    if (Player.AttackMode = TAttackMode.amAll) { //如果当前是全体攻击模
+        Player.AttackMode = TAttackMode.amPeaceful; //修改成和平攻击模式
+        Player.SendCenterMessage('攻击模式由{S=全体;C=249}改为了{S=和平;C=250}。。。', 0);
+    }
+}

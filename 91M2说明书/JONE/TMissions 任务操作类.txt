@@ -1,0 +1,62 @@
+TMissions 任务操作类
+Clear(): void;                                                              / 清除已接和未接任务
+Contain(ARecordID: string): boolean;                                        / 是否包含了指定系列ID的任务
+TryGet(ARecordID: string): TMissionItem;                                    / 获取一个指定系列ID的已接任务
+ContainMissionIDInDB(AMissionID: string): boolean;                          / 查看所有任务列表是否包含某个任务(包含当前任务列表)
+ContainMissionID(AMissionID: string): boolean;                              / 是否包含了指定任务ID的任务
+TryGetByMissionID(AMissionID: string): TMissionItem;                        / 获得任务ID相同的第一个已接任务
+ContainLink(AMissionID: string): boolean;                                   / 是否包含了指定任务ID的未接任务
+TryGetLink(AMissionID: string): TMissionLinkItem;                           / 获取一个指定任务ID的未接任务
+Delete(ARecordID: string): void;                                            / 删除一个指定的已接任务
+DeleteLink(AMissionID: string): void;                                       / 删除指定任务ID的未接任务
+Refresh(): void;                                                            / 刷新任务
+GetCount(): number;Count:number;                                            / 获取已接任务数量
+GetItems(AIndex: number): TMissionItem;Items:TMissionItem;                  / 获取玩家已接任务对象
+IndexOf(ARecordID: string): number;                                         / 根据任务唯一存储ID 获得在任务列表的下标
+GetLinkCount(): number;LinkCount:number;                                    / 获取未接任务数量
+GetLinkItems(AIndex: number): TMissionLinkItem;LinkItems:TMissionLinkItem;  / 获取指定位置的未接任务
+IndexOfLink(AMissionID: string): number;                                    / 获取指定ID的任务对象所在的序号
+// 方法1：根据任务中心添加一个预制任务模版(已接任务)
+// 参数1：任务类别 参数2：任务ID 参数3：关联NPC
+Add1(AKind: number,AMissionID: string,ATargetNPC: number): TMissionItem;
+// 示例：
+Player.Missions.Add1(0, 'R0001', 0);
+
+// 方法2：纯脚本添加一个任务(已接任务)
+Add2(AKind: number,AMissionID: string,ANeedType: number,ASubject: string,AContent: string,ARewards: string,ANeedName: string,ANeedMax: number,ANeedQuality: number,ALimit: number,ATargetNPC: number,AAutoComplete: boolean): TMissionItem;
+// 示例：
+Player.Missions.Add2(2,      // AKind：任务分类
+                    'R0001', // AMissionID：任务ID
+                    0,       // ANeedType：任务需求类型 0击杀指定名称的怪 1击杀等级不低于指定值的怪 2需要指定数量的物品 3脚本指定
+                    '小试牛刀10级',                // ASubject：任务主题
+                    '小伙子，如果你帮我{S=杀5只鸡;C=249}，我将给你丰厚的报酬', // AContent：任务描述
+                    '金币x100000;屠龙x1',          // ARewards：任务奖励描述
+                    '鹿',                          // ANeedName：任务需求为杀怪或需要物品时, 为怪名或物品名
+                    5,                             // ANeedMax：需求杀怪或者物品的数量
+                    0,// ANeedQuality：需求辅助, 击杀指定等级怪时此为等级值, 如果为需求肉制品或者矿石时此为品质
+                    0,        // ALimit：任务限时，单位秒
+                    0,        // ATargetNPC：关联Npc
+                    false);   // AAutoComplete：是否自动提交
+
+//方法1通过任务中心定义的任务直接添加到任务列表,明显简单很多
+//方法2比较复杂,但是可以做出同任务ID不同需求和奖励的任务
+//方法2中任务描述可以使用4个字段: 当前任务的系列ID#RecordID#、当前任务的唯一ID#MissionID#、当前任务的进度#P#和当前任务的总量#M#
+//注意任务的系列ID是全局唯一,而任务ID则大家都看拥有
+// 将任务中心ID为：R0001任务添加到玩家的任务列表(未接任务)
+AddLink1(AKind: number,AMissionID: string,ATargetNPC: number): TMissionLinkItem;
+
+// 添加一个非任务中心的任务(未接任务)
+AddLink2(AKind: number,AMissionID: string,ASubject: string,AContent: string,ATargetNPC: number,ANeedLevel: number,ANeedReLevel: number): TMissionLinkItem;
+// 示例：
+Player.Missions.AddLink2(2,//{ 任务分类 }
+                        'R0003',//{ 唯一ID }
+                        '小试牛刀',//{ 主题 }
+                        '小伙子，如果你帮我{S=杀5只鹿;C=249}，我将给\\你丰厚的报酬！！！' +
+                        '\\\\\\\\\\\\\\<&接受/@Accept(#MissionID#)> <&拒绝/@Reject(#MissionID#)>' +   //#MissionID#,系统将自动填充为任务唯一ID
+                        '\\\\\\\\{S=金币:;C= 243}100000\\{S=装备:;C=243} 屠龙刀',
+                        0,//{ 关联NPC }
+                        50,//{ 玩家等级必须大于等于50级 }
+                        1)//{ 玩家转生等级必须大于等于1 })
+
+// 两种方式的区别,第一种是从版本文件的任务中心里面直接添加已经定义好的任务
+// 第二种则是自定义添加,需要在脚本中写明任务描述

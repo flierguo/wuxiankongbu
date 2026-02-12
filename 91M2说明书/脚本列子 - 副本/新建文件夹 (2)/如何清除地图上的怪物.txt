@@ -1,0 +1,9 @@
+如何清除地图上的怪物
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    //方式1: 使用Gamelib执行清理
+    GameLib.ClearMapMon('3'/*地图名称*/, true/*清理的方式怪物不爆出物品*/, '白野猪'/*要清理的怪物*/); //清除地图上的全部白野猪
+    GameLib.ClearMapMon('3'/*地图名称*/); //清除地图上的全部怪物
+    //方式2:使用TEnvirnoment对象的函数执行清理
+    Player.Map.ClearMon(true, '白野猪'); //清除地图上的全部白野猪
+    Player.Map.ClearMon(); //清除地图上的全部怪物
+} 

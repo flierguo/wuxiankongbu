@@ -1,0 +1,30 @@
+如何显示一个进度条
+// 开启进度条：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.ShowProgress('开启中...'/*进度条上显示的信息*/, 30/*进度条时长30秒*/, 1000/*进度条标记*/, true/*移动、攻击或被被攻击的时候取消进度条事件*/); //开启进度条    
+    //如果当前存在进度条则返回False
+    //进度条计时结束后调用QFunctionNpc单元中的ProgressEvent函数，其中可根据EventID进行事件处理
+}
+// 处理进度条事件：
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.ShowProgress('开启中...'/*进度条上显示的信息*/, 30/*进度条时长30秒*/, 1000/*进度条标记*/, true/*移动、攻击或被被攻击的时候取消进度条事件*/); //开启进度条
+    //如果当前存在进度条则返回False
+    //进度条计时结束后调用QFunctionNpc单元中的ProgressEvent函数，其中可根据EventID进行事件处理
+}
+//用户执行进度条事件触发，只有脚本调用ShowProgress函数且最终执行其事件才会触发本函数
+export function ProgressEvent(Npc: TNormNpc, Player: TPlayObject, EventID: number) {
+    if (EventID == 1000) {
+        Player.MessageBox('执行进度条事件，事件ID:' + EventID);
+    }
+}
+//用户角度条执行失败触发
+export function ProgressFaild(Npc: TNormNpc, Player: TPlayObject, EventID: number) {
+    if (EventID == 1000) {
+        Player.MessageBox('执行进度条事件失败，事件ID:' + EventID);
+    }
+}
+
+// 关闭一个进度条
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.CloseProgress(); //进度条同一时间只有一个存在
+} 

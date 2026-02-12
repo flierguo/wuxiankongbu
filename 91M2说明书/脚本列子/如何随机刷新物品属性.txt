@@ -1,0 +1,9 @@
+如何随机刷新物品属性
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    if (Player.Wepon) { //如果玩家穿戴了武器
+        GameLib.RandomUpgrade(Player.Wepon); //随机刷新武器属性  
+        GameLib.RandomUpgradePoint(Player.Wepon); //随机刷新武器极品属性  
+        GameLib.RandomUpgradeLevel(Player.Wepon); //随机刷新武器强化属性
+        Player.UpdateItem(Player.Wepon); //发送到客户端
+    }
+}

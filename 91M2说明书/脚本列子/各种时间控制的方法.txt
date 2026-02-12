@@ -1,0 +1,14 @@
+各种时间控制的方法
+当前时间函数： Now
+在单元DateUtils中，有各种控制时间的方法，以下举例几个比较常用的：
+计算两个日期Date1和Date2的间隔天数： DateUtils.DaysBetween(Date1, Date2)
+计算两个日期Date1和Date2的间隔小时数： DateUtils.HoursBetween(Date1, Date2)
+计算两个日期Date1和Date2的间隔分钟数： DateUtils.MinutesBetween(Date1, Date2)
+计算两个日期Date1和Date2的间隔秒数： DateUtils.SecondsBetween(Date1, Date2)
+
+当前时间加1天： DateUtils.IncDay(Now, 1)
+当前时间减1天： DateUtils.IncDay(Now, -1)
+今天星期几： DateUtils.DayOfTheWeek(Now);
+明天星期几： DateUtils.DayOfTheWeek(IncDay(Now, 1));
+
+DateUtils 单元里的各种函数均可通过百度获得使用案例

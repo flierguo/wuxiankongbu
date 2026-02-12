@@ -1,0 +1,50 @@
+TUserCastle 城堡对象类
+GetMapCastle(): TEnvirnoment;MapCastle:TEnvirnoment;                   / 城堡所在地图
+GetMapPalace(): TEnvirnoment;MapPalace:TEnvirnoment;                   / 皇宫所在地图
+GetMapSecret(): TEnvirnoment;MapSecret:TEnvirnoment;                   / 密道所在地图
+GetName(): string;Name:string;                                         / 获取城堡所在地图名称
+SetName(Value: string): void;                                          / 设置城堡所在地图名称
+SetTotalGold(Value: number): void;                                     / 设置城堡资金
+GetTodayIncome(): number;TodayIncome:number;                           / 获取今日收入金币
+SetTodayIncome(Value: number): void;                                   / 设置今日收入金币
+GetGuild(): TGuild;Guild:TGuild;                                       / 获取城堡所属行会
+SetGuild(AGuild: TGuild): void;                                        / 设置城堡所属行会
+GetHomeMap(): string;HomeMap:string;                                   / 获取行会回城地图ID
+GetHomeX(): number;HomeX:number;                                       / 获取行会回城x坐标
+GetHomeY(): number;HomeY:number;                                       / 获取行会回城y坐标
+GetWarDate(): number;WarDate:number;                                   / 获取攻城日期
+GetUnderWar(): boolean;UnderWar:boolean;                               / 判断是否正在攻城
+InCastleWarArea(Envir: TEnvirnoment,nX: number,nY: number): boolean;   / 判断指定地图范围是否正在攻城
+IsMember(Cert: TActor): boolean;                                       / 判断是否为城堡成员
+IsMasterGuild(Guild: TGuild): boolean;                                 / 判断行会是否拥有城堡
+IsAttackGuild(Guild: TGuild): boolean;                                 / 是否为攻城方行会
+IsAttackAllyGuild(Guild: TGuild): boolean;                             / 是否为攻城方行会的联盟行会
+IsDefenseGuild(Guild: TGuild): boolean;                                / 是否为守城方行会
+IsDefenseAllyGuild(Guild: TGuild): boolean;                            / 是否为守城方联盟行会
+StartWall(): void;                                                     / 开始攻城战
+StopWall(): void;                                                      / 停止攻城战
+AddAttacker(Guild: TGuild): boolean;                                   / 将行会增加到攻城方列表
+AddAttackerByTime(Guild: TGuild,ATime: number): boolean;               / 将行会增加到指定日期的攻城列表
+AddAllAttacker(): void;                                                / 将全部公会加入到当前的攻城列表
+AddAllAttackerByTime(ATime: number): void;                             / 将全部公会加入到指定日期的攻城列表
+RepairDoor(): boolean;                                                 / 修复大门
+GetLeftWall(): TActor;LeftWall:TActor;                                 / 获取皇宫左城墙
+GetCenterWall(): TActor;CenterWall:TActor;                             / 获取皇宫中间城墙
+GetRightWall(): TActor;RightWall:TActor;                               / 获取皇宫右城墙
+RepairWall(nWallIndex: number): boolean;                               / 修复指定位置的城墙
+GetMainDoorOpened(): boolean;MainDoorOpened:boolean;                   / 判断城门是否打开
+GetMainDoor(): TActor;MainDoor:TActor;                                 / 获取城门对象
+OpenDoor(): void;                                                      / 打开大门
+CloseDoor(): void;                                                     / 关闭大门
+HireArcher(Index: number): boolean;                                    / 在指定的位置租用弓箭手
+HireGuard(Index: number): boolean;                                     / 在指定的位置租用卫士
+UnHireArcher(Index: number): boolean;                                  / 解散指定位置的弓箭手
+UnHireGuard(Index: number): boolean;                                   / 解散指定位置的卫士
+GetGuard(Index: number): TActor;                                       / 取指定序号的卫士对象（序号0-3）
+GetArcher(Index: number): TActor;                                      / 取指定序号的弓箭手（序号0-11）
+GetAttackWarCount(): number;AttackWarCount:number;                     / 获取已申请的攻城战总数
+GetAttackWarDate(Index: number): number;                               / 取一个攻城战的日期
+GetAttackWarGuild(Index: number): TGuild;                              / 取一个攻城战的申请行会
+GetAttackGuildCount(): number;AttackGuildCount:number;                 / 取正在攻城的行会总数
+GetAttackGuild(Index: number): TGuild;                                 / 取一个正在攻城的行会对象
+GetChangeDateTime(): number;TDateTime:number;                          / 获取城堡被占领的时间

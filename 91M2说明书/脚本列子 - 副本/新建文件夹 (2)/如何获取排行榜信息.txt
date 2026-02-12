@@ -1,0 +1,25 @@
+如何获取排行榜信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    //Gamelib.Toptenz: 排行榜系统
+    //Gamelib.Toptenz.Levels 等级排行榜
+    //Gamelib.Toptenz.Richest 财富排行榜
+    //Gamelib.Toptenz.Warrior 战士排行榜
+    //循环读取战士排行榜
+    for (let I = 0; I < GameLib.Toptenz.Warrior.Count; I++) {
+        //Gamelib.Toptenz.Warrior.MinValue[I] 最低物理攻击,不同职业表示不同属性
+        //Gamelib.Toptenz.Warrior.MaxValue[I] 最高物理攻击,不同职业表示不同属性
+        Player.SendMessage(format('排名:%d 角色:%s 物理攻击:%d-%d', [I + 1, GameLib.Toptenz.Warrior.GetName(I), GameLib.Toptenz.Warrior.MinValue[I], GameLib.Toptenz.Warrior.GetMaxValue(I)]));
+    }
+    //循环财富榜
+    for (let I = 0; I < GameLib.Toptenz.Richest.Count; I++) {
+        //Gamelib.Toptenz.Richest.Values[I] 金币数
+        Player.SendMessage(format('排名:%d 角色:%s 金币:%d-%d', [I + 1, GameLib.Toptenz.Richest.GetName(I), GameLib.Toptenz.Richest.GetValue(I)]));
+}
+    //每个排行榜都具有IndexOf函数,用来取指定名称的排名信息,没上榜返回-1,第一名返回0,第二名返回1,以此类推
+    Player.MessageBox(format('等级榜%d人,我的排行%d,排行第一:%s %d', [GameLib.Toptenz.Levels.Count, GameLib.Toptenz.Levels.IndexOf(Player.Name), GameLib.Toptenz.Levels.GetName(0), GameLib.Toptenz.Levels.GetLevel(0)]));
+}
+
+// 重新计算排行榜
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    GameLib.Toptenz.Refresh();
+}

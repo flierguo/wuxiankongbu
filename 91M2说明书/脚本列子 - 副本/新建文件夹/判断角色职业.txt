@@ -1,0 +1,24 @@
+判断角色职业
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    switch (Player.Job) {
+        case 0:
+            Player.SendMessage('你是一个战士', 0);
+            break;
+        case 1:
+            Player.SendMessage('你是一个法师', 0);
+            break;
+        case 2:
+            Player.SendMessage('你是一个道士', 0);
+            break;
+        case 3:
+            Player.SendMessage('你是一个刺客', 0);
+            break;
+        case 4:
+            Player.SendMessage('你是一个弓箭手', 0);
+            break;
+        default:
+            Player.SendMessage('你是一个不可识别的职业', 0);
+            Player.Kick();
+            break;
+    }
+}

@@ -1,0 +1,11 @@
+如何弹出对话框让玩家选择执行
+export function YMethod(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    Player.MessageBox('你点击了确定');
+}
+
+export function NMethod(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    Player.MessageBox('你点击了取消');
+}
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs) {
+    Player.Question('确定执行吗?', 'Q2.YMethod', 'Q2.NMethod');
+}

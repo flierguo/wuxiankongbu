@@ -1,0 +1,5 @@
+如何禁止玩家聊天
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    Player.AllowSendMessage = false; //不允许发送聊天消息
+    //Player.AllowSendMessage = true;  ---> 允许发送聊天消息
+} 

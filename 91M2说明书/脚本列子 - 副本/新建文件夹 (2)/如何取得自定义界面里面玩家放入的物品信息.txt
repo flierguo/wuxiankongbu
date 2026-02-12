@@ -1,0 +1,10 @@
+如何取得自定义界面里面玩家放入的物品信息
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AItem: TUserItem;
+    for (let I = 0; I <= Player.CustomItemCount - 1; I++) { //循环取每个物品放置位置上的物品,Player.CustomItemCount表示当前自定义UI上可放置物品的格子总数
+        AItem = Player.GetCustomItem(I);
+        if (AItem) { //如果物品不为空(即这个位置放入了物品)
+            //做些事情！
+        }
+    }
+} 

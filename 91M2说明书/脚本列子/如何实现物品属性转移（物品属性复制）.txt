@@ -1,0 +1,30 @@
+如何实现物品属性转移（物品属性复制）
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+    let AItem: TUserItem'
+    //方法1: 使用CopyFrom执行属性完全拷贝
+    if (Player.Wepon) { //如果玩家穿戴了武器
+        AItem = Npc.GiveItem(Player, '乌木剑', false);  //发放一把新武器乌木剑,因为需要属性拷贝,所以最后一个参数为False,减少了随机升级物品带来的开销   
+        if (AItem.CopyFrom(Player.Wepon)) { //将乌木剑的属性从人物携带的武器上拷贝过来
+            Player.UpdateItem(AItem); //如果属性拷贝成功则通知客户端更新这把武器的属性
+        }
+    }
+    //CopyFrom是属性完全拷贝,但不影响物品类型和编号,比如上例,拷贝属性后乌木剑依旧为乌木剑,但是极品属性是从人物穿戴武器上拷贝而来
+    //方法2: 自定义属性拷贝
+    if (Player.Wepon) { //如果玩家穿戴了武器
+        AItem = Npc.GiveItem(Player, '乌木剑', false);  //发放一把新武器乌木剑,因为需要属性拷贝,所以最后一个参数为False,减少了随机升级物品带来的开销   
+        AItem.AddAC = Player.Wepon.AddAC;
+        AItem.AddMAC = Player.Wepon.AddMAC;
+        AItem.AddDC = Player.Wepon.AddDC; //拷贝物理攻击
+        AItem.AddMC = Player.Wepon.AddMC; //拷贝魔法攻击
+        AItem.AddSC = Player.Wepon.AddSC; //拷贝道术攻击
+        AItem.AddTC = Player.Wepon.AddTC; //拷贝射术攻击
+        AItem.AddPC = Player.Wepon.AddPC; //拷贝刺术攻击
+        for (let I = 0; I <= 6; I++) { //拷贝附加属性
+            AItem.GetAddPoint(I).ValueType = Player.Wepon.GetAddPoint(I).ValueType; //拷贝属性类型
+            AItem.GetAddPoint(I).Value = Player.Wepon.GetAddPoint(I).Value; //拷贝属性值
+        }
+        //这里还可以拷贝强化属性、宝石镶嵌及绑定状态等
+        Player.UpdateItem(AItem); //如果属性拷贝成功则通知客户端更新这把武器的属性
+    }
+    //方法2比方法1复杂,但是方法2可以控制拷贝项
+} 

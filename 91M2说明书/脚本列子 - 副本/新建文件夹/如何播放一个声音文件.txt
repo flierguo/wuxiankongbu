@@ -1,0 +1,4 @@
+如何播放一个声音文件
+export function Main(Npc: TNormNpc, Player: TPlayObject, Args: TArgs): void {
+Player.PlaySound('Wav\\0001.wav'); //播放声音文件,首先从Resources目录下搜索,如果文件不存在再找游戏的Wav目录
+}
